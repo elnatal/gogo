@@ -13,25 +13,32 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Connecting to mongoDB
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
+mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, () => {
   console.log("connected");
 }).
   catch(error => handleError(error));
 
 // Routes
-app.get('/', (req, res) => {
-  res.send('hello');
-});
+const coreRoute = require('./routes/core');
+const settingRoute = require('./routes/settings');
 const driversRoute = require('./routes/drivers');
+const usersRoute = require('./routes/users');
+const vehiclesRoute = require('./routes/vehicles');
+const vehicleTypesRoute = require('./routes/vehicleTypes');
+app.use('/', coreRoute);
+app.use('/setting', settingRoute);
 app.use('/drivers', driversRoute);
+app.use('/users', usersRoute);
+app.use('/vehicles', vehiclesRoute);
+app.use('/vehicleTypes', vehicleTypesRoute);
 
 // Driver Socket
-const ds = require('./sockets/DriverSocket');
+const ds = require('./sockets/DriverSocket')(io);
 const driverSocket = io.of('/driver-socket');
 driverSocket.on('connection', ds);
 
 // Passenger Socket
-const ps = require('./sockets/PassengerSocket');
+const ps = require('./sockets/PassengerSocket')(io);
 const passengerSocket = io.of('/passenger-socket');
 passengerSocket.on('connection', ps);
 

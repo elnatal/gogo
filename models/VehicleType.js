@@ -6,7 +6,7 @@ const VehicleTypeSchema = Schema({
         type: String,
         required: true
     },
-    status: {
+    active: {
         type: Boolean,
         required: true
     },

@@ -12,7 +12,7 @@ const userSchema = Schema({
     },
     email: {
         type: String,
-        required: true
+        required: false
     },
     phoneNumber: {
         type: String,
@@ -20,7 +20,7 @@ const userSchema = Schema({
     },
     profileImage: {
         type: String,
-        required: true
+        required: false
     },
     emergencyContactNumber: {
         type: String,

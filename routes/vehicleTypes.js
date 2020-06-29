@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const VehicleType = require('../models/VehicleType');
 
 router.get('/', async (req, res) => {
     try {
-        var user = await User.find();
-        console.log(user);
-        res.send(user);
+        var vehicleType = await VehicleType.find();
+        console.log(vehicleType);
+        res.send(vehicleType);
     } catch(err) {
         res.send('err ' + err);
     };
@@ -14,9 +14,9 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        var user = await User.findById(req.params.id);
+        var vehicleType = await VehicleType.findById(req.params.id);
         console.log(req.params.id);
-        res.send(user);
+        res.send(vehicleType);
     } catch(err) {
         res.send('err ' + err);
     };
@@ -24,8 +24,8 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const savedUser = await User.create(req.body);
-        res.send(savedUser);
+        const savedVehicleType = await VehicleType.create(req.body);
+        res.send(savedVehicleType);
     } catch(err) {
         console.log(err);
         res.send(err);
@@ -34,8 +34,8 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
     try {
-        const updatedUser = await User.updateOne({'_id': req.params.id}, req.body);
-        res.send(updatedUser);
+        const updatedVehicleType = await VehicleType.updateOne({'_id': req.params.id}, req.body);
+        res.send(updatedVehicleType);
     } catch(err) {
         console.log(err);
         res.send({"message": "error => " + err});
@@ -44,8 +44,8 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const deletedUser = await User.remove({_id: req.params.id});
-        res.send(deletedUser);
+        const deletedVehicleType = await VehicleType.remove({_id: req.params.id});
+        res.send(deletedVehicleType);
     } catch(err) {
         res.send(err);
     }

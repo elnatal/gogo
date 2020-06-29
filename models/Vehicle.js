@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const vehicleSchema = mongoose.Schema({
+const vehicleSchema = Schema({
     modelName: {
         type: String,
         required: true
@@ -25,42 +26,41 @@ const vehicleSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    vehicleTypeId: {
-        type: String,
+    vehicleType: {
+        type: Schema.Types.ObjectId,
+        ref: 'VehicleTypes',
         required: true
     },
     online: {
         type: Boolean,
-        required: true
+        default: false
     },
     position: {
       type: {
         type: String,
-        enum: ['Point'],
-        required: true
+        enum: ['Point']
       },
       coordinates: {
         type: [Number], // longitude comes first
-        required: true
       }
     },
-    timeStamp: {
+    timestamp: {
         type: Date,
-        required: true
+        required: false
     },
-    token: {
+    fcm: {
         type: String,
-        required: true
+        required: false
     },
     active: {
         type: Boolean,
-        required: true
+        default: true
     }
 },
 {
  timestamps: true
 });
 
-vehicleSchema.index({position: "2dsphere"});
+vehicleSchema.index({online: 1, position: "2dsphere"});
 
 module.exports = mongoose.model('Vehicles', vehicleSchema);

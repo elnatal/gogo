@@ -1,15 +1,66 @@
-const PassengerSocket = function(socket) {
-    const passengerId = "";
-    let userLocation = null;
+const { addUser, removeUser, getUser } = require('../containers/usersContainer');
+const { addRequest, removeRequest, getRequest } = require('../containers/requestContainer');
+const { getNearbyDrivers, search } = require('./core');
+const Request = require('../models/Request');
+const User = require('../models/User');
 
-    socket.on("location", () => {
-        // TODO:: update the user location
-    })
-    console.log("new passenger connection");
+module.exports = function(io) {
+    return function (socket) {
+        console.log("new passenger connection", socket.id);
+        var id = "";
+        var fcm = "";
+        var location = null;
+    
+        io.of('/passenger-socket').to(socket.id).emit('test');
+    
+        var interval = setInterval(async () => {
+            if (id && location) {
+                try {
+                    var drivers = await getNearbyDrivers({ location, distance: 1000 });
+                    socket.emit('nearDrivers', drivers);
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }, 5000)
+    
+        socket.on("init", async (passengerInfo) => {
+            console.log(passengerInfo)
+            if (passengerInfo && passengerInfo.id && passengerInfo.fcm && passengerInfo.location && passengerInfo.location.lat && passengerInfo.location.long) {
+                id = passengerInfo.id;
+                location = passengerInfo.location;
+                fcm = passengerInfo.fcm;
+                try {
+                    var drivers = await getNearbyDrivers({ location, distance: 1000 });
+                    socket.emit('nearDrivers', drivers);
+                } catch (err) {
+                    console.log(err);
+                }
+                User.update({ "_id": id }, { fcm });
+                addUser({ userId: id, socketId: socket.id, fcm });
+            } else {
+                return { error: "Invalid data" };
+            }
+        })
+    
+        socket.on('search', async (data) => {
+            console.log("search")
+            // search({userId: id, pickupLocation: data.pickupLocation, dropOffLocation: data.dropOffLocation});
+            var request = new Request({passengerId: id, driverId: 1, pickupLocation: data.pickupLocation, dropOffLocation: data.dropOffLocation, status: "inRequest", updateCallback});
+            addRequest({newRequest: request});
 
-    socket.on('disconnect', () => {
-        console.log("Passenger disconnected");
-    })
+            console.log(request);
+
+            function updateCallback(status) {
+                console.log("status updated passenger")
+                console.log(getRequest({passengerId: 1, driverId: 1}).getStatus());
+                console.log(status);
+            }
+        })
+
+        socket.on('disconnect', () => {
+            clearInterval(interval);
+            console.log("Passenger disconnected");
+        })
+    }
 }
-
-module.exports = PassengerSocket;
