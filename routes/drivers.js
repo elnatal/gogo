@@ -7,8 +7,17 @@ router.get('/', async (req, res) => {
         var drives = await Driver.find();
         console.log(drives);
         res.send(drives);
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        res.send(error);
+    };
+});
+
+router.get('/firebase/:firebaseId', async (req, res) => {
+    try {
+        var driver = await Driver.findOne({firebaseId: req.params.firebaseId});
+        res.send(driver);
+    } catch(error) {
+        res.send(error);
     };
 });
 
@@ -17,8 +26,8 @@ router.get('/:id', async (req, res) => {
         var driver = await Driver.findById(req.params.id);
         console.log(req.params.id);
         res.send(driver);
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        res.send(error);
     };
 });
 

@@ -44,6 +44,11 @@ const vehicleSchema = Schema({
         type: [Number], // longitude comes first
       }
     },
+    vehicleType: {
+        type: Schema.Types.ObjectId,
+        ref: 'Drivers',
+        required: true
+    },
     timestamp: {
         type: Date,
         required: false

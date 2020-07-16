@@ -11,6 +11,15 @@ router.get('/', async (req, res) => {
     };
 });
 
+router.get('/firebase/:firebaseId', async (req, res) => {
+    try {
+        var user = await User.findOne({firebaseId: req.params.firebaseId});
+        res.send(user);
+    } catch(error) {
+        res.send(error);
+    };
+});
+
 router.get('/:id', async (req, res) => {
     try {
         var user = await User.findById(req.params.id);

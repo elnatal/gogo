@@ -26,6 +26,6 @@ router.get('/getSettingsAndVehicleModels', async (req, res) => {
     }
 
     res.send(responseData);
-})
+});
 
 module.exports = router;

@@ -13,8 +13,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Connecting to mongoDB
-mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, () => {
-  console.log("connected");
+mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (err, res) => {
+  // console.log("connected");
+  if (err) console.log(err);
+  if (res) console.log(res);
 }).
   catch(error => handleError(error));
 
