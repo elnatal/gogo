@@ -22,7 +22,7 @@ app.use(function(req, res, next) {
 mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (err, res) => {
   // console.log("connected");
   if (err) console.log(err);
-  if (res) console.log(res);
+  if (res) console.log("Connected");
 }).
   catch(error => handleError(error));
 
