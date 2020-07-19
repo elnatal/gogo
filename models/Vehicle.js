@@ -31,6 +31,11 @@ const vehicleSchema = Schema({
         ref: 'VehicleTypes',
         required: true
     },
+    driver: {
+        type: Schema.Types.ObjectId,
+        ref: 'Drivers',
+        required: true
+    },
     online: {
         type: Boolean,
         default: false

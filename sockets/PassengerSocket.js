@@ -1,4 +1,5 @@
 const { addUser, removeUser, getUser } = require('../containers/usersContainer');
+const { getDriver } = require('../containers/driversContainer');
 const { addRequest, removeRequest, getRequest } = require('../containers/requestContainer');
 const { getNearbyDrivers, search } = require('./core');
 const Request = require('../models/Request');
@@ -10,8 +11,6 @@ module.exports = function (io) {
         var id = "";
         var fcm = "";
         var location = null;
-        var searchInterval = false;
-        var waitForResponse = false;
 
         io.of('/passenger-socket').to(socket.id).emit('test');
 
@@ -48,20 +47,20 @@ module.exports = function (io) {
         socket.on('search', async (data) => {
             console.log("search")
             var requestedDrivers = [];
+            sendRequest();
 
 
-            searchInterval = setInterval(async () => {
+            async function sendRequest() {
                 var vehicle;
                 var vehicles = await getNearbyDrivers({ location: data.pickupLocation, distance: 1000 });
 
                 vehicles.forEach((v) => {
                     if (!requestedDrivers.contains(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
                         vehicle = v;
+                        requestedDrivers.push(v._id)
                         return;
                     }
                 });
-
-                console.log("vehicle", vehicle);
 
                 if (vehicle) {
                     var request = new Request({
@@ -72,78 +71,26 @@ module.exports = function (io) {
                         status: "inRequest",
                         updateCallback
                     })
+                    addRequest({ newRequest: request });
+                    socket.emit("request", request);
+                    var driver = getDriver({driverId: request.driverId})
+                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
-                    waitForResponse = true;
-                    var sec = 0;
-
-                    while(waitForResponse) {
-                        setTimeout(() => {
-                            if (waitForResponse) {
-                                sec++;
-                                if (sec >= 15) {
-                                    waitForResponse = false;
-                                }
-                            }
-                        }, 1000)
-                    }
-
-
+                    setTimeout(() => {
+                        if (true) {
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                            sendRequest();
+                        }
+                    }, 10000);
                 } else {
-
-                }
-            }, 0);
-
-            while (searching) {
-                var vehicle;
-                var vehicles = await getNearbyDrivers({ location: data.pickupLocation, distance: 1000 });
-
-                vehicles.forEach((v) => {
-                    if (!requestedDrivers.contains(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
-                        vehicle = v;
-                        return;
-                    }
-                });
-
-                console.log("vehicle", vehicle);
-
-                if (vehicle) {
-                    var request = new Request({
-                        passengerId: id,
-                        driverId: vehicle.driver,
-                        pickupLocation: data.pickupLocation,
-                        dropOffLocation: data.dropOffLocation,
-                        status: "inRequest",
-                        updateCallback
-                    })
-
-                    waitForResponse = true;
-                    var sec = 0;
-
-                    while(waitForResponse) {
-                        setTimeout(() => {
-                            if (waitForResponse) {
-                                sec++;
-                                if (sec >= 15) {
-                                    waitForResponse = false;
-                                }
-                            }
-                        }, 1000)
-                    }
-
-
-                } else {
-
+                    socket.emit("noAvailableDriver");
                 }
             }
 
-            // search({userId: id, pickupLocation: data.pickupLocation, dropOffLocation: data.dropOffLocation});
-            var request = new Request({ passengerId: id, driverId: 1, pickupLocation: data.pickupLocation, dropOffLocation: data.dropOffLocation, status: "inRequest", updateCallback });
-            addRequest({ newRequest: request });
-
-            console.log(request);
-
             function updateCallback(status) {
-                console.log("status updated passenger")
+                if (status == "declined") {
+                    sendRequest();
+                } console.log("status updated passenger")
                 console.log(getRequest({ passengerId: 1, driverId: 1 }).getStatus());
                 console.log(status);
             }
@@ -151,6 +98,7 @@ module.exports = function (io) {
 
         socket.on('disconnect', () => {
             clearInterval(interval);
+            removeUser({userId: id});
             console.log("Passenger disconnected");
         })
     }

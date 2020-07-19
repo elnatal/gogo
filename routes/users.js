@@ -14,7 +14,11 @@ router.get('/', async (req, res) => {
 router.get('/firebase/:firebaseId', async (req, res) => {
     try {
         var user = await User.findOne({firebaseId: req.params.firebaseId});
-        res.send(user);
+        if (user) {
+            res.send(user);
+        } else {
+            res.status(404).send("User doesn't exist");
+        }
     } catch(error) {
         res.send(error);
     };
@@ -41,8 +45,9 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
     try {
-        const updatedUser = await User.updateOne({'_id': req.params.id}, req.body);
-        res.send(updatedUser);
+        await User.updateOne({'_id': req.params.id}, req.body);
+        const user = await User.findById(req.params.id);
+        res.send(user);
     } catch(err) {
         console.log(err);
         res.send({"message": "error => " + err});

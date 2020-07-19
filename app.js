@@ -12,6 +12,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 // Connecting to mongoDB
 mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (err, res) => {
   // console.log("connected");
@@ -21,18 +27,12 @@ mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlPar
   catch(error => handleError(error));
 
 // Routes
-const coreRoute = require('./routes/core');
-const settingRoute = require('./routes/settings');
-const driversRoute = require('./routes/drivers');
-const usersRoute = require('./routes/users');
-const vehiclesRoute = require('./routes/vehicles');
-const vehicleTypesRoute = require('./routes/vehicleTypes');
-app.use('/', coreRoute);
-app.use('/setting', settingRoute);
-app.use('/drivers', driversRoute);
-app.use('/users', usersRoute);
-app.use('/vehicles', vehiclesRoute);
-app.use('/vehicleTypes', vehicleTypesRoute);
+app.use('/', require('./routes/core'));
+app.use('/setting', require('./routes/settings'));
+app.use('/drivers', require('./routes/drivers'));
+app.use('/users', require('./routes/users'));
+app.use('/vehicles', require('./routes/vehicles'));
+app.use('/vehicleTypes', require('./routes/vehicleTypes'));
 
 // Driver Socket
 const ds = require('./sockets/DriverSocket')(io);

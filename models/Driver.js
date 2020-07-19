@@ -16,7 +16,7 @@ const DriverSchema = Schema({
     },
     email: {
         type: String,
-        required: true
+        required: false
     },
     businessLicense: {
         type: String,
@@ -45,6 +45,10 @@ const DriverSchema = Schema({
     active: {
         type: Boolean,
         default: true
+    },
+    approved: {
+        type: Boolean,
+        default: false
     },
 });
 

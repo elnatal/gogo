@@ -18,6 +18,10 @@ const VehicleTypeSchema = Schema({
         type: Number,
         required: true
     },
+    photo: {
+        type: String,
+        required: true
+    },
     pricePerMin: {
         type: Number,
         required: true
