@@ -1,9 +1,10 @@
 const { addUser, removeUser, getUser } = require('../containers/usersContainer');
 const { getDriver } = require('../containers/driversContainer');
-const { addRequest, removeRequest, getRequest } = require('../containers/requestContainer');
+const { addRequest, updateRequest, getRequest, removeRequest } = require('../containers/requestContainer');
 const { getNearbyDrivers, search } = require('./core');
 const Request = require('../models/Request');
 const User = require('../models/User');
+const { remove } = require('../models/User');
 
 module.exports = function (io) {
     return function (socket) {
@@ -47,12 +48,16 @@ module.exports = function (io) {
         socket.on('search', async (data) => {
             console.log("search")
             var requestedDrivers = [];
+            var driverFound = false;
             sendRequest();
 
 
             async function sendRequest() {
                 var vehicle;
                 var vehicles = await getNearbyDrivers({ location: data.pickupLocation, distance: 1000 });
+                if (!vehicles) {
+                    vehicles = [];
+                }
 
                 vehicles.forEach((v) => {
                     if (!requestedDrivers.contains(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
@@ -77,8 +82,9 @@ module.exports = function (io) {
                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
                     setTimeout(() => {
-                        if (true) {
+                        if (!driverFound) {
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                            removeRequest({passengerId: request.passengerId, driverId: request.driverId});
                             sendRequest();
                         }
                     }, 10000);
@@ -90,10 +96,19 @@ module.exports = function (io) {
             function updateCallback(status) {
                 if (status == "declined") {
                     sendRequest();
-                } console.log("status updated passenger")
+                } else if (status == "accepted") {
+                    driverFound = true;
+
+                    // TODO:: create trip and send it to the user
+                } 
+                console.log("status updated passenger")
                 console.log(getRequest({ passengerId: 1, driverId: 1 }).getStatus());
                 console.log(status);
             }
+        });
+
+        socket.on('cancel', (request) => {
+            updateRequest({passengerId: require.passengerId, driverId: request.driverId, status: "Canceled"});
         })
 
         socket.on('disconnect', () => {

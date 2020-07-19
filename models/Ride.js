@@ -70,7 +70,8 @@ const RideSchema = Schema({
     collectFromDriver: Number,
     corporateTicketNumber: Number,
     transactionNumber: Number,
-    bidNumber: Number
+    bidNumber: Number,
+    createdBy: String,
 });
 
 module.exports = mongoose.model("Rides", RideSchema);

@@ -22,6 +22,10 @@ const VehicleTypeSchema = Schema({
         type: String,
         required: true
     },
+    numberOfSeats: {
+        type: Number,
+        required: true,
+    },
     pricePerMin: {
         type: Number,
         required: true
