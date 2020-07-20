@@ -6,7 +6,7 @@ router.get('/', async (req, res) => {
     try {
         var vehicleType = await VehicleType.find();
         console.log(vehicleType);
-        res.send(vehicleType);
+        res.json(vehicleType);
     } catch(err) {
         res.send('err ' + err);
     };

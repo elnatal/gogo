@@ -14,7 +14,7 @@ function getNearbyDrivers({location, distance}) {
                         }
                     }
                 }
-            }, 'position vehicleType').find((err, res) => {
+            }, 'position vehicleType driver').find((err, res) => {
                 if(err) return err;
                 if(res) {
                     let drivers = JSON.stringify(res);

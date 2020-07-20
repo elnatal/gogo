@@ -54,13 +54,13 @@ module.exports = function (io) {
 
             async function sendRequest() {
                 var vehicle;
-                var vehicles = await getNearbyDrivers({ location: data.pickupLocation, distance: 1000 });
-                if (!vehicles) {
-                    vehicles = [];
-                }
+                var vehicles = [];
+                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 100000000 }));
 
                 vehicles.forEach((v) => {
-                    if (!requestedDrivers.contains(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
+                    console.log(vehicles);
+                    if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
+                        console.log("here");
                         vehicle = v;
                         requestedDrivers.push(v._id)
                         return;
