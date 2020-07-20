@@ -10,7 +10,7 @@ function getNearbyDrivers({location, distance}) {
                         $maxDistance: distance,
                         $geometry: {
                             type: "Point",
-                            coordinates: [location.long, location.lat]
+                            coordinates: [location.lat, location.long]
                         }
                     }
                 }

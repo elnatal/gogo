@@ -1,6 +1,6 @@
 const Vehicle = require("../models/Vehicle");
-const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
-const  { getRequest } = require('../containers/requestContainer');
+const { addDriver, removeDriver } = require('../containers/driversContainer');
+const  { getRequest, updateRequest } = require('../containers/requestContainer');
 
 module.exports = function (io) {
     return function (socket) {
@@ -35,7 +35,8 @@ module.exports = function (io) {
 
         socket.on('updateRequest', (request) => {
             console.log("request update")
-            getRequest({passengerId: request.passengerId, driverId: request.driverId}).updateStatus(request.status);
+            updateRequest({passengerId: request.passengerId, driverId: request.driverId, status: request.status});
+            getRequest().updateStatus(request.status);
         })
 
         socket.on('startTrip', () => {
