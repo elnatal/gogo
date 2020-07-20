@@ -14,6 +14,10 @@ const vehicleSchema = Schema({
         type: String,
         required: true
     },
+    photo: {
+        type: String,
+        required: true
+    },
     color: {
         type: String,
         required: true
@@ -64,7 +68,7 @@ const vehicleSchema = Schema({
     },
     active: {
         type: Boolean,
-        default: true
+        default: false
     }
 },
 {

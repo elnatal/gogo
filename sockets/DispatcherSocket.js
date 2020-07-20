@@ -1,64 +1,24 @@
-const { addUser, removeUser, getUser } = require('../containers/usersContainer');
 const { getDriver } = require('../containers/driversContainer');
-const { addRequest, updateRequest, getRequest, removeRequest } = require('../containers/requestContainer');
-const { getNearbyDrivers, search } = require('./core');
+const { addRequest, updateRequest } = require('../containers/requestContainer');
+const { getNearbyDrivers } = require('./core');
 const Request = require('../models/Request');
-const User = require('../models/User');
 const Ride = require('../models/Ride');
-const VehicleType = require('../models/VehicleType');
+const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
 
 module.exports = function (io) {
     return function (socket) {
         console.log("new passenger connection", socket.id);
         var id = "";
-        var fcm = "";
-        var location = null;
         var started = false;
 
-        io.of('/passenger-socket').to(socket.id).emit('test');
-
-        var interval = setInterval(async () => {
-            if (id && location) {
-                try {
-                    var drivers = await getNearbyDrivers({ location, distance: 100000 });
-                    socket.emit('nearDrivers', drivers);
-                } catch (err) {
-                    console.log(err);
-                }
-            }
-        }, 5000)
-
-        socket.on("init", async (passengerInfo) => {
-            console.log(passengerInfo)
-            if (passengerInfo && passengerInfo.id && passengerInfo.fcm && passengerInfo.location && passengerInfo.location.lat && passengerInfo.location.long) {
-                id = passengerInfo.id;
-                location = passengerInfo.location;
-                fcm = passengerInfo.fcm;
+        socket.on("init", async (dispatcherInfo) => {
+            console.log(dispatcherInfo)
+            if (dispatcherInfo && dispatcherInfo.id) {
+                id = dispatcherInfo.id;
                 started = true;
-                try {
-                    var drivers = await getNearbyDrivers({ location, distance: 100 });
-                    socket.emit('nearDrivers', drivers);
-                } catch (err) {
-                    console.log(err);
-                }
-                User.update({ "_id": id }, { fcm });
-                addUser({ userId: id, socketId: socket.id, fcm });
+                addDispatcher({ dispatcherId: id, socketId: socket.id });
             } else {
                 return { error: "Invalid data" };
-            }
-        });
-
-        socket.on('changeLocation', (newLocation) => {
-            if (newLocation && newLocation.lat, newLocation.long) {
-                location = newLocation;
-                if (started) {
-                    try {
-                        var drivers = await getNearbyDrivers({ location, distance: 100 });
-                        socket.emit('nearDrivers', drivers);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                }
             }
         });
 
@@ -97,7 +57,9 @@ module.exports = function (io) {
                             updateCallback
                         })
                         addRequest({ newRequest: request });
-                        socket.emit("request", request);
+                        var dispatcher = getDispatcher({ dispatcherId: id });
+                        if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('request', request);
+
                         var driver = getDriver({ driverId: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
@@ -108,7 +70,8 @@ module.exports = function (io) {
                             }
                         }, 10000);
                     } else {
-                        socket.emit("noAvailableDriver");
+                        var dispatcher = getDispatcher({ dispatcherId: id });
+                        if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('noAvailableDriver');
                     }
                 }
 
@@ -124,14 +87,13 @@ module.exports = function (io) {
                         var driver = getDriver({ driverId: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
-                        var passenger = getUser({ userId: request.passengerId });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
+                        var dispatcher = getDispatcher({ dispatcherId: id });
+                        if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
                     } else if (status == "Accepted") {
                         driverFound = true;
 
                         try {
                             var ride = await Ride.create({
-                                passenger: request.passengerId,
                                 driver: request.driverId,
                                 pickUpAddress: {
                                     name: "String",
@@ -145,12 +107,14 @@ module.exports = function (io) {
                                 vehicleType: request.vehicleType,
                                 status: "Accepted",
                                 active: true,
-                                createdBy: "app",
+                                createdBy: "dispatcher",
                             });
 
-                            const createdRide = await Ride.findById(ride._id).populate('driver').populate('passenger').populate('vehicleType');
+                            const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType');
 
-                            socket.emit("requestAccepted", createdRide);
+                            var dispatcher = getDispatcher({ dispatcherId: id });
+                            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted');
+
                             var driver = getDriver({ driverId: request.driverId })
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
                         } catch (error) {
@@ -164,34 +128,12 @@ module.exports = function (io) {
         });
 
         socket.on('cancelRequest', (request) => {
-            updateRequest({ passengerId: require.passengerId, driverId: request.driverId, status: "Canceled" });
-        });
-
-        socket.on('cancelTrip', (trip) => {
-            if (trip) {
-                try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Canceled" });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Canceled") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('tripCanceled', trip.id);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('tripCanceled', trip.id);
-                    } else {
-                        console.log("Status not changed");
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-            }
+            updateRequest({ passengerId: passengerId, driverId: request.driverId, status: "Canceled" });
         });
 
         socket.on('disconnect', () => {
-            clearInterval(interval);
-            removeUser({ userId: id });
-            console.log("Passenger disconnected");
+            removeDispatcher({ dispatcherId: id });
+            console.log("Dispatcher disconnected");
         })
     }
 }

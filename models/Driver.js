@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const DriverSchema = Schema({
     firebaseId: {
         type: String,
-        required: true
+        required: false
     },
     firstName: {
         type: String,
