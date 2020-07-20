@@ -62,7 +62,7 @@ module.exports = function (io) {
             getRequest().updateStatus(request.status);
         });
 
-        socket.on('arrived', (tripId) => {
+        socket.on('arrived', async (tripId) => {
             if (tripId) {
                 try {
                     await Ride.updateOne({ _id: tripId }, { status: "Arrived" });
@@ -104,7 +104,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('tripEnded', (trip) => {
+        socket.on('tripEnded', async (trip) => {
             if (trip && trip.id) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Completed" });
@@ -125,7 +125,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('cancelTrip', (trip) => {
+        socket.on('cancelTrip', async (trip) => {
             if (trip) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Canceled" });
