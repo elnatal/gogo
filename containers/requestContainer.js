@@ -2,30 +2,28 @@ const { request } = require("express");
 
 const requests = [];
 
-const addRequest = ({newRequest}) => {
+const addRequest = ({ newRequest }) => {
     const existing = requests.find((request) => request.driverId == newRequest.driverId && request.passengerId == newRequest.passengerId);
     if (existing) {
-        removeRequest({passengerId: newRequest.passengerId, driverId: newRequest.driverId});
+        removeRequest({ passengerId: newRequest.passengerId, driverId: newRequest.driverId });
     }
     requests.push(newRequest);
 }
 
 const removeRequest = ({ passengerId, driverId }) => {
-    if (requests[passengerId]) {
-        const index = requests.findIndex((request) => request.driverId == driverId && request.passengerId == passengerId);
+    const index = requests.findIndex((request) => request.driverId == driverId && request.passengerId == passengerId);
 
-        if (index != -1) {
-            requests[passengerId].splice(index, 1);
-        }
+    if (index != -1) {
+        requests.splice(index, 1);
     }
 }
 
-const updateRequest = ({passengerId, driverId, status}) => {
-    var request = getRequest({passengerId, driverId});
+const updateRequest = ({ passengerId, driverId, status }) => {
+    var request = getRequest({ passengerId, driverId });
 
     if (request) {
         request.updateStatus(status);
-        removeRequest({passengerId, driverId});
+        removeRequest({ passengerId, driverId });
     }
 }
 

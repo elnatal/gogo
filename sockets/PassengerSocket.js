@@ -18,7 +18,7 @@ module.exports = function (io) {
         var interval = setInterval(async () => {
             if (id && location) {
                 try {
-                    var drivers = await getNearbyDrivers({ location, distance: 1000 });
+                    var drivers = await getNearbyDrivers({ location, distance: 100000 });
                     socket.emit('nearDrivers', drivers);
                 } catch (err) {
                     console.log(err);
@@ -55,7 +55,7 @@ module.exports = function (io) {
             async function sendRequest() {
                 var vehicle;
                 var vehicles = [];
-                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 1000000000000000 }));
+                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 10000 }));
 
                 vehicles.forEach((v) => {
                     console.log(vehicles);
