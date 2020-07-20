@@ -45,6 +45,11 @@ const ps = require('./sockets/PassengerSocket')(io);
 const passengerSocket = io.of('/passenger-socket');
 passengerSocket.on('connection', ps);
 
+// Dispatcher Socket
+const dis = require('./sockets/DispatcherSocket')(io);
+const dispatcherSocket = io.of('/dispatcher-socket');
+dispatcherSocket.on('connection', dis);
+
 // Listening
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("LISTENING ON PORT " + PORT));

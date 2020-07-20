@@ -17,7 +17,7 @@
 
         socket.on('connect', function () {
             console.log('check 2', socket.id);
-            socket.emit("init", { id: 1, fcm: "test", location: { lat: 8.983315, long: 38.77973170000001 } });
+            socket.emit("init", { id: "5f12a1a5e627470017236ed9", fcm: "test", location: { lat: 8.983315, long: 38.77973170000001 } });
         });
 
         // dSocket.on('connect', function () {
@@ -29,13 +29,13 @@
             console.log(vehicles)
         })
 
-        socket.on("test", () => {
-            console.log("test emit")
-        })
+        // socket.on("test", () => {
+        //     console.log("test emit")
+        // })
 
-        setTimeout(() => {
-            socket.emit('search', {vehicleType: "5ef32208f8413c753a799632", pickupLocation: { lat: 8.983315, long: 38.77973170000001 }, dropOffLocation: { lat: 3.43423, long: 9.16525 }});
-        }, 3000)
+        // setTimeout(() => {
+        //     socket.emit('search', {vehicleType: "5ef32208f8413c753a799632", pickupLocation: { lat: 8.983315, long: 38.77973170000001 }, dropOffLocation: { lat: 3.43423, long: 9.16525 }});
+        // }, 3000)
 
         // setTimeout(() => {
         //     dSocket.emit('updateRequest', {driverId: 1, passengerId: 1, status: "declines"});

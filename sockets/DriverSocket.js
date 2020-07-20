@@ -22,25 +22,45 @@ module.exports = function (io) {
                 fcm = driverInfo.fcm;
                 started = true;
 
-                Vehicle.update({ "_id": vehicleId }, {
-                    fcm,
-                    position: {
-                        type: "Point",
-                        coordinates: [
-                            location.long,
-                            location.lat
-                        ]
-                    }
-                });
+                try {
+                    Ride.findOne({ active: true, driver: id }, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            socket.emit('trip', res);
+                        }
+                    });
+
+                    Vehicle.findById(vehicleId, (err, res) => {
+                        if (res) {
+                            socket.emit('status', res.online);
+                        }
+                    })
+
+                    Vehicle.update({ "_id": vehicleId }, {
+                        fcm,
+                        timestamp: new Date(),
+                        position: {
+                            type: "Point",
+                            coordinates: [
+                                location.long,
+                                location.lat
+                            ]
+                        }
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
+
                 addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
             } else {
                 return { error: "Invalid data" };
             }
         })
 
-        socket.on('changeLocation', (newLocation) => {
+        socket.on('updatedLocation', (newLocation) => {
             if (newLocation && newLocation.lat && newLocation.long) {
                 Vehicle.update({ "_id": vehicleId }, {
+                    timestamp: new Date(),
                     position: {
                         type: "Point",
                         coordinates: [
@@ -86,7 +106,7 @@ module.exports = function (io) {
         socket.on('startTrip', async (tripId) => {
             if (tripId) {
                 try {
-                    await Ride.updateOne({ _id: tripId }, { status: "Started" });
+                    await Ride.updateOne({ _id: tripId }, { status: "Started", pickupTimestamp: new Date() });
                     const updatedRide = await Ride.findById(tripId);
 
                     if (updatedRide && updatedRide.status == "Started") {
@@ -105,9 +125,9 @@ module.exports = function (io) {
         });
 
         socket.on('tripEnded', async (trip) => {
-            if (trip && trip.id) {
+            if (trip && trip.id && trip.totalDistance) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Completed" });
+                    await Ride.updateOne({ _id: trip.id }, { status: "Completed", totalDistance: trip.totalDistance, endTimestamp: new Date(), active: false });
                     const updatedRide = await Ride.findById(trip.id);
 
                     if (updatedRide && updatedRide.status == "Completed") {
@@ -147,6 +167,7 @@ module.exports = function (io) {
         });
 
         socket.on('disconnect', () => {
+            Vehicle.update({ _id: vehicleId }, { online: false });
             console.log("Driver disconnected");
             removeDriver({ driverId: id })
         });

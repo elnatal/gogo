@@ -36,6 +36,13 @@ module.exports = function (io) {
                 fcm = passengerInfo.fcm;
                 started = true;
                 try {
+                    Ride.findOne({active: true, passenger: id}, (err, res) => {
+                        if (err) console.log(err);
+                        if(res) {
+                            socket.emit('trip', res);
+                        }
+                    });
+
                     var drivers = await getNearbyDrivers({ location, distance: 100 });
                     socket.emit('nearDrivers', drivers);
                 } catch (err) {
@@ -150,7 +157,9 @@ module.exports = function (io) {
 
                             const createdRide = await Ride.findById(ride._id).populate('driver').populate('passenger').populate('vehicleType');
 
-                            socket.emit("requestAccepted", createdRide);
+                            var passenger = getUser({ userId: id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestAccepted', createdRide);
+
                             var driver = getDriver({ driverId: request.driverId })
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
                         } catch (error) {
