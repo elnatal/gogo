@@ -48,7 +48,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('changeLocation', (newLocation) => {
+        socket.on('changeLocation', async (newLocation) => {
             if (newLocation && newLocation.lat, newLocation.long) {
                 location = newLocation;
                 if (started) {
@@ -167,7 +167,7 @@ module.exports = function (io) {
             updateRequest({ passengerId: require.passengerId, driverId: request.driverId, status: "Canceled" });
         });
 
-        socket.on('cancelTrip', (trip) => {
+        socket.on('cancelTrip', async (trip) => {
             if (trip) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Canceled" });
