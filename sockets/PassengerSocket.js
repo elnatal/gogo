@@ -55,7 +55,7 @@ module.exports = function (io) {
             async function sendRequest() {
                 var vehicle;
                 var vehicles = [];
-                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 100000000 }));
+                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 1000000000000000 }));
 
                 vehicles.forEach((v) => {
                     console.log(vehicles);
