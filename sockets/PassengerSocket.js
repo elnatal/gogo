@@ -169,6 +169,8 @@ module.exports = function (io) {
                     console.log("status updated passenger")
                     console.log(status);
                 }
+            } else {
+                console.log("incomplete information")
             }
         });
 

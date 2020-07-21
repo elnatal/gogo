@@ -38,10 +38,6 @@ const DriverSchema = Schema({
         type: String,
         required: true
     },
-    vehicle: {
-        type: Schema.Types.ObjectId,
-        ref: 'Vehicles'
-    },
     active: {
         type: Boolean,
         default: true

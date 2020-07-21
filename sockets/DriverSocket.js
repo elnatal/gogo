@@ -82,18 +82,18 @@ module.exports = function (io) {
             getRequest().updateStatus(request.status);
         });
 
-        socket.on('arrived', async (tripId) => {
-            if (tripId) {
+        socket.on('arrived', async (trip) => {
+            if (trip && trip.id) {
                 try {
-                    await Ride.updateOne({ _id: tripId }, { status: "Arrived" });
-                    const updatedRide = await Ride.findById(tripId);
+                    await Ride.updateOne({ _id: trip.id }, { status: "Arrived" });
+                    const updatedRide = await Ride.findById(trip.id);
 
                     if (updatedRide && updatedRide.status == "Arrived") {
                         var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('arrived');
+                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
 
                         var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('driverArrived');
+                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
                     } else {
                         console.log("Status not changed");
                     }
@@ -103,18 +103,18 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('startTrip', async (tripId) => {
-            if (tripId) {
+        socket.on('startTrip', async (trip) => {
+            if (trip && trip.id) {
                 try {
-                    await Ride.updateOne({ _id: tripId }, { status: "Started", pickupTimestamp: new Date() });
-                    const updatedRide = await Ride.findById(tripId);
+                    await Ride.updateOne({ _id: trip.id }, { status: "Started", pickupTimestamp: new Date() });
+                    const updatedRide = await Ride.findById(trip.id);
 
                     if (updatedRide && updatedRide.status == "Started") {
                         var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('tripStarted');
+                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
 
                         var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('tripStarted');
+                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
                     } else {
                         console.log("Status not changed");
                     }
@@ -132,10 +132,10 @@ module.exports = function (io) {
 
                     if (updatedRide && updatedRide.status == "Completed") {
                         var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('tripEnded');
+                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
 
                         var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('tripEnded');
+                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
                     } else {
                         console.log("Status not changed");
                     }
@@ -153,10 +153,10 @@ module.exports = function (io) {
 
                     if (updatedRide && updatedRide.status == "Canceled") {
                         var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('tripCanceled', trip.id);
+                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
 
                         var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('tripCanceled', trip.id);
+                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
                     } else {
                         console.log("Status not changed");
                     }

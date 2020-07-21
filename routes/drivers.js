@@ -16,9 +16,14 @@ router.get('/firebase/:firebaseId', async (req, res) => {
     try {
         var driver = await Driver.findOne({firebaseId: req.params.firebaseId});
         if (driver) {
-            res.send(driver);
+            var vehicle = await Driver.findOne({driver: driver._id});
+            if (vehicle) {
+                res.send({driver, vehicle});
+            } else {
+                res.status(404).send("No vehicle found")
+            }
         } else {
-            res.status(404).send("Driver not found");
+            res.status(404).send("Unknown Driver")
         }
     } catch(error) {
         res.send(error);
