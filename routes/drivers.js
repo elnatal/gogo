@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Driver = require('../models/Driver');
+const Vehicle = require('../models/Vehicle');
 
 router.get('/', async (req, res) => {
     try {
@@ -16,7 +17,7 @@ router.get('/firebase/:firebaseId', async (req, res) => {
     try {
         var driver = await Driver.findOne({firebaseId: req.params.firebaseId});
         if (driver) {
-            var vehicle = await Driver.findOne({driver: driver._id});
+            var vehicle = await Vehicle.findOne({driver: driver._id});
             if (vehicle) {
                 res.send({driver, vehicle});
             } else {
