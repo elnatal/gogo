@@ -5,12 +5,13 @@ function getNearbyDrivers({location, distance}) {
         if (distance && location) {
             Vehicle.find({
                 online: true,
+                active: true,
                 position: {
                     $near: {
                         $maxDistance: distance,
                         $geometry: {
                             type: "Point",
-                            coordinates: [location.lat, location.long]
+                            coordinates: [location.long, location.lat]
                         }
                     }
                 }

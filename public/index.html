@@ -20,10 +20,15 @@
             socket.emit("init", { id: "5f12a1a5e627470017236ed9", fcm: "test", location: { lat: 8.983315, long: 38.77973170000001 } });
         });
 
-        // dSocket.on('connect', function () {
-        //     console.log('check driver', dSocket.id);
-        //     dSocket.emit("init", { id: 1, fcm: "test", vehicleId: "32", location: { lat: 8.983315, long: 38.77973170000001 } });
-        // });
+        dSocket.on('connect', function () {
+            console.log('check driver', dSocket.id);
+            dSocket.emit("init", {"fcm":"fcm","id":"5f168adb7c3bf40017d07b58","location":{"lat":"8.348","long":"38.3844"},"vehicleId":"5f167acb7c3bf40017d07b56"});
+
+            setTimeout(() => {
+                
+            dSocket.emit("changeStatus", false);
+            }, 10000);
+        });
 
         socket.on('nearDrivers', (vehicles) => {
             console.log(vehicles)

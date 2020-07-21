@@ -13,9 +13,12 @@ module.exports = function (io) {
         var location = null;
         var started = false;
 
-        socket.on('init', (driverInfo) => {
-            console.log(driverInfo)
+        socket.on('init', async (driverInfo) => {
+            console.log(driverInfo);
+            // console.log(JSON.parse(driverInfo));
+            console.log("type", typeof(driverInfo));
             if (driverInfo && driverInfo.id && driverInfo.vehicleId && driverInfo.fcm && driverInfo.location && driverInfo.location.lat && driverInfo.location.long) {
+                console.log("passed");
                 id = driverInfo.id;
                 vehicleId = driverInfo.vehicleId;
                 location = driverInfo.location;
@@ -30,13 +33,7 @@ module.exports = function (io) {
                         }
                     });
 
-                    Vehicle.findById(vehicleId, (err, res) => {
-                        if (res) {
-                            socket.emit('status', res.online);
-                        }
-                    })
-
-                    Vehicle.update({ "_id": vehicleId }, {
+                    const update = await Vehicle.updateOne({ _id: vehicleId }, {
                         fcm,
                         timestamp: new Date(),
                         position: {
@@ -47,6 +44,7 @@ module.exports = function (io) {
                             ]
                         }
                     });
+                    console.log("res", update);
                 } catch (error) {
                     console.log(error);
                 }
@@ -59,7 +57,7 @@ module.exports = function (io) {
 
         socket.on('updatedLocation', (newLocation) => {
             if (newLocation && newLocation.lat && newLocation.long) {
-                Vehicle.update({ "_id": vehicleId }, {
+                Vehicle.update({ _id: vehicleId }, {
                     timestamp: new Date(),
                     position: {
                         type: "Point",
@@ -72,8 +70,20 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('changeStatus', (online) => {
-            Vehicle.update({ "_id": vehicleId }, { online });
+        socket.on('changeStatus', async (online) => {
+            console.log(typeof(online));
+            console.log('vehicle id', vehicleId);
+            if (started) {
+                if (online != null && vehicleId) {
+                    console.log('status', online);
+                    const update = await Vehicle.updateOne({ _id: vehicleId }, { online });
+                    console.log("updated status", update);
+                } else {
+                    console.log("incorrect data");
+                }
+            } else {
+                console.log("not started");
+            }
         });
 
         socket.on('updateRequest', (request) => {
