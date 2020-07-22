@@ -36,12 +36,12 @@ module.exports = function (io) {
                 fcm = passengerInfo.fcm;
                 started = true;
                 try {
-                    Ride.findOne({active: true, passenger: id}, (err, res) => {
+                    Ride.findOne({ active: true, passenger: id }, (err, res) => {
                         if (err) console.log(err);
-                        if(res) {
+                        if (res) {
                             socket.emit('trip', res);
                         }
-                    });
+                    }).populate('driver').populate('passenger').populate('vehicleType');
 
                     var drivers = await getNearbyDrivers({ location, distance: 100 });
                     socket.emit('nearDrivers', drivers);
@@ -115,11 +115,14 @@ module.exports = function (io) {
                             }
                         }, 10000);
                     } else {
+                        console.log("no diver found");
                         socket.emit("noAvailableDriver");
                     }
                 }
 
-                async function updateCallback(request) {
+                function updateCallback(request) {
+                    console.log("changed", request);
+                    console.log("status", request.getStatus());
                     var status = request.getStatus();
                     if (status == "Declined") {
                         sendRequest();
@@ -135,9 +138,8 @@ module.exports = function (io) {
                         if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                     } else if (status == "Accepted") {
                         driverFound = true;
-
                         try {
-                            var ride = await Ride.create({
+                            Ride.create({
                                 passenger: request.passengerId,
                                 driver: request.driverId,
                                 pickUpAddress: {
@@ -146,22 +148,31 @@ module.exports = function (io) {
                                 },
                                 dropOffAddress: {
                                     name: "String",
-                                    coordinate: location.dropOffLocation
+                                    coordinate: request.dropOffLocation
 
                                 },
                                 vehicleType: request.vehicleType,
                                 status: "Accepted",
                                 active: true,
                                 createdBy: "app",
+                            }, (err, ride) => {
+                                if (err) console.log(err);
+                                if (ride) {
+                                    console.log(ride);
+                                    Ride.findById(ride._id, (err, createdRide) => {
+                                        if (createdRide) {
+
+                                            console.log("ride", createdRide);
+                                            var passenger = getUser({ userId: id });
+                                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+
+                                            var driver = getDriver({ driverId: request.driverId })
+                                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                        }
+                                    }).populate('driver').populate('passenger').populate('vehicleType');
+                                }
                             });
 
-                            const createdRide = await Ride.findById(ride._id).populate('driver').populate('passenger').populate('vehicleType');
-
-                            var passenger = getUser({ userId: id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestAccepted', createdRide);
-
-                            var driver = getDriver({ driverId: request.driverId })
-                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
                         } catch (error) {
                             console.log(error);
                         }
@@ -202,7 +213,7 @@ module.exports = function (io) {
         socket.on('disconnect', () => {
             clearInterval(interval);
             removeUser({ userId: id });
-            console.log("Passenger disconnected");
+            console.log("Passenger disconnected", id);
         })
     }
 }

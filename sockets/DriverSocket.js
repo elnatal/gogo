@@ -1,5 +1,5 @@
 const Vehicle = require("../models/Vehicle");
-const { addDriver, removeDriver } = require('../containers/driversContainer');
+const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
 const { getRequest, updateRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
@@ -31,7 +31,7 @@ module.exports = function (io) {
                         if (res) {
                             socket.emit('trip', res);
                         }
-                    });
+                    }).populate('driver').populate('passenger').populate('vehicleType');
 
                     const update = await Vehicle.updateOne({ _id: vehicleId }, {
                         fcm,
@@ -87,12 +87,13 @@ module.exports = function (io) {
         });
 
         socket.on('updateRequest', (request) => {
-            console.log("request update")
+            console.log("request update", request);
             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: request.status });
-            getRequest().updateStatus(request.status);
+            // getRequest().updateStatus(request.status);
         });
 
         socket.on('arrived', async (trip) => {
+            console.log("arrived" , trip)
             if (trip && trip.id) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Arrived" });
@@ -114,6 +115,7 @@ module.exports = function (io) {
         });
 
         socket.on('startTrip', async (trip) => {
+            console.log("start trip" , trip)
             if (trip && trip.id) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Started", pickupTimestamp: new Date() });
@@ -135,6 +137,7 @@ module.exports = function (io) {
         });
 
         socket.on('tripEnded', async (trip) => {
+            console.log("completed" , trip)
             if (trip && trip.id && trip.totalDistance) {
                 try {
                     await Ride.updateOne({ _id: trip.id }, { status: "Completed", totalDistance: trip.totalDistance, endTimestamp: new Date(), active: false });
@@ -178,7 +181,7 @@ module.exports = function (io) {
 
         socket.on('disconnect', () => {
             Vehicle.update({ _id: vehicleId }, { online: false });
-            console.log("Driver disconnected");
+            console.log("Driver disconnected", id, vehicleId);
             removeDriver({ driverId: id })
         });
     }

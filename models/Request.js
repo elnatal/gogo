@@ -18,7 +18,7 @@ class Request {
 
     updateStatus(status) {
         this.#status = status;
-        this.updateCallback(this.#status);
+        this.updateCallback(this);
     }
 
     getStatus() {
