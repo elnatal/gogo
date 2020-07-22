@@ -21,10 +21,10 @@ router.get('/firebase/:firebaseId', async (req, res) => {
             if (vehicle) {
                 res.send({driver, vehicle});
             } else {
-                res.status(404).send("No vehicle found")
+                res.send({driver, vehicle: null});
             }
         } else {
-            res.status(404).send("Unknown Driver")
+            res.status(404).send("Unknown Driver");
         }
     } catch(error) {
         res.send(error);

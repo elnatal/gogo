@@ -75,6 +75,6 @@ const vehicleSchema = Schema({
  timestamps: true
 });
 
-vehicleSchema.index({online: 1, position: "2dsphere"});
+vehicleSchema.index({ active: 1, online: 1, position: "2dsphere"});
 
 module.exports = mongoose.model('Vehicles', vehicleSchema);
