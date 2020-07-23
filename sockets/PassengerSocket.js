@@ -192,18 +192,18 @@ module.exports = function (io) {
         socket.on('cancelTrip', async (trip) => {
             if (trip) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Canceled" });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Canceled") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('tripCanceled', trip.id);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('tripCanceled', trip.id);
-                    } else {
-                        console.log("Status not changed");
-                    }
+                    Ride.findById(trip.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Canceled";
+                            res.save();
+                            var driver = getDriver({ driverId: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+    
+                            var passenger = getUser({ userId: res.passenger._id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType');
                 } catch (error) {
                     console.log(error);
                 }

@@ -96,18 +96,18 @@ module.exports = function (io) {
             console.log("arrived" , trip)
             if (trip && trip.id) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Arrived" });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Arrived") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
-                    } else {
-                        console.log("Status not changed");
-                    }
+                    Ride.findById(trip.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Arrived";
+                            res.save();
+                            var driver = getDriver({ driverId: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+        
+                            var passenger = getUser({ userId: res.passenger._id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType');
                 } catch (error) {
                     console.log(error);
                 }
@@ -118,18 +118,19 @@ module.exports = function (io) {
             console.log("start trip" , trip)
             if (trip && trip.id) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Started", pickupTimestamp: new Date() });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Started") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
-                    } else {
-                        console.log("Status not changed");
-                    }
+                    Ride.findById(trip.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Started";
+                            res.pickupTimestamp = new Date();
+                            res.save();
+                            var driver = getDriver({ driverId: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+        
+                            var passenger = getUser({ userId: res.passenger._id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType');
                 } catch (error) {
                     console.log(error);
                 }
@@ -140,18 +141,21 @@ module.exports = function (io) {
             console.log("completed" , trip)
             if (trip && trip.id && trip.totalDistance) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Completed", totalDistance: trip.totalDistance, endTimestamp: new Date(), active: false });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Completed") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
-                    } else {
-                        console.log("Status not changed");
-                    }
+                    Ride.findById(trip.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Completed";
+                            res.totalDistance = trip.totalDistance; 
+                            res.endTimestamp = new Date();
+                            res.active = false;
+                            res.save();
+                            var driver = getDriver({ driverId: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+    
+                            var passenger = getUser({ userId: res.passenger._id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType');
                 } catch (error) {
                     console.log(error);
                 }
@@ -161,18 +165,18 @@ module.exports = function (io) {
         socket.on('cancelTrip', async (trip) => {
             if (trip) {
                 try {
-                    await Ride.updateOne({ _id: trip.id }, { status: "Canceled" });
-                    const updatedRide = await Ride.findById(trip.id);
-
-                    if (updatedRide && updatedRide.status == "Canceled") {
-                        var driver = getDriver({ driverId: updatedRide.driver });
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', updatedRide);
-
-                        var passenger = getUser({ userId: updatedRide.passenger });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', updatedRide);
-                    } else {
-                        console.log("Status not changed");
-                    }
+                    Ride.findById(trip.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Canceled";
+                            res.save();
+                            var driver = getDriver({ driverId: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+    
+                            var passenger = getUser({ userId: res.passenger._id });
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType');
                 } catch (error) {
                     console.log(error);
                 }
