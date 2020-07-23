@@ -46,6 +46,11 @@ const RideSchema = Schema({
         ref: "VehicleTypes",
         required: true
     },
+    vehicle: {
+        type: Schema.Types.ObjectId,
+        ref: "Vehicles",
+        required: true
+    },
     type: String,
     cancelledBy: String,
     cancelledReason: String,

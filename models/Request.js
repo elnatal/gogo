@@ -4,12 +4,14 @@ class Request {
     pickupLocation;
     dropOffLocation;
     vehicleType;
+    vehicleId;
     #status;
     updateCallback;
-    constructor({passengerId, driverId, pickupLocation, dropOffLocation, vehicleType, status, updateCallback}) {
+    constructor({passengerId, driverId, pickupLocation, dropOffLocation, vehicleType, vehicleId, status, updateCallback}) {
         this.passengerId = passengerId;
         this.driverId = driverId;
         this.pickupLocation = pickupLocation;
+        this.vehicleId = vehicleId;
         this.vehicleType = vehicleType;
         this.dropOffLocation = dropOffLocation;
         this.#status = status;

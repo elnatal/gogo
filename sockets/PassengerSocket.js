@@ -41,7 +41,7 @@ module.exports = function (io) {
                         if (res) {
                             socket.emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
                     var drivers = await getNearbyDrivers({ location, distance: 100 });
                     socket.emit('nearDrivers', drivers);
@@ -97,6 +97,7 @@ module.exports = function (io) {
                         var request = new Request({
                             passengerId: id,
                             driverId: vehicle.driver,
+                            vehicleId: vehicle._id,
                             pickupLocation: data.pickupLocation,
                             vehicleType: data.vehicleType,
                             dropOffLocation: data.dropOffLocation,
@@ -142,6 +143,7 @@ module.exports = function (io) {
                             Ride.create({
                                 passenger: request.passengerId,
                                 driver: request.driverId,
+                                vehicle: request.vehicleId,
                                 pickUpAddress: {
                                     name: "String",
                                     coordinate: request.pickupLocation,
@@ -169,7 +171,7 @@ module.exports = function (io) {
                                             var driver = getDriver({ driverId: request.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
                                         }
-                                    }).populate('driver').populate('passenger').populate('vehicleType');
+                                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                                 }
                             });
 
@@ -203,7 +205,7 @@ module.exports = function (io) {
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
                     console.log(error);
                 }

@@ -31,7 +31,7 @@ module.exports = function (io) {
                         if (res) {
                             socket.emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
                     const update = await Vehicle.updateOne({ _id: vehicleId }, {
                         fcm,
@@ -107,7 +107,7 @@ module.exports = function (io) {
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
                     console.log(error);
                 }
@@ -130,7 +130,7 @@ module.exports = function (io) {
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
                     console.log(error);
                 }
@@ -155,7 +155,7 @@ module.exports = function (io) {
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
                     console.log(error);
                 }
@@ -176,7 +176,7 @@ module.exports = function (io) {
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType');
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
                     console.log(error);
                 }
