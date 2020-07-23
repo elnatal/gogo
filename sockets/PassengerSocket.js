@@ -145,11 +145,11 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
                                 pickUpAddress: {
-                                    name: "String",
+                                    name: request.pickupLocation.name ? request.pickupLocation.name : "__",
                                     coordinate: request.pickupLocation,
                                 },
                                 dropOffAddress: {
-                                    name: "String",
+                                    name: request.dropOffLocation.name ? request.dropOffLocation.name : "__",
                                     coordinate: request.dropOffLocation
 
                                 },
