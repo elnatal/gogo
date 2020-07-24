@@ -51,6 +51,8 @@ router.get('/dashboard', async (req, res) => {
 
 router.post('/route', (req, res) => {
     try {
+        console.log("req", req.body)
+        console.log("type", typeof(req.body))
         if (req && req.body && req.body.dropOffLocation && req.body.pickupLocation) {
             Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + req.body.pickupLocation.lat + ',' + req.body.pickupLocation.long + ';' + req.body.dropOffLocation.lat + ',' + req.body.dropOffLocation.long + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((route) => {
             if (route && route.data && route.data.routes && route.data.routes[0] && route.data.routes[0].geometry && route.data.routes[0].geometry.coordinates ) {
