@@ -11,7 +11,7 @@ const addRequest = ({ newRequest }) => {
 }
 
 const removeRequest = ({ passengerId, driverId }) => {
-    const index = requests.findIndex((request) => request.driverId == driverId && request.passengerId == passengerId);
+    const index = requests.findIndex((request) => driverId ? request.driverId == driverId && request.passengerId == passengerId : request.passengerId == passengerId);
 
     if (index != -1) {
         requests.splice(index, 1);
@@ -27,6 +27,6 @@ const updateRequest = ({ passengerId, driverId, status }) => {
     }
 }
 
-const getRequest = ({ passengerId, driverId }) => requests.find((request) => request.driverId == driverId && request.passengerId == passengerId);
+const getRequest = ({ passengerId, driverId }) => requests.find((request) =>  driverId ? request.driverId == driverId && request.passengerId == passengerId : request.passengerId == passengerId);
 
 module.exports = { addRequest, removeRequest, getRequest, updateRequest };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Driver = require('../models/Driver');
 const Vehicle = require('../models/Vehicle');
+const Ride = require('../models/Ride');
 
 router.get('/', async (req, res) => {
     try {
@@ -31,7 +32,7 @@ router.get('/firebase/:firebaseId', async (req, res) => {
     };
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
     try {
         Driver.findById(req.params.id, (err, driver) => {
             if (err) console.log(err);
@@ -52,6 +53,16 @@ router.get('/:id', async (req, res) => {
     } catch(error) {
         res.send(error);
     };
+});
+
+router.get('/:id/bookings', (req, res) => {
+    try {
+        Ride.find({driver: req.params.id}, (err, rides) => {
+            res.send(rides);
+        });
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 router.post('/', async (req, res) => {

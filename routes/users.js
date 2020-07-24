@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Ride = require('../models/Ride');
 
 router.get('/', async (req, res) => {
     try {
@@ -31,6 +32,16 @@ router.get('/:id', async (req, res) => {
     } catch(err) {
         res.send('err ' + err);
     };
+});
+
+router.get('/:id/bookings', (req, res) => {
+    try {
+        Ride.find({passenger: req.params.id}, (err, rides) => {
+            res.send(rides);
+        });
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 router.post('/', async (req, res) => {
