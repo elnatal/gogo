@@ -188,7 +188,7 @@ module.exports = function (io) {
         });
 
         socket.on('cancelRequest', (request) => {
-            updateRequest({ passengerId: require.passengerId, driverId: request.driverId, status: "Canceled" });
+            updateRequest({ passengerId: request.passengerId, driverId: null, status: "Canceled" });
         });
 
         socket.on('cancelTrip', async (trip) => {

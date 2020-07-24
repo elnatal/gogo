@@ -6,6 +6,8 @@ const Driver = require('../models/Driver');
 const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
+const { route } = require('./drivers');
+const { default: Axios } = require('axios');
 
 router.get('/getSettingsAndVehicleModels', async (req, res) => {
     Promise.all([
@@ -46,5 +48,26 @@ router.get('/dashboard', async (req, res) => {
         });
     });
 });
+
+router.post('/route', (req, res) => {
+    try {
+        if (req && req.body && req.body.dropOffLocation && req.body.pickupLocation) {
+            Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + req.body.pickupLocation.lat + ',' + req.body.pickupLocation.long + ';' + req.body.dropOffLocation.lat + ',' + req.body.dropOffLocation.long + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((route) => {
+            if (route?.data?.routes[0]?.geometry?.coordinates ) {
+                res.send(route.data.routes[0].geometry.coordinates);
+            } else {
+                res.sendStatus(500);
+            }
+            }).catch(err => {
+                res.sendStatus(500);
+                console.log(err);
+            });
+        } else {
+            res.status(500).send("invalid data");
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 module.exports = router;
