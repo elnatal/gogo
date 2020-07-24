@@ -1,12 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const Ride = require('../models/Ride');
+const { request } = require('express');
 
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
     try {
-        var trip = await Ride.find();
-        console.log(trip);
-        res.send(trip);
+        var nextPage;
+
+        var trip =  Ride.find();
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            var skip = ( parseInt(req.query.page) - 1 ) * (req.query.limit ?  parseInt(req.query.limit) : 0)
+            nextPage = parseInt(req.query.page) + 1;
+            trip.skip(skip)
+        }
+        if (req.query.limit) {
+            trip.limit(parseInt(req.query.limit))
+        }
+        Promise.all([
+            Ride.count(),
+            trip.exec()
+        ]).then((value) => {
+            if (value) {
+                res.send({data: value[1], count: value[0], nextPage});
+            }
+        })
+        // trip.populate('passenger');
+        // trip.exec((err, trip) => {
+        //     if (err) console.log(err);
+
+        // });
     } catch(err) {
         res.send('err ' + err);
     };
