@@ -33,9 +33,22 @@ router.get('/firebase/:firebaseId', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        var driver = await Driver.findById(req.params.id);
-        console.log(req.params.id);
-        res.send(driver);
+        Driver.findById(req.params.id, (err, driver) => {
+            if (err) console.log(err);
+            if (driver) {
+                console.log({"drivers": driver});
+                Vehicle.findOne({driver: driver._id}, (err, vehicle) => {
+                    if (err) console.log(err);
+                    if (vehicle) {
+                        res.send({driver, vehicle});
+                    } else {
+                        res.send({driver, vehicle: null});
+                    }
+                }).populate('vehicleType');
+            } else {
+                res.status(404).send("Unknown Driver");
+            }
+        });
     } catch(error) {
         res.send(error);
     };

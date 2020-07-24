@@ -55,7 +55,7 @@ const vehicleSchema = Schema({
     },
     vehicleType: {
         type: Schema.Types.ObjectId,
-        ref: 'Drivers',
+        ref: 'VehicleTypes',
         required: true
     },
     timestamp: {
