@@ -77,6 +77,9 @@ const RideSchema = Schema({
     transactionNumber: Number,
     bidNumber: Number,
     createdBy: String,
+},
+{
+ timestamps: true
 });
 
 module.exports = mongoose.model("Rides", RideSchema);

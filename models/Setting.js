@@ -11,6 +11,7 @@ const SettingSchema = Schema({
     tax: Number,
     defaultCommission: Number,
     cancelCost: Number,
+    discount: Number,
     contactNumber: String,
     contactEmail: String,
     facebookLink: String,

@@ -1,34 +1,50 @@
 const express = require('express');
 const router = express.Router();
 const Ride = require('../models/Ride');
-const { request } = require('express');
+const { request, json } = require('express');
 
 router.get('/', (req, res) => {
     try {
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
         var nextPage;
+        var prevPage;
 
         var trip =  Ride.find();
         if (req.query.page && parseInt(req.query.page) != 0) {
-            var skip = ( parseInt(req.query.page) - 1 ) * (req.query.limit ?  parseInt(req.query.limit) : 0)
-            nextPage = parseInt(req.query.page) + 1;
-            trip.skip(skip)
+            page = parseInt(req.query.page);
         }
         if (req.query.limit) {
-            trip.limit(parseInt(req.query.limit))
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+        
+        trip.sort({createdAt: 'desc'});
+        trip.limit(limit);
+        trip.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                trip.populate(e);
+            });
         }
         Promise.all([
-            Ride.count(),
+            Ride.estimatedDocumentCount(),
             trip.exec()
         ]).then((value) => {
             if (value) {
-                res.send({data: value[1], count: value[0], nextPage});
+                if (((page  * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+                res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
-        })
-        // trip.populate('passenger');
-        // trip.exec((err, trip) => {
-        //     if (err) console.log(err);
-
-        // });
+        });
     } catch(err) {
         res.send('err ' + err);
     };
@@ -37,7 +53,7 @@ router.get('/', (req, res) => {
 
 router.get('/latest', (req, res) => {
     try {
-        Ride.find({} , 'driver passenger pickupAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (err, rides) => {
+        Ride.find({} , 'driver passenger pickUpAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (err, rides) => {
             if (err) console.log(err);
             if (rides) {
                 res.send(rides);

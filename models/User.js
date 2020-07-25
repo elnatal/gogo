@@ -30,6 +30,10 @@ const userSchema = Schema({
         type: String,
         required: false
     },
+    rating: {
+        type: Number,
+        default: 0.0
+    },
     favoritePlaces: [
         {
             type: Schema.Types.ObjectId,
