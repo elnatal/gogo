@@ -85,7 +85,7 @@ module.exports = function (io) {
 
                     vehicles.forEach((v) => {
                         console.log(vehicles);
-                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f1c55204ce77d89a805449d") ? true : v.vehicleType == data.vehicleType)) {
+                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
                             requestedDrivers.push(v._id)
