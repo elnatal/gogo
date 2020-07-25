@@ -37,8 +37,8 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/bookings', (req, res) => {
     try {
         Ride.find({passenger: req.params.id}, (err, rides) => {
-            res.send(rides).populate('driver').populate('vehicleType').populate('vehicle');
-        });
+            res.send(rides);
+        }).sort({createdAt: 'desc'}).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
         console.log(error);
     }
