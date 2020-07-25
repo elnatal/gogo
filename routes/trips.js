@@ -34,6 +34,20 @@ router.get('/', (req, res) => {
     };
 });
 
+
+router.get('/latest', (req, res) => {
+    try {
+        Ride.find({} , 'driver passenger pickupAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (err, rides) => {
+            if (err) console.log(err);
+            if (rides) {
+                res.send(rides);
+            }
+        }).limit(30).populate({path: 'driver', select: 'firstName lastName -_id'}).populate({path: 'passenger', select: 'firstName lastName -_id'})
+    } catch (error) {
+        console.log(error);
+    }
+});
+
 router.get('/:id', async (req, res) => {
     try {
         var trip = await Ride.findById(req.params.id);
@@ -43,6 +57,7 @@ router.get('/:id', async (req, res) => {
         res.send('err ' + err);
     };
 });
+
 
 router.post('/', async (req, res) => {
     try {
