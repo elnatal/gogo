@@ -169,6 +169,7 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Canceled";
+                            res.active = false;
                             res.save();
                             var driver = getDriver({ driverId: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
