@@ -144,16 +144,18 @@ module.exports = function (io) {
                     Ride.findById(trip.id, (err, res) => {
                         if (err) console.log(err);
                         if (res) {
-                            res.status = "Completed";
-                            res.totalDistance = trip.totalDistance; 
-                            res.endTimestamp = new Date();
-                            res.active = false;
-                            res.save();
-                            var driver = getDriver({ driverId: res.driver._id });
-                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-    
-                            var passenger = getUser({ userId: res.passenger._id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            if (res.status != "Completed") {
+                                res.status = "Completed";
+                                res.totalDistance = trip.totalDistance; 
+                                res.endTimestamp = new Date();
+                                res.active = false;
+                                res.save();
+                                var driver = getDriver({ driverId: res.driver._id });
+                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+        
+                                var passenger = getUser({ userId: res.passenger._id });
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
