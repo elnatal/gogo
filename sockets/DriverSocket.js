@@ -171,6 +171,9 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Canceled";
+                            res.endTimestamp = new Date();
+                            res.cancelledBy = "Driver";
+                            res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
                             var driver = getDriver({ driverId: res.driver._id });
