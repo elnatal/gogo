@@ -59,7 +59,7 @@ router.get('/:id/bookings', (req, res) => {
     try {
         Ride.find({driver: req.params.id}, (err, rides) => {
             res.send(rides);
-        });
+        }).populate('passenger');
     } catch (error) {
         console.log(error);
     }
