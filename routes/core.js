@@ -43,7 +43,7 @@ router.get('/dashboard', async (req, res) => {
             numberOfApprovedDriver: value[5],
             totalCanceledTrips: value[6],
             totalRunningTrips: value[7],
-            totalCompletedTrps: value[8],
+            totalCompletedTrips: value[8],
             revenue: 0,
         });
     });
