@@ -191,6 +191,14 @@ module.exports = function (io) {
     
                                                 var driver = getDriver({ driverId: request.driverId })
                                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                            }).catch(reason => {
+                                                console.log(reason);
+                                                console.log("ride", createdRide);
+                                                var passenger = getUser({ userId: id });
+                                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+    
+                                                var driver = getDriver({ driverId: request.driverId })
+                                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
                                             });
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
