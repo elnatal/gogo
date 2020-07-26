@@ -92,7 +92,7 @@ module.exports = function (io) {
 
                 Promise.all([pickup, dropOff]).then(value => {
                     if (typeof(value[0]) != typeof(" ")) {
-                        if (value[0].status == "OK") {
+                        if (value[0].status == 200) {
                             console.log("status ok pul");
                             data.pickupLocation.name = value[0].results[0].formatted_address;
                         } else {
@@ -104,7 +104,7 @@ module.exports = function (io) {
                     }
 
                     if (typeof(value[1]) != typeof(" ")) {
-                        if (value[1].status == "OK") {
+                        if (value[1].status == 200) {
                             console.log("status ok pul");
                             data.dropOffLocation.name = value[1].results[0].formatted_address;
                         } else {
