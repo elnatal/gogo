@@ -91,10 +91,12 @@ module.exports = function (io) {
                 }
 
                 Promise.all([pickup, dropOff]).then(value => {
-                    if (typeof(value[0]) != typeof(" ")) {
-                        if (value[0].status == 200) {
+                    console.log(value[0].data);
+                    res.send(value[0].data);
+                    if (typeof(value[0].data) != typeof(" ")) {
+                        if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
-                            data.pickupLocation.name = value[0].results[0].formatted_address;
+                            data.pickupLocation.name = value[0].data.results[0].formatted_address;
                         } else {
                             data.pickupLocation.name = "_";
                             console.log("wrong response pul", value[0])
@@ -102,11 +104,11 @@ module.exports = function (io) {
                     } else {
                         console.log("wrong data pul", value[0])
                     }
-
-                    if (typeof(value[1]) != typeof(" ")) {
-                        if (value[1].status == 200) {
+        
+                    if (typeof(value[1].data) != typeof(" ")) {
+                        if (value[1].status == 200 && value[1].data.status == "OK") {
                             console.log("status ok pul");
-                            data.dropOffLocation.name = value[1].results[0].formatted_address;
+                            data.dropOffLocation.name = value[1].data.results[0].formatted_address;
                         } else {
                             data.dropOffLocation.name = "_";
                             console.log("wrong response dol", value[1])
@@ -114,6 +116,7 @@ module.exports = function (io) {
                     } else {
                         console.log("wrong data dol", value[1])
                     }
+                    console.log(data)
                     sendRequest();
                 });
 

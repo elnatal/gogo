@@ -65,7 +65,7 @@ router.get('/firebase/:firebaseId', async (req, res) => {
             res.status(404).send("Unknown Driver");
         }
     } catch(error) {
-        res.send(error);
+        res.status(500).send(error);
     };
 });
 
@@ -88,7 +88,7 @@ router.get('/:id', (req, res) => {
             }
         });
     } catch(error) {
-        res.send(error);
+        res.status(500).send(error);
     };
 });
 
@@ -98,7 +98,7 @@ router.get('/:id/bookings', (req, res) => {
             res.send(rides);
         }).sort({createdAt: 'desc'}).limit(15).populate('passenger');
     } catch (error) {
-        console.log(error);
+        res.status(500).send(error);
     }
 });
 
@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
         res.send(savedDriver);
     } catch(err) {
         console.log(err);
-        res.send(err);
+        res.status(500).send(err);
     }
 });
 
@@ -118,7 +118,7 @@ router.patch('/:id', async (req, res) => {
         res.send(updatedDriver);
     } catch(err) {
         console.log(err);
-        res.send({"message": "error => " + err});
+        res.status(500).send({"message": "error => " + err});
     }
 });
 
@@ -127,7 +127,7 @@ router.delete('/:id', async (req, res) => {
         const deletedDriver = await Driver.remove({_id: req.params.id});
         res.send(deletedDriver);
     } catch(err) {
-        res.send(err);
+        res.status(500).send(err);
     }
 })
 
