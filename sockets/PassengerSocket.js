@@ -92,7 +92,6 @@ module.exports = function (io) {
 
                 Promise.all([pickup, dropOff]).then(value => {
                     console.log(value[0].data);
-                    res.send(value[0].data);
                     if (typeof(value[0].data) != typeof(" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
