@@ -71,22 +71,22 @@ module.exports = function (io) {
         });
 
         socket.on('search', async (data) => {
-            if (started && data && data.pickupLocation && data.dropOffLocation && data.vehicleType) {
+            if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
                 console.log("search")
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
 
-                var pickup = data.pickupLocation.name;
-                var dropOff = data.dropOffLocation.name;
+                var pickup = data.pickUpAddress.name;
+                var dropOff = data.dropOffAddress.name;
 
                 if (!pickup) {
-                    pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickupLocation.lat + "," + data.pickupLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                    pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
                     console.log("pickup", pickup);
                 }
 
                 if (!dropOff) {
-                    dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffLocation.lat + "," + data.dropOffLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                    dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffAddress.lat + "," + data.dropOffAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
                     console.log("drpOff", dropOff);
                 }
 
@@ -95,9 +95,9 @@ module.exports = function (io) {
                     if (typeof(value[0].data) != typeof(" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
-                            data.pickupLocation.name = value[0].data.results[0].formatted_address;
+                            data.pickUpAddress.name = value[0].data.results[0].formatted_address;
                         } else {
-                            data.pickupLocation.name = "_";
+                            data.pickUpAddress.name = "_";
                             console.log("wrong response pul", value[0])
                         }
                     } else {
@@ -107,9 +107,9 @@ module.exports = function (io) {
                     if (typeof(value[1].data) != typeof(" ")) {
                         if (value[1].status == 200 && value[1].data.status == "OK") {
                             console.log("status ok pul");
-                            data.dropOffLocation.name = value[1].data.results[0].formatted_address;
+                            data.dropOffAddress.name = value[1].data.results[0].formatted_address;
                         } else {
-                            data.dropOffLocation.name = "_";
+                            data.dropOffAddress.name = "_";
                             console.log("wrong response dol", value[1])
                         }
                     } else {
@@ -122,7 +122,7 @@ module.exports = function (io) {
                 async function sendRequest() {
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: {lat: data.pickUpAddress.coordinate, long: data.pickUpAddress.long}, distance: 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log(vehicles);
@@ -139,9 +139,21 @@ module.exports = function (io) {
                             passengerId: id,
                             driverId: vehicle.driver,
                             vehicleId: vehicle._id,
-                            pickupLocation: data.pickupLocation,
+                            pickUpAddress: {
+                                name: data.pickUpAddress.name,
+                                coordinate: {
+                                    lat: data.pickUpAddress.lat,
+                                    long: data.pickUpAddress.long
+                                },
+                            },
                             vehicleType: data.vehicleType,
-                            dropOffLocation: data.dropOffLocation,
+                            dropOffAddress: {
+                                name: data.dropOffAddress.name,
+                                coordinate: {
+                                    lat: data.dropOffAddress.lat,
+                                    long: data.dropOffAddress.long
+                                },
+                            },
                             status: "inRequest",
                             updateCallback
                         })
@@ -185,21 +197,8 @@ module.exports = function (io) {
                                 passenger: request.passengerId,
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
-                                pickUpAddress: {
-                                    name: request.pickupLocation.name ? request.pickupLocation.name : "__",
-                                    coordinate: {
-                                        lat: request.pickupLocation.lat,
-                                        long: request.pickupLocation.long
-                                    },
-                                },
-                                dropOffAddress: {
-                                    name: request.dropOffLocation.name ? request.dropOffLocation.name : "__",
-                                    coordinate: {
-                                        lat: request.dropOffLocation.lat,
-                                        long: request.dropOffLocation.long
-                                    }
-
-                                },
+                                pickUpAddress: request.pickUpAddress,
+                                dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,
                                 status: "Accepted",
                                 active: true,
