@@ -14,4 +14,7 @@ const SOSSchema = Schema({
         }
       },
       timestamp: Date
+},
+{
+ timestamps: true
 })

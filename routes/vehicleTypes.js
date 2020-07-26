@@ -4,9 +4,46 @@ const VehicleType = require('../models/VehicleType');
 
 router.get('/', async (req, res) => {
     try {
-        var vehicleType = await VehicleType.find();
-        console.log(vehicleType);
-        res.json(vehicleType);
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
+        var nextPage;
+        var prevPage;
+
+        var vehicleType =  VehicleType.find();
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            page = parseInt(req.query.page);
+        }
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+        
+        vehicleType.sort({createdAt: 'desc'});
+        vehicleType.limit(limit);
+        vehicleType.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                vehicleType.populate(e);
+            });
+        }
+        Promise.all([
+            VehicleType.countDocuments(),
+            vehicleType.exec()
+        ]).then((value) => {
+            if (value) {
+                if (((page  * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+                res.send({data: value[1], count: value[0], nextPage, prevPage});
+            }
+        });
     } catch(err) {
         res.send('err ' + err);
     };

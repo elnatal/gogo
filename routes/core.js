@@ -12,7 +12,7 @@ const { default: Axios } = require('axios');
 router.get('/getSettingsAndVehicleModels', async (req, res) => {
     Promise.all([
         Setting.findOne({}),
-        VehicleType.find({ active: true })
+        VehicleType.find({ active: true }).sort({createdAt: 'desc'})
     ]).then(value => {
            res.json({
                setting: value[0],
@@ -31,8 +31,10 @@ router.get('/dashboard', async (req, res) => {
         Ride.countDocuments(),
         Driver.countDocuments({ "approved": true }),
         Ride.countDocuments({ "status": "Canceled" }),
-        Ride.countDocuments({ "status": "Running" }),
         Ride.countDocuments({ "status": "Completed" }),
+        Ride.countDocuments({ "status": "Accepted" }),
+        Ride.countDocuments({ "status": "Arrived" }),
+        Ride.countDocuments({ "status": "Started" }),
     ]).then(value => {
         res.json({
             totalDrivers: value[0],
@@ -42,8 +44,8 @@ router.get('/dashboard', async (req, res) => {
             totalTrips: value[4],
             numberOfApprovedDriver: value[5],
             totalCanceledTrips: value[6],
-            totalRunningTrips: value[7],
-            totalCompletedTrips: value[8],
+            totalCompletedTrips: value[7],
+            totalRunningTrips: value[8] + value[9] + value[10],
             revenue: 0,
         });
     });

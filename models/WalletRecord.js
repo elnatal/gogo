@@ -14,4 +14,7 @@ const WalletRecordSchema = Schema({
     topupper: {
         type: Schema.Types.ObjectId
     }
+},
+{
+ timestamps: true
 })

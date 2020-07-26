@@ -5,8 +5,46 @@ const Ride = require('../models/Ride');
 
 router.get('/', async (req, res) => {
     try {
-        var user = await User.find();
-        res.send(user);
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
+        var nextPage;
+        var prevPage;
+
+        var user =  User.find();
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            page = parseInt(req.query.page);
+        }
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+        
+        user.sort({createdAt: 'desc'});
+        user.limit(limit);
+        user.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                user.populate(e);
+            });
+        }
+        Promise.all([
+            User.countDocuments(),
+            user.exec()
+        ]).then((value) => {
+            if (value) {
+                if (((page  * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+                res.send({data: value[1], count: value[0], nextPage, prevPage});
+            }
+        });
     } catch(err) {
         res.send('err ' + err);
     };
@@ -38,7 +76,7 @@ router.get('/:id/bookings', (req, res) => {
     try {
         Ride.find({passenger: req.params.id}, (err, rides) => {
             res.send(rides);
-        }).sort({createdAt: 'desc'}).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
+        }).sort({createdAt: 'desc'}).limit(15).populate('driver').populate('user').populate('vehicle');
     } catch (error) {
         console.log(error);
     }

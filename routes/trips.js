@@ -35,7 +35,7 @@ router.get('/', (req, res) => {
             });
         }
         Promise.all([
-            Ride.estimatedDocumentCount(),
+            Ride.countDocuments(),
             trip.exec()
         ]).then((value) => {
             if (value) {

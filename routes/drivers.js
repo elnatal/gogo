@@ -6,9 +6,46 @@ const Ride = require('../models/Ride');
 
 router.get('/', async (req, res) => {
     try {
-        var drives = await Driver.find();
-        console.log(drives);
-        res.send(drives);
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
+        var nextPage;
+        var prevPage;
+
+        var drives =  Driver.find();
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            page = parseInt(req.query.page);
+        }
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+        
+        drives.sort({createdAt: 'desc'});
+        drives.limit(limit);
+        drives.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                drives.populate(e);
+            });
+        }
+        Promise.all([
+            Driver.countDocuments(),
+            drives.exec()
+        ]).then((value) => {
+            if (value) {
+                if (((page  * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+                res.send({data: value[1], count: value[0], nextPage, prevPage});
+            }
+        });
     } catch(error) {
         res.send(error);
     };
@@ -45,7 +82,7 @@ router.get('/:id', (req, res) => {
                     } else {
                         res.send({driver, vehicle: null});
                     }
-                }).populate('vehicleType');
+                }).populate('drives');
             } else {
                 res.status(404).send("Unknown Driver");
             }

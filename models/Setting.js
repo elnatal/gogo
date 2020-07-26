@@ -24,6 +24,9 @@ const SettingSchema = Schema({
     localization: {
         type: Object
     }
+},
+{
+ timestamps: true
 });
 
 module.exports = mongoose.model("Setting", SettingSchema);
