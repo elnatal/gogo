@@ -1,16 +1,16 @@
 class Request {
     passengerId;
     driverId;
-    pickupAddress;
+    pickUpAddress;
     dropOffAddress;
     vehicleType;
     vehicleId;
     #status;
     updateCallback;
-    constructor({passengerId, driverId, pickupAddress, dropOffAddress, vehicleType, vehicleId, status, updateCallback}) {
+    constructor({passengerId, driverId, pickUpAddress, dropOffAddress, vehicleType, vehicleId, status, updateCallback}) {
         this.passengerId = passengerId;
         this.driverId = driverId;
-        this.pickupAddress = pickupAddress;
+        this.pickUpAddress = pickUpAddress;
         this.vehicleId = vehicleId;
         this.vehicleType = vehicleType;
         this.dropOffAddress = dropOffAddress;
