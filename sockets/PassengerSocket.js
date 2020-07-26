@@ -82,20 +82,38 @@ module.exports = function (io) {
 
                 if (!pickup) {
                     pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickupLocation.lat + "," + data.pickupLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
-                    console.log(pickup);
+                    console.log("pickup", pickup);
                 }
 
                 if (!dropOff) {
                     dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffLocation.lat + "," + data.dropOffLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
-                    console.log(dropOff);
+                    console.log("drpOff", dropOff);
                 }
 
                 Promise.all([pickup, dropOff]).then(value => {
-                    if (typeof(value[0]) != typeof("")) data.pickupLocation.name = (value[0].status == "OK") ? value[0].results[0].formatted_address : "__";
-                    if (typeof(value[1]) != typeof("")) data.dropOffLocation.name = (value[1].status == "OK") ? value[1].results[0].formatted_address : "__";
-    
-                    console.log("value", value);
-                    console.log("data", data);
+                    if (typeof(value[0]) != typeof(" ")) {
+                        if (value[0].status == "OK") {
+                            console.log("status ok pul");
+                            data.pickupLocation.name = value[0].results[0].formatted_address;
+                        } else {
+                            data.pickupLocation.name = "_";
+                            console.log("wrong response pul", value[0])
+                        }
+                    } else {
+                        console.log("wrong data pul", value[0])
+                    }
+
+                    if (typeof(value[1]) != typeof(" ")) {
+                        if (value[1].status == "OK") {
+                            console.log("status ok pul");
+                            data.dropOffLocation.name = value[1].results[0].formatted_address;
+                        } else {
+                            data.dropOffLocation.name = "_";
+                            console.log("wrong response dol", value[1])
+                        }
+                    } else {
+                        console.log("wrong data dol", value[1])
+                    }
                     sendRequest();
                 });
 
