@@ -76,8 +76,28 @@ module.exports = function (io) {
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
-                sendRequest();
 
+                var pickup = data.pickupLocation.name;
+                var dropOff = data.dropOffLocation.name;
+
+                if (!pickup) {
+                    pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickupLocation.lat + "," + data.pickupLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                    console.log(pickup);
+                }
+
+                if (!dropOff) {
+                    dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffLocation.lat + "," + data.dropOffLocation.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                    console.log(dropOff);
+                }
+
+                var value = await Promise.all([pickup, dropOff]);
+
+
+                if (typeof(value[0]) != "string") data.pickupLocation.name = value[0].status == "OK" ? value[0].results[0].formatted_address : "__";
+                if (typeof(value[1]) != "string") data.dropOffLocation.name = value[1].status == "OK" ? value[1].results[0].formatted_address : "__";
+
+                console.log(value);
+                sendRequest();
 
                 async function sendRequest() {
                     var vehicle;
@@ -170,36 +190,12 @@ module.exports = function (io) {
                                     console.log(ride);
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {
-                                            var pickup = createdRide.pickUpAddress.name;
-                                            var dropOff = createdRide.dropOffAddress.name;
+                                            console.log("ride", createdRide);
+                                            var passenger = getUser({ userId: id });
+                                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
 
-                                            if (pickup == "__") {
-                                                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.pickUpAddress.coordinate.lat + "," + createdRide.pickUpAddress.coordinate.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
-                                            }
-                                            
-                                            if (dropOff == "__") {
-                                                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.dropOffAddress.coordinate.lat + "," + createdRide.dropOffAddress.coordinate.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
-                                            }
-
-                                            Promise.all([pickup, dropOff]).then(value => {
-                                                if (typeof(value[0]) != "string") createdRide.pickUpAddress.name = value[0].status == "OK" ? value[0].results[0].formatted_address : "__";
-                                                if (typeof(value[1]) != "string") createdRide.dropOffAddress.name = value[1].status == "OK" ? value[1].results[0].formatted_address : "__";
-                                                createdRide.save();
-                                                console.log("ride", createdRide);
-                                                var passenger = getUser({ userId: id });
-                                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
-    
-                                                var driver = getDriver({ driverId: request.driverId })
-                                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
-                                            }).catch(reason => {
-                                                console.log(reason);
-                                                console.log("ride", createdRide);
-                                                var passenger = getUser({ userId: id });
-                                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
-    
-                                                var driver = getDriver({ driverId: request.driverId })
-                                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
-                                            });
+                                            var driver = getDriver({ driverId: request.driverId })
+                                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                                 }
@@ -235,7 +231,7 @@ module.exports = function (io) {
                             res.save();
                             var driver = getDriver({ driverId: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-    
+
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
