@@ -6,6 +6,7 @@ const Request = require('../models/Request');
 const User = require('../models/User');
 const Ride = require('../models/Ride');
 const VehicleType = require('../models/VehicleType');
+const { default: Axios } = require('axios');
 
 module.exports = function (io) {
     return function (socket) {
@@ -146,11 +147,17 @@ module.exports = function (io) {
                                 vehicle: request.vehicleId,
                                 pickUpAddress: {
                                     name: request.pickupLocation.name ? request.pickupLocation.name : "__",
-                                    coordinate: request.pickupLocation,
+                                    coordinate: {
+                                        lat: request.pickupLocation.lat,
+                                        long: request.pickupLocation.long
+                                    },
                                 },
                                 dropOffAddress: {
                                     name: request.dropOffLocation.name ? request.dropOffLocation.name : "__",
-                                    coordinate: request.dropOffLocation
+                                    coordinate: {
+                                        lat: request.dropOffLocation.lat,
+                                        long: request.dropOffLocation.long
+                                    }
 
                                 },
                                 vehicleType: request.vehicleType,
@@ -163,13 +170,28 @@ module.exports = function (io) {
                                     console.log(ride);
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {
+                                            var pickup = createdRide.pickUpAddress.name;
+                                            var dropOff = createdRide.dropOffAddress.name;
 
-                                            console.log("ride", createdRide);
-                                            var passenger = getUser({ userId: id });
-                                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+                                            if (pickup == "__") {
+                                                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.pickUpAddress.lat + "," + createdRide.pickUpAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                                            }
+                                            
+                                            if (dropOff == "__") {
+                                                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.dropOffAddress.lat + "," + createdRide.dropOffAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                                            }
 
-                                            var driver = getDriver({ driverId: request.driverId })
-                                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                            Promise.all([pickup, dropOff]).then(value => {
+                                                if (typeof(value[0]) != "string") createdRide.pickUpAddress.name = value[0].status == "OK" ? value[0].results[0].formatted_address : "__";
+                                                if (typeof(value[1]) != "string") createdRide.dropOffAddress.name = value[1].status == "OK" ? value[1].results[0].formatted_address : "__";
+                                                createdRide.save();
+                                                console.log("ride", createdRide);
+                                                var passenger = getUser({ userId: id });
+                                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+    
+                                                var driver = getDriver({ driverId: request.driverId })
+                                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                            });
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                                 }
