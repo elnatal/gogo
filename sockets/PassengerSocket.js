@@ -174,11 +174,11 @@ module.exports = function (io) {
                                             var dropOff = createdRide.dropOffAddress.name;
 
                                             if (pickup == "__") {
-                                                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.pickUpAddress.lat + "," + createdRide.pickUpAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                                                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.pickUpAddress.coordinate.lat + "," + createdRide.pickUpAddress.coordinate.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
                                             }
                                             
                                             if (dropOff == "__") {
-                                                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.dropOffAddress.lat + "," + createdRide.dropOffAddress.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
+                                                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + createdRide.dropOffAddress.coordinate.lat + "," + createdRide.dropOffAddress.coordinate.long + "&key=AIzaSyBayzRMZ5Q2f3tLE1UwQQoMta-1vSlH3_U");
                                             }
 
                                             Promise.all([pickup, dropOff]).then(value => {
