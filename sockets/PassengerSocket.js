@@ -90,14 +90,14 @@ module.exports = function (io) {
                     console.log(dropOff);
                 }
 
-                var value = await Promise.all([pickup, dropOff]);
-
-
-                if (typeof(value[0]) != "string") data.pickupLocation.name = value[0].status == "OK" ? value[0].results[0].formatted_address : "__";
-                if (typeof(value[1]) != "string") data.dropOffLocation.name = value[1].status == "OK" ? value[1].results[0].formatted_address : "__";
-
-                console.log(value);
-                sendRequest();
+                Promise.all([pickup, dropOff]).then(value => {
+                    if (typeof(value[0]) != typeof("")) data.pickupLocation.name = (value[0].status == "OK") ? value[0].results[0].formatted_address : "__";
+                    if (typeof(value[1]) != typeof("")) data.dropOffLocation.name = (value[1].status == "OK") ? value[1].results[0].formatted_address : "__";
+    
+                    console.log("value", value);
+                    console.log("data", data);
+                    sendRequest();
+                });
 
                 async function sendRequest() {
                     var vehicle;
