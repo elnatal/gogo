@@ -3,6 +3,7 @@ const router = express.Router();
 const Driver = require('../models/Driver');
 const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
+const mongoose = require('mongoose');
 
 router.get('/', async (req, res) => {
     try {
@@ -38,11 +39,23 @@ router.get('/', async (req, res) => {
         Promise.all([
             Driver.countDocuments(),
             drives.exec()
-        ]).then((value) => {
+        ]).then(async (value) => {
             if (value) {
                 if (((page  * limit) <= value[0])) {
                     nextPage = page + 1;
                 }
+
+                var result = value[1].map((driver) => mongoose.Types.ObjectId(driver._id));
+
+                var vehicles = await Vehicle.find({driver: {$in: result}});
+
+                value[1].map((driver) => {
+                    var vehicle = vehicles.find((v) => v.driver.toString() == driver._id.toString());
+                    if (vehicle) {
+                        driver._doc["vehicle"] = vehicle;
+                    }
+                    return driver;
+                })
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
         });
