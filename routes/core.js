@@ -12,12 +12,12 @@ const { default: Axios } = require('axios');
 router.get('/getSettingsAndVehicleModels', async (req, res) => {
     Promise.all([
         Setting.findOne({}),
-        VehicleType.find({ active: true }).sort({createdAt: 'desc'})
+        VehicleType.find({ active: true }).sort({ createdAt: 'desc' })
     ]).then(value => {
-           res.json({
-               setting: value[0],
-               vehicleTypes: value[1],
-           });
+        res.json({
+            setting: value[0],
+            vehicleTypes: value[1],
+        });
     });
 });
 
@@ -54,14 +54,14 @@ router.get('/dashboard', async (req, res) => {
 router.post('/route', (req, res) => {
     try {
         console.log("req", req.body)
-        console.log("type", typeof(req.body))
+        console.log("type", typeof (req.body))
         if (req && req.body && req.body.dropOffLocation && req.body.pickupLocation) {
             Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + req.body.pickupLocation.long + ',' + req.body.pickupLocation.lat + ';' + req.body.dropOffLocation.long + ',' + req.body.dropOffLocation.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((route) => {
-            if (route && route.data && route.data.routes && route.data.routes[0] && route.data.routes[0].geometry && route.data.routes[0].geometry.coordinates ) {
-                res.send(route.data.routes[0].geometry.coordinates);
-            } else {
-                res.sendStatus(500);
-            }
+                if (route && route.data && route.data.routes && route.data.routes[0] && route.data.routes[0].geometry && route.data.routes[0].geometry.coordinates) {
+                    res.send({ coordinates: route.data.routes[0].geometry.coordinates, distance: route.data.routes[0].distance, duration: route.data.routes[0].duration });
+                } else {
+                    res.sendStatus(500);
+                }
             }).catch(err => {
                 res.sendStatus(500);
                 console.log(err);
