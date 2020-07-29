@@ -1,43 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const Setting = require('../models/Setting');
+const SettingController = require('../controllers/SettingController');
 
-router.get('/', async (req, res) => {
-    try {
-        var setting = await Setting.findOne({});
-        res.send(setting ? setting : {});
-    } catch (error) {
-        console.log(error);
-        res.send({});
-    }
-});
+router.get('/', SettingController.get);
 
-router.post('/', async (req, res) => {
-    var setting = null;
-    try {
-        setting = await Setting.findOne({});
-    } catch (error) {
-        console.log(error);
-    }
-
-    if (setting) {
-        try {
-            const updatedSetting = await Setting.updateOne({ '_id': setting._id }, req.body);
-            res.send(updatedSetting);
-        } catch (error) {
-            console.log(error);
-            res.send(error);
-        }
-    } else {
-        try {
-            const savedSetting = await Setting.create(req.body);
-            res.send(savedSetting);
-        } catch (error) {
-            console.log(error);
-            res.send(error);
-        }
-    }
-});
+router.post('/', SettingController.add);
 
 
 module.exports = router;
