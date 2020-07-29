@@ -35,6 +35,7 @@ app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
 app.use('/vehicles', require('./routes/vehicles'));
 app.use('/vehicleTypes', require('./routes/vehicleTypes'));
+app.use('/dispatchers', require('./routes/dispatcher'));
 
 // Driver Socket
 const ds = require('./sockets/DriverSocket')(io);
