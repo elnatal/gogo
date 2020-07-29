@@ -56,6 +56,7 @@ module.exports = function (io) {
         })
 
         socket.on('updatedLocation', (newLocation) => {
+            console.log({newLocation});
             if (newLocation && newLocation.lat && newLocation.long) {
                 Vehicle.update({ _id: vehicleId }, {
                     timestamp: new Date(),

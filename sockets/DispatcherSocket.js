@@ -73,7 +73,7 @@ module.exports = function (io) {
                         var dispatcher = getDispatcher({ dispatcherId: id });
                         if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('noAvailableDriver');
                     }
-                }
+                } 
 
                 async function updateCallback(request) {
                     var status = request.getStatus();
