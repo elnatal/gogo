@@ -55,7 +55,7 @@ module.exports = function (io) {
             }
         })
 
-        socket.on('updatedLocation', (newLocation) => {
+        socket.on('updateLocation', (newLocation) => {
             console.log({newLocation});
             if (newLocation && newLocation.lat && newLocation.long) {
                 Vehicle.update({ _id: vehicleId }, {
@@ -67,6 +67,8 @@ module.exports = function (io) {
                             newLocation.lat
                         ]
                     }
+                }, (err, res) => {
+                    console.log({res});
                 });
             }
         });
