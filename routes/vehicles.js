@@ -1,101 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const Vehicle = require('../models/Vehicle');
+const vehicleController = require('../controllers/VehicleController');
 
-router.get('/', async (req, res) => {
-    try {
-        var page = 1;
-        var skip = 0;
-        var limit = 20;
-        var nextPage;
-        var prevPage;
+router.get('/', vehicleController.index);
 
-        var vehicle =  Vehicle.find();
-        if (req.query.page && parseInt(req.query.page) != 0) {
-            page = parseInt(req.query.page);
-        }
-        if (req.query.limit) {
-            limit = parseInt(req.query.limit);
-        }
+router.get('/activeVehicles', vehicleController.activeVehicles)
 
-        if (page > 1) {
-            prevPage = page - 1;
-        }
+router.get('/:id', vehicleController.show);
 
-        skip = (page - 1) * limit;
-        
-        vehicle.sort({createdAt: 'desc'});
-        vehicle.limit(limit);
-        vehicle.skip(skip);
-        if (req.query.populate) {
-            var populate = JSON.parse(req.query.populate)
-            populate.forEach((e) => {
-                vehicle.populate(e);
-            });
-        }
-        Promise.all([
-            Vehicle.countDocuments(),
-            vehicle.exec()
-        ]).then((value) => {
-            if (value) {
-                if (((page  * limit) <= value[0])) {
-                    nextPage = page + 1;
-                }
-                res.send({data: value[1], count: value[0], nextPage, prevPage});
-            }
-        });
-    } catch (err) {
-        res.send('err ' + err);
-    };
-});
+router.post('/', vehicleController.store);
 
-router.get('/activeVehicles', async (req, res) => {
-    try {
-        const vehicles = await Vehicle.find({ "online": true }).populate('driver');
-        res.send(vehicles);
-    } catch (err) {
-        res.send(err);
-        console.log(err);
-    }
-})
+router.patch('/:id', vehicleController.update);
 
-router.get('/:id', async (req, res) => {
-    try {
-        var vehicle = await Vehicle.findById(req.params.id);
-        console.log(req.params.id);
-        res.send(vehicle);
-    } catch (err) {
-        res.send('err ' + err);
-    };
-});
-
-router.post('/', async (req, res) => {
-    try {
-        const savedVehicle = await Vehicle.create(req.body);
-        res.send(savedVehicle);
-    } catch (err) {
-        console.log(err);
-        res.send(err);
-    }
-});
-
-router.patch('/:id', async (req, res) => {
-    try {
-        const updatedVehicle = await Vehicle.updateOne({ '_id': req.params.id }, req.body);
-        res.send(updatedVehicle);
-    } catch (err) {
-        console.log(err);
-        res.send({ "message": "error => " + err });
-    }
-});
-
-router.delete('/:id', async (req, res) => {
-    try {
-        const deletedVehicle = await Vehicle.remove({ _id: req.params.id });
-        res.send(deletedVehicle);
-    } catch (err) {
-        res.send(err);
-    }
-});
+router.delete('/:id', vehicleController.remove);
 
 module.exports = router;
