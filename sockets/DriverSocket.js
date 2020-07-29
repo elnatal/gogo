@@ -15,6 +15,9 @@ module.exports = function (io) {
 
         socket.on('init', async (driverInfo) => {
             console.log(driverInfo);
+            console.log("///////////////////////////////////");
+            console.log("//////////// Le Nati //////////////");
+            console.log("///////////////////////////////////");
             // console.log(JSON.parse(driverInfo));
             console.log("type", typeof(driverInfo));
             if (driverInfo && driverInfo.id && driverInfo.vehicleId && driverInfo.fcm && driverInfo.location && driverInfo.location.lat && driverInfo.location.long) {
