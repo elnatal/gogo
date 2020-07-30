@@ -102,4 +102,8 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, latest, show, store, update, remove };
+const sendEmail = (data) => {
+
+}
+
+module.exports = { index, latest, show, store, update, remove, sendEmail };

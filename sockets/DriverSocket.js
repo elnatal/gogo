@@ -3,6 +3,7 @@ const { addDriver, removeDriver, getDriver } = require('../containers/driversCon
 const { getRequest, updateRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
+const { sendEmail } = require("../controllers/TripController");
 
 module.exports = function (io) {
     return function (socket) {
@@ -156,6 +157,10 @@ module.exports = function (io) {
                                 res.endTimestamp = new Date();
                                 res.active = false;
                                 res.save();
+
+                                if (res.createdBy == "app") {
+                                    sendEmail(res);
+                                }
                                 var driver = getDriver({ driverId: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
         
