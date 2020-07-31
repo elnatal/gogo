@@ -19,3 +19,5 @@ class DriverObject {
         this.removeDriverCallback();
     }
 }
+
+module.exports = DriverObject;

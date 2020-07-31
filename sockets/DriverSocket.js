@@ -1,4 +1,5 @@
 const Vehicle = require("../models/Vehicle");
+const DriverObject = require('../models/DriverObject');
 const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
 const { getRequest, updateRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
