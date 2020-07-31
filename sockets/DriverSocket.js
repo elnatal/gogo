@@ -80,6 +80,7 @@ module.exports = function (io) {
                         ]
                     }
                 }, (err, res) => {
+                    if (err) console.log({err});
                     console.log({res});
                 });
             }
@@ -116,7 +117,7 @@ module.exports = function (io) {
                         if (res) {
                             res.status = "Arrived";
                             res.save();
-                            var driver = getDriver({ driverId: res.driver._id });
+                            var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
         
                             var passenger = getUser({ userId: res.passenger._id });
@@ -139,7 +140,7 @@ module.exports = function (io) {
                             res.status = "Started";
                             res.pickupTimestamp = new Date();
                             res.save();
-                            var driver = getDriver({ driverId: res.driver._id });
+                            var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
         
                             var passenger = getUser({ userId: res.passenger._id });
@@ -169,7 +170,7 @@ module.exports = function (io) {
                                 if (res.createdBy == "app") {
                                     sendEmail(res);
                                 }
-                                var driver = getDriver({ driverId: res.driver._id });
+                                var driver = getDriver({ id: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
         
                                 var passenger = getUser({ userId: res.passenger._id });
@@ -195,7 +196,7 @@ module.exports = function (io) {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
-                            var driver = getDriver({ driverId: res.driver._id });
+                            var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
     
                             var passenger = getUser({ userId: res.passenger._id });

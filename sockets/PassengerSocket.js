@@ -159,7 +159,7 @@ module.exports = function (io) {
                         })
                         addRequest({ newRequest: request });
                         socket.emit("request", request);
-                        var driver = getDriver({ driverId: request.driverId })
+                        var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
                         setTimeout(() => {
@@ -181,11 +181,11 @@ module.exports = function (io) {
                     if (status == "Declined") {
                         sendRequest();
                     } else if (status == "Expired") {
-                        var driver = getDriver({ driverId: request.driverId })
+                        var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
                     } else if (status == "Canceled") {
                         canceled = true;
-                        var driver = getDriver({ driverId: request.driverId });
+                        var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
                         var passenger = getUser({ userId: request.passengerId });
@@ -213,7 +213,7 @@ module.exports = function (io) {
                                             var passenger = getUser({ userId: id });
                                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
 
-                                            var driver = getDriver({ driverId: request.driverId })
+                                            var driver = getDriver({ id: request.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -248,7 +248,7 @@ module.exports = function (io) {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
-                            var driver = getDriver({ driverId: res.driver._id });
+                            var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
                             var passenger = getUser({ userId: res.passenger._id });
