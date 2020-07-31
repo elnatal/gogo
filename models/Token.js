@@ -6,13 +6,17 @@ const TokenSchema = Schema({
         type: Boolean,
         default: true
     },
+    driver: {
+        type: Schema.Types.ObjectId,
+        ref: "Drivers" 
+    },
+    dispatcher: {
+        type: Schema.Types.ObjectId,
+        ref: "Dispatchers" 
+    },
     role: {
         type: Number,
         require: true
-    },
-    ttl: {
-        type: Number,
-        default: new Date().getTime() + (24 * 60 * 60 * 1000)
     }
 },
     {

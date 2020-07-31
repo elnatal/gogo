@@ -13,6 +13,7 @@ module.exports = function (io) {
         var fcm = "";
         var location = null;
         var started = false;
+        var token = "";
 
         socket.on('init', async (driverInfo) => {
             console.log(driverInfo);
@@ -21,12 +22,13 @@ module.exports = function (io) {
             console.log("///////////////////////////////////");
             // console.log(JSON.parse(driverInfo));
             console.log("type", typeof(driverInfo));
-            if (driverInfo && driverInfo.id && driverInfo.vehicleId && driverInfo.fcm && driverInfo.location && driverInfo.location.lat && driverInfo.location.long) {
+            if (driverInfo && driverInfo.id && driverInfo.vehicleId && driverInfo.fcm && driverInfo.location && driverInfo.location.lat && driverInfo.location.long, driverInfo.token) {
                 console.log("passed");
                 id = driverInfo.id;
                 vehicleId = driverInfo.vehicleId;
                 location = driverInfo.location;
                 fcm = driverInfo.fcm;
+                token = driverInfo.token;
                 started = true;
 
                 try {
@@ -53,7 +55,13 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
-                addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
+                addDriver(DriverObject({id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }))
+                // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
+
+                function removeDriverCallback() {
+                    socket.emit("unauthorized");
+                    socket.disconnect();
+                }
             } else {
                 return { error: "Invalid data" };
             }
@@ -201,9 +209,9 @@ module.exports = function (io) {
         });
 
         socket.on('disconnect', () => {
+            removeDriver({ id });
             Vehicle.update({ _id: vehicleId }, { online: false });
             console.log("Driver disconnected", id, vehicleId);
-            removeDriver({ driverId: id })
         });
     }
 }

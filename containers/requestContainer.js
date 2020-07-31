@@ -1,5 +1,3 @@
-const { request } = require("express");
-
 const requests = [];
 
 const addRequest = ({ newRequest }) => {

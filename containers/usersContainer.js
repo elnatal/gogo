@@ -1,14 +1,9 @@
 const users = [];
 
 const addUser = ({userId, socketId, fcm}) => {
-    const existingUser = users.find((user) => user.userId == userId);
-    if (existingUser) {
-        return existingUser;
-    } else {
-        const user = {userId, socketId, fcm};
-        users.push(user);
-        return user;
-    }
+    const user = {userId, socketId, fcm};
+    users.push(user);
+    return user;
 }
 
 const removeUser = ({userId}) => {

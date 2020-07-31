@@ -1,24 +1,25 @@
 const drivers = [];
 
-const addDriver = ({driverId, vehicleId, fcm, socketId}) => {
-    const existingDriver = drivers.find((driver) => driver.driverId == driverId);
+const addDriver = ({ newDriver }) => {
+    console.log("before driver add", drivers);
+    const existingDriver = drivers.find((driver) => driver.id == newDriver.id);
     if (existingDriver) {
-        return existingDriver;
-    } else {
-        const driver = {driverId, vehicleId, fcm, socketId};
-        drivers.push(driver);
-        return driver;
+        removeDriver({id: existingDriver.id});
     }
+    drivers.push(newDriver);
+    console.log("after driver add", drivers);
+    return driver;
 }
 
-const removeDriver = ({driverId}) => {
-    const index = drivers.findIndex((driver) => driver.driverId == driverId);
+const removeDriver = ({id}) => {
+    const index = drivers.findIndex((driver) => driver.id == id);
 
     if (index != -1) {
+        drivers[index].removeDriver();
         return drivers.splice(index, 1)[0];
     }
 }
 
-const getDriver = ({driverId}) => drivers.find((driver) => driver.driverId == driverId);
+const getDriver = ({id}) => drivers.find((driver) => driver.id == id);
 
 module.exports = {addDriver, removeDriver, getDriver};
