@@ -12,11 +12,14 @@ const addDriver = ({ newDriver }) => {
 }
 
 const removeDriver = ({id}) => {
+    console.log("before driver remove", drivers);
     const index = drivers.findIndex((driver) => driver.id == id);
 
     if (index != -1) {
         drivers[index].removeDriver();
-        return drivers.splice(index, 1)[0];
+        drivers.splice(index, 1)[0];
+        console.log("after driver remove", drivers);
+        return true;
     }
 }
 

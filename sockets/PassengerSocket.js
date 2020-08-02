@@ -125,7 +125,7 @@ module.exports = function (io) {
                     vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
 
                     vehicles.forEach((v) => {
-                        console.log(vehicles);
+                        console.log({vehicles});
                         if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
@@ -158,6 +158,7 @@ module.exports = function (io) {
                             updateCallback
                         })
                         addRequest({ newRequest: request });
+                        console.log({request});
                         socket.emit("request", request);
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);

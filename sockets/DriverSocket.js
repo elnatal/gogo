@@ -51,7 +51,7 @@ module.exports = function (io) {
                             ]
                         }
                     });
-                    console.log("res", update);
+                    // console.log("res", update);
                 } catch (error) {
                     console.log(error);
                 }
@@ -60,6 +60,7 @@ module.exports = function (io) {
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
                 function removeDriverCallback() {
+                    console.log("unauthorized", id);
                     socket.emit("unauthorized");
                     socket.disconnect();
                 }
@@ -82,7 +83,6 @@ module.exports = function (io) {
                     }
                 }, (err, res) => {
                     if (err) console.log({err});
-                    console.log({res});
                 });
             }
         });
@@ -210,9 +210,9 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
             removeDriver({ id });
-            Vehicle.update({ _id: vehicleId }, { online: false });
+            await Vehicle.update({ _id: vehicleId }, { online: false });
             console.log("Driver disconnected", id, vehicleId);
         });
     }
