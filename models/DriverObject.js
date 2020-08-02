@@ -6,7 +6,7 @@ class DriverObject {
     vehicleId;
     removeDriverCallback;
 
-    DriverObject({id, fcm, token, socketId, vehicleId, removeDriverCallback}) {
+    constructor({id, fcm, token, socketId, vehicleId, removeDriverCallback}) {
         this.id = id;
         this.fcm = fcm;
         this.token = token;
