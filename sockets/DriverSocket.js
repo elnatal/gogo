@@ -56,7 +56,7 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
-                addDriver({newDriver: DriverObject({id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback })})
+                addDriver({newDriver: new DriverObject({id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback })})
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
                 function removeDriverCallback() {
