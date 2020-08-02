@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Ride = require('../models/Ride');
 const VehicleType = require('../models/VehicleType');
 const { default: Axios } = require('axios');
+const Vehicle = require('../models/Vehicle');
 
 module.exports = function (io) {
     return function (socket) {
@@ -208,6 +209,8 @@ module.exports = function (io) {
                                 if (err) console.log(err);
                                 if (ride) {
                                     console.log(ride);
+                                    Vehicle.update({ _id: request.vehicleId }, { online: false });
+                                    socket.emit('status', { "status": false });
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {
                                             console.log("ride", createdRide);

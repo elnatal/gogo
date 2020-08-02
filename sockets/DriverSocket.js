@@ -22,7 +22,7 @@ module.exports = function (io) {
             console.log("//////////// Le Nati //////////////");
             console.log("///////////////////////////////////");
             // console.log(JSON.parse(driverInfo));
-            console.log("type", typeof(driverInfo));
+            console.log("type", typeof (driverInfo));
             if (driverInfo && driverInfo.id && driverInfo.vehicleId && driverInfo.fcm && driverInfo.location && driverInfo.location.lat && driverInfo.location.long, driverInfo.token) {
                 console.log("passed");
                 id = driverInfo.id;
@@ -36,7 +36,19 @@ module.exports = function (io) {
                     Ride.findOne({ active: true, driver: id }, (err, res) => {
                         if (err) console.log(err);
                         if (res) {
+                            Vehicle.update({ _id: vehicleId }, { online: false });
+                            socket.emit('status', { "status": false });
                             socket.emit('trip', res);
+                        } else {
+                            Vehicle.findById(vehicleId, (err, vehicle) => {
+                                if (vehicle) {
+                                    if (vehicle.online == true) {
+                                        socket.emit('status', { "status": true });
+                                    } else {
+                                        socket.emit('status', { "status": false });
+                                    }
+                                }
+                            });
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
@@ -56,7 +68,7 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
-                addDriver({newDriver: new DriverObject({id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback })})
+                addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
                 function removeDriverCallback() {
@@ -70,7 +82,7 @@ module.exports = function (io) {
         })
 
         socket.on('updateLocation', (newLocation) => {
-            console.log({newLocation});
+            console.log({ newLocation });
             if (newLocation && newLocation.lat && newLocation.long) {
                 Vehicle.update({ _id: vehicleId }, {
                     timestamp: new Date(),
@@ -82,19 +94,20 @@ module.exports = function (io) {
                         ]
                     }
                 }, (err, res) => {
-                    if (err) console.log({err});
+                    if (err) console.log({ err });
                 });
             }
         });
 
         socket.on('changeStatus', async (online) => {
-            console.log(typeof(online));
+            console.log(typeof (online));
             console.log('vehicle id', vehicleId);
             if (started) {
                 if (online != null && vehicleId) {
                     console.log('status', online);
                     const update = await Vehicle.updateOne({ _id: vehicleId }, { online });
-                    console.log("updated status", update);
+                    socket.emit('status', {"status": online});
+                    // console.log("updated status", update);
                 } else {
                     console.log("incorrect data");
                 }
@@ -110,7 +123,7 @@ module.exports = function (io) {
         });
 
         socket.on('arrived', async (trip) => {
-            console.log("arrived" , trip)
+            console.log("arrived", trip)
             if (trip && trip.id) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
@@ -120,7 +133,7 @@ module.exports = function (io) {
                             res.save();
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-        
+
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
@@ -132,7 +145,7 @@ module.exports = function (io) {
         });
 
         socket.on('startTrip', async (trip) => {
-            console.log("start trip" , trip)
+            console.log("start trip", trip)
             if (trip && trip.id) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
@@ -143,7 +156,7 @@ module.exports = function (io) {
                             res.save();
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-        
+
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
@@ -155,7 +168,7 @@ module.exports = function (io) {
         });
 
         socket.on('tripEnded', async (trip) => {
-            console.log("completed" , trip)
+            console.log("completed", trip)
             if (trip && trip.id && trip.totalDistance) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
@@ -163,7 +176,7 @@ module.exports = function (io) {
                         if (res) {
                             if (res.status != "Completed") {
                                 res.status = "Completed";
-                                res.totalDistance = trip.totalDistance; 
+                                res.totalDistance = trip.totalDistance;
                                 res.endTimestamp = new Date();
                                 res.active = false;
                                 res.save();
@@ -173,7 +186,7 @@ module.exports = function (io) {
                                 }
                                 var driver = getDriver({ id: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-        
+
                                 var passenger = getUser({ userId: res.passenger._id });
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                             }
@@ -199,7 +212,7 @@ module.exports = function (io) {
                             res.save();
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-    
+
                             var passenger = getUser({ userId: res.passenger._id });
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
                         }
