@@ -4,7 +4,7 @@ const Driver = require('../models/Driver');
 const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
-const { Axios } = require('axios');
+const { default: Axios } = require('axios');
 
 const getSettingsAndVehicleModels = async (req, res) => {
     Promise.all([

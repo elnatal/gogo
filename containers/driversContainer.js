@@ -8,7 +8,7 @@ const addDriver = ({ newDriver }) => {
     }
     drivers.push(newDriver);
     console.log("after driver add", drivers);
-    return driver;
+    return newDriver;
 }
 
 const removeDriver = ({id}) => {
