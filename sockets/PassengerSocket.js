@@ -91,9 +91,11 @@ module.exports = function (io) {
                     console.log("drpOff", dropOff);
                 }
 
-                Promise.all([pickup, dropOff]).then(value => {
+                var route = Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + req.body.pickUpAddress.long + ',' + req.body.pickUpAddress.lat + ';' + req.body.dropOffAddress.long + ',' + req.body.dropOffAddress.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug');
+
+                Promise.all([pickup, dropOff, route]).then(value => {
                     console.log(value[0].data);
-                    if (typeof(value[0].data) != typeof(" ")) {
+                    if (typeof (value[0].data) != typeof (" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
                             data.pickUpAddress.name = value[0].data.results[0].formatted_address;
@@ -104,8 +106,8 @@ module.exports = function (io) {
                     } else {
                         console.log("wrong data pul", value[0])
                     }
-        
-                    if (typeof(value[1].data) != typeof(" ")) {
+
+                    if (typeof (value[1].data) != typeof (" ")) {
                         if (value[1].status == 200 && value[1].data.status == "OK") {
                             console.log("status ok pul");
                             data.dropOffAddress.name = value[1].data.results[0].formatted_address;
@@ -115,6 +117,10 @@ module.exports = function (io) {
                         }
                     } else {
                         console.log("wrong data dol", value[1])
+                    }
+
+                    if (value[2] && value[2].data && value[2].data.routes && value[2].data.routes[0] && value[2].data.routes[0].geometry && value[2].data.routes[0].geometry.coordinates) {
+                        data.route = { coordinates: value[2].data.routes[0].geometry.coordinates, distance: value[2].data.routes[0].distance, duration: value[2].data.routes[0].duration };
                     }
                     console.log(data)
                     sendRequest();
@@ -126,7 +132,7 @@ module.exports = function (io) {
                     vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
 
                     vehicles.forEach((v) => {
-                        console.log({vehicles});
+                        console.log({ vehicles });
                         if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
@@ -159,7 +165,7 @@ module.exports = function (io) {
                             updateCallback
                         })
                         addRequest({ newRequest: request });
-                        console.log({request});
+                        console.log({ request });
                         socket.emit("request", request);
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
