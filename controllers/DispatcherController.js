@@ -1,5 +1,6 @@
 const Dispatcher = require('../models/Dispatcher');
 const bcrypt = require('bcryptjs');
+const Token = require('../models/Token');
 require('dotenv/config');
 
 const index = (req, res) => {
@@ -83,14 +84,15 @@ const store = async (req, res) => {
 const auth = (req, res) => {
     const data = req.body;
     if (data && data.email && data.password && data.role) {
-        Dispatcher.findOne({ email: data.email, roles: data.role }, (err, dispatcher) => {
+        Dispatcher.findOne({ email: data.email, roles: data.role }, async (err, dispatcher) => {
             if (err) res.status(500).send(err);
             if (dispatcher) {
                 if (bcrypt.compare(data.password, dispatcher.password)) {
                     const dispatcherObject = dispatcher.toObject();
                     delete dispatcherObject.password;
                     delete dispatcherObject.roles;
-                    res.send({dispatcher: dispatcherObject, role: data.role, token: "token"});
+                    var token = await Token.create({ active: true, dispatcher: dispatcherObject._id, role: 3});
+                    res.send({dispatcher: dispatcherObject, role: data.role, token: token._id});
                 } else {
                     res.status(401).send({ error: "UNAUTHORIZED" });
                 }

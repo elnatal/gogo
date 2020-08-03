@@ -12,11 +12,11 @@ module.exports = (roles) => {
                 if (token && token.active && enabledRoles.includes(token.role)) {
                     next();
                 } else {
-                    res.status(401).send("Unauthorized");
+                    res.status(401).send("UNAUTHORIZED");
                 }
             })
         } else {
-            res.status(401).send("Unauthorized");
+            res.status(401).send("UNAUTHORIZED");
         }
     }
 }
