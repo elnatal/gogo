@@ -5,6 +5,7 @@ const { getRequest, updateRequest, getDriverRequest } = require('../containers/r
 const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
 const { sendEmail } = require("../controllers/TripController");
+const Setting = require("../models/Setting");
 
 module.exports = function (io) {
     return function (socket) {
@@ -166,16 +167,22 @@ module.exports = function (io) {
             console.log("completed", trip)
             if (trip && trip.id && trip.totalDistance) {
                 try {
-                    Ride.findById(trip.id, (err, res) => {
+                    Ride.findById(trip.id, async (err, res) => {
                         if (err) console.log(err);
                         if (res) {
                             if (res.status != "Completed") {
+                                var setting = await Setting.findOne();
+                                var discount = setting.discount ? setting.discount : 0;
+                                var tax = setting.tax ? setting.tax : 15;
+                                var discount = setting.discount ? setting.discount : 0;
                                 var date = new Date();
                                 var tsts = new Data(pickupTimestamp);
                                 var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;
-                                res.fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                res.discount = discount;
+                                res.tax = tax;
+                                res.fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
                                 res.endTimestamp = date;
                                 res.active = false;
                                 res.save();
