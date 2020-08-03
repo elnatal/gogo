@@ -170,9 +170,13 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             if (res.status != "Completed") {
+                                var date = new Date();
+                                var tsts = new Data(pickupTimestamp);
+                                var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;
-                                res.endTimestamp = new Date();
+                                res.fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                res.endTimestamp = date;
                                 res.active = false;
                                 res.save();
 
