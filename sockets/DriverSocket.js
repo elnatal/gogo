@@ -231,7 +231,7 @@ module.exports = function (io) {
 
         socket.on('disconnect', async () => {
             removeDriver({ id });
-            await Vehicle.update({ _id: vehicleId }, { online: false });
+            await Vehicle.updateOne({ _id: vehicleId }, { online: false });
             console.log("Driver disconnected", id, vehicleId);
         });
     }
