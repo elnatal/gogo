@@ -1,7 +1,7 @@
 const Vehicle = require("../models/Vehicle");
 const DriverObject = require('../models/DriverObject');
 const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
-const { getRequest, updateRequest } = require('../containers/requestContainer');
+const { getRequest, updateRequest, getDriverRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
 const { sendEmail } = require("../controllers/TripController");
@@ -53,6 +53,8 @@ module.exports = function (io) {
                             socket.emit('trip', res);
                             socket.emit('status', { "status": false });
                         } else {
+                            var request = getDriverRequest({driverId: id});
+                            if (Request) socket.emit('request', request);
                             socket.emit('status', { "status": true });
                         }
 

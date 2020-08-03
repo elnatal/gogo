@@ -27,4 +27,6 @@ const updateRequest = ({ passengerId, driverId, status }) => {
 
 const getRequest = ({ passengerId, driverId }) => requests.find((request) =>  driverId ? request.driverId == driverId && request.passengerId == passengerId : request.passengerId == passengerId);
 
-module.exports = { addRequest, removeRequest, getRequest, updateRequest };
+const getDriverRequest = ({driverId}) => requests.find((request) => request.driverId == driverId);
+
+module.exports = { addRequest, removeRequest, getRequest, updateRequest, getDriverRequest };
