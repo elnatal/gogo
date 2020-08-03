@@ -209,6 +209,7 @@ module.exports = function (io) {
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,
+                                route: request.route,
                                 status: "Accepted",
                                 active: true,
                                 createdBy: "app",

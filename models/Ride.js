@@ -57,6 +57,13 @@ const RideSchema = Schema({
     totalDistance: Number,
     fare: Number,
     tax: Number,
+    route: {
+        coordinates: {
+            type: [[Number]]
+        },
+        distance: Number,
+        duration: Number
+    },
     discount: Number,
     totalAmount: Number,
     paymentMethod: String,
