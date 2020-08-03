@@ -55,7 +55,7 @@ module.exports = function (io) {
                             socket.emit('status', { "status": false });
                         } else {
                             var request = getDriverRequest({driverId: id});
-                            if (Request) socket.emit('request', request);
+                            if (request) socket.emit('request', request);
                             socket.emit('status', { "status": true });
                         }
 
