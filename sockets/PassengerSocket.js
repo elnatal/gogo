@@ -153,6 +153,7 @@ module.exports = function (io) {
                                     long: data.pickUpAddress.long
                                 },
                             },
+                            route: data.route,
                             vehicleType: data.vehicleType,
                             dropOffAddress: {
                                 name: data.dropOffAddress.name,
