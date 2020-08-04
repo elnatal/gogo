@@ -42,6 +42,10 @@ const DriverSchema = Schema({
         type: Number,
         default: 5.0
     },
+    rateCount: {
+        type: Number,
+        default: 1
+    },
     active: {
         type: Boolean,
         default: true

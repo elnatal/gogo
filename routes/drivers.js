@@ -11,6 +11,8 @@ router.get('/:id', AuthMiddleware([4, 5]), DriverController.show);
 
 router.get('/:id/bookings', DriverController.bookings);
 
+router.post('/:id/rate', DriverController.rate);
+
 router.post('/', DriverController.store);
 
 router.patch('/:id', DriverController.update);

@@ -137,6 +137,30 @@ const bookings = (req, res) => {
     }
 };
 
+const rate = async (req, res) => {
+    try {
+        if (req.params.id && req.body && req.body.tripId && req.body.rate) {
+            const driver = await Driver.findById(req.params.id);
+
+            if (driver) {
+                driver.rating = (((driver.rating * driver.rateCount) + req.body.rate) / (driver.rateCount + 1));
+                driver.rateCount = driver.rateCount + 1;
+                driver.save();
+            }
+
+            const trip = await Ride.findById(req.body.tripId);
+            if (trip) {
+                trip.passengerRate = req.body.rate;
+                trip.save();
+            }
+            res.send("Rated");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+}
+
 const store = async (req, res) => {
     try {
         const savedDriver = await Driver.create(req.body);
@@ -168,4 +192,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate };
