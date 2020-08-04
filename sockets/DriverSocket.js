@@ -79,7 +79,7 @@ module.exports = function (io) {
 
         socket.on('updateLocation', (newLocation) => {
             console.log({ newLocation });
-            if (newLocation && newLocation.lat && newLocation.long) {
+            if (started && newLocation && newLocation.lat && newLocation.long) {
                 Vehicle.updateOne({ _id: vehicleId }, {
                     timestamp: new Date(),
                     position: {
@@ -120,7 +120,7 @@ module.exports = function (io) {
 
         socket.on('arrived', async (trip) => {
             console.log("arrived", trip)
-            if (trip && trip.id) {
+            if (started && trip && trip.id) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
                         if (err) console.log(err);
@@ -142,7 +142,7 @@ module.exports = function (io) {
 
         socket.on('startTrip', async (trip) => {
             console.log("start trip", trip)
-            if (trip && trip.id) {
+            if (started && trip && trip.id) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
                         if (err) console.log(err);
@@ -165,7 +165,7 @@ module.exports = function (io) {
 
         socket.on('tripEnded', async (trip) => {
             console.log("completed", trip)
-            if (trip && trip.id && trip.totalDistance) {
+            if (started && trip && trip.id && trip.totalDistance) {
                 try {
                     Ride.findById(trip.id, async (err, res) => {
                         if (err) console.log(err);
@@ -205,7 +205,7 @@ module.exports = function (io) {
         });
 
         socket.on('cancelTrip', async (trip) => {
-            if (trip) {
+            if (started && trip) {
                 try {
                     Ride.findById(trip.id, (err, res) => {
                         if (err) console.log(err);
@@ -230,8 +230,10 @@ module.exports = function (io) {
         });
 
         socket.on('disconnect', async () => {
-            removeDriver({ id });
-            await Vehicle.updateOne({ _id: vehicleId }, { online: false });
+            if (started) {
+                removeDriver({ id });
+                await Vehicle.updateOne({ _id: vehicleId }, { online: false });
+            }
             console.log("Driver disconnected", id, vehicleId);
         });
     }
