@@ -8,6 +8,8 @@ router.get('/firebase/:firebaseId', UserController.firebaseAuth);
 
 router.get('/:id', UserController.show);
 
+router.post('/:id/rate', UserController.rate);
+
 router.get('/:id/bookings', UserController.bookings);
 
 router.post('/', UserController.store);

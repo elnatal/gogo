@@ -80,6 +80,30 @@ const bookings = (req, res) => {
     }
 };
 
+const rate = async (req, res) => {
+    try {
+        if (req.params.id && req.body && req.body.tripId && req.body.rate) {
+            const user = await User.findById(req.params.id);
+
+            if (user) {
+                user.rating = (((user.rating * user.rateCount) + req.body.rate) / (user.rateCount + 1));
+                user.rateCount = user.rateCount + 1;
+                user.save();
+            }
+
+            const trip = await Ride.findById(req.body.tripId);
+            if (trip) {
+                trip.driverRate = req.body.rate;
+                trip.save();
+            }
+            res.send("Rated");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+}
+
 const store = async (req, res) => {
     try {
         const savedUser = await User.create(req.body);
@@ -110,4 +134,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, bookings, show, store, update, remove };
+module.exports = { index, firebaseAuth, bookings, show, store, update, remove, rate };
