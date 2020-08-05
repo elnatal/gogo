@@ -83,6 +83,8 @@ module.exports = function (io) {
                     }).catch((err) => {
                         console.log({err});
                     });
+                }).catch((error) => {
+                    console.log({error});
                 });
 
                 sendRequest();
