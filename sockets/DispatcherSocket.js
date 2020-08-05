@@ -23,7 +23,7 @@ module.exports = function (io) {
         });
 
         socket.on('search', async (data) => {
-            if (started && data && data.pickupLocation && data.dropOffLocation && data.vehicleType, data.name && data.phone) {
+            if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType, data.name && data.phone) {
                 console.log("search")
                 var requestedDrivers = [];
                 var driverFound = false;
