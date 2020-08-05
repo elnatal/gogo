@@ -91,9 +91,10 @@ module.exports = function (io) {
 
 
                 async function sendRequest() {
+                    console.log("requesting");
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pua, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
