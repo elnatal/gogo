@@ -4,10 +4,11 @@ const { getNearbyDrivers } = require('./core');
 const Request = require('../models/Request');
 const Ride = require('../models/Ride');
 const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
+const { default: Axios } = require('axios');
 
 module.exports = function (io) {
     return function (socket) {
-        console.log("new passenger connection", socket.id);
+        console.log("new dispatcher connection", socket.id);
         var id = "";
         var started = false;
 
