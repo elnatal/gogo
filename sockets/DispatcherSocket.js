@@ -13,7 +13,7 @@ module.exports = function (io) {
 
         socket.on("init", async (dispatcherInfo) => {
             console.log(dispatcherInfo)
-            if (dispatcherInfo && dispatcherInfo.id) {
+            if (!started && dispatcherInfo && dispatcherInfo.id) {
                 id = dispatcherInfo.id;
                 started = true;
                 addDispatcher({ dispatcherId: id, socketId: socket.id });
@@ -28,17 +28,70 @@ module.exports = function (io) {
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
+                var pua = {
+                    lat: 0,
+                    long: 0,
+                    name: ""
+                }
+
+                var doa = {
+                    lat: 0,
+                    long: 0,
+                    name: ""
+                }
+
+                var route;
+
+
+                var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+
+                var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+
+                Promise.all([pickup, dropOff]).then(value => {
+                    if (value[0].status == 200 && value[0].data.status == "OK") {
+                        console.log("status ok pul");
+                        pua.name = value[0].data.results[0].formatted_address;
+                        pua.lat = value[0].data.results[0].geometry.location.lat;
+                        pua.long = value[0].data.results[0].geometry.location.long;
+                    } else {
+                        pua.name = "_";
+                        console.log("wrong response pul", value[0])
+                    }
+
+                    if (value[1].status == 200 && value[1].data.status == "OK") {
+                        console.log("status ok pul");
+                        doa.name = value[1].data.results[0].formatted_address;
+                        pua.lat = value[1].data.results[0].geometry.location.lat;
+                        pua.long = value[1].data.results[0].geometry.location.long;
+                    } else {
+                        doa.name = "_";
+                        console.log("wrong response dol", value[1])
+                    }
+
+                    Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + pua.long + ',' + pua.lat + ';' + doa.long + ',' + doa.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((routeObject) => {
+                        if (routeObject && routeObject.data && routeObject.data.routes && routeObject.data.routes[0] && routeObject.data.routes[0].geometry && routeObject.data.routes[0].geometry.coordinates) {
+                            route = { coordinates: routeObject.data.routes[0].geometry.coordinates, distance: routeObject.data.routes[0].distance, duration: routeObject.data.routes[0].duration };
+                            console.log({pua});
+                            console.log({doa});
+                            console.log({route});
+                            sendRequest();
+                        } else {
+                            console.log("========================== something went wrong =============================")
+                        }
+                    });
+                });
+
                 sendRequest();
 
 
                 async function sendRequest() {
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickupLocation, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
 
                     vehicles.forEach((v) => {
-                        console.log(vehicles);
-                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && v.vehicleType == data.vehicleType) {
+                        console.log({ vehicles });
+                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
                             requestedDrivers.push(v._id)
@@ -50,41 +103,54 @@ module.exports = function (io) {
                         var request = new Request({
                             passengerId: id,
                             driverId: vehicle.driver,
-                            pickupLocation: data.pickupLocation,
+                            vehicleId: vehicle._id,
+                            pickUpAddress: {
+                                name: pua.name,
+                                coordinate: {
+                                    lat: pua.lat,
+                                    long: pua.long
+                                },
+                            },
+                            route: route,
                             vehicleType: data.vehicleType,
-                            dropOffLocation: data.dropOffLocation,
+                            dropOffAddress: {
+                                name: doa.name,
+                                coordinate: {
+                                    lat: doa.lat,
+                                    long: doa.long
+                                },
+                            },
                             status: "inRequest",
                             updateCallback
                         })
                         addRequest({ newRequest: request });
-                        var dispatcher = getDispatcher({ dispatcherId: id });
-                        if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('request', request);
-
-                        var driver = getDriver({ driverId: request.driverId })
+                        console.log({ request });
+                        socket.emit("request", request);
+                        var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
                         setTimeout(() => {
                             if (!driverFound && !canceled) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                                sendRequest();
                             }
                         }, 10000);
                     } else {
-                        var dispatcher = getDispatcher({ dispatcherId: id });
-                        if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('noAvailableDriver');
+                        console.log("no diver found");
+                        socket.emit("noAvailableDriver");
                     }
-                } 
+                }
 
                 async function updateCallback(request) {
                     var status = request.getStatus();
                     if (status == "Declined") {
                         sendRequest();
                     } else if (status == "Expired") {
-                        var driver = getDriver({ driverId: request.driverId })
+                        var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                        sendRequest();
                     } else if (status == "Canceled") {
                         canceled = true;
-                        var driver = getDriver({ driverId: request.driverId });
+                        var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
                         var dispatcher = getDispatcher({ dispatcherId: id });
@@ -117,7 +183,7 @@ module.exports = function (io) {
                             var dispatcher = getDispatcher({ dispatcherId: id });
                             if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted');
 
-                            var driver = getDriver({ driverId: request.driverId })
+                            var driver = getDriver({ id: request.driverId })
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
                         } catch (error) {
                             console.log(error);
