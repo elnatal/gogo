@@ -25,7 +25,7 @@ module.exports = function (io) {
 
         socket.on('search', async (data) => {
             if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType, data.name && data.phone) {
-                console.log("search")
+                console.log("search", data);
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
@@ -49,6 +49,7 @@ module.exports = function (io) {
                 var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
 
                 Promise.all([pickup, dropOff]).then(value => {
+                    console.log("promise")
                     if (value[0].status == 200 && value[0].data.status == "OK") {
                         console.log("status ok pul");
                         pua.name = value[0].data.results[0].formatted_address;
@@ -79,6 +80,8 @@ module.exports = function (io) {
                         } else {
                             console.log("========================== something went wrong =============================")
                         }
+                    }).catch((err) => {
+                        console.log({err});
                     });
                 });
 
