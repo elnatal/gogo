@@ -63,8 +63,8 @@ module.exports = function (io) {
                     if (value[1].status == 200 && value[1].data.status == "OK") {
                         console.log("status ok pul");
                         doa.name = value[1].data.results[0].formatted_address;
-                        pua.lat = value[1].data.results[0].geometry.location.lat;
-                        pua.long = value[1].data.results[0].geometry.location.long;
+                        doa.lat = value[1].data.results[0].geometry.location.lat;
+                        doa.long = value[1].data.results[0].geometry.location.long;
                     } else {
                         doa.name = "_";
                         console.log("wrong response dol", value[1])
