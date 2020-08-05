@@ -170,15 +170,10 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 passengerName: data.name,
                                 passengerPhone: data.phone,
-                                pickUpAddress: {
-                                    name: "String",
-                                    coordinate: request.pickupLocation,
-                                },
-                                dropOffAddress: {
-                                    name: "String",
-                                    coordinate: request.dropOffLocation
-
-                                },
+                                vehicle: request.vehicleId,
+                                route: request.route,
+                                pickUpAddress: request.pickUpAddress,
+                                dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,
                                 status: "Accepted",
                                 active: true,
