@@ -181,6 +181,7 @@ module.exports = function (io) {
                             });
 
                             const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType');
+                            console.log({createdRide});
 
                             var dispatcher = getDispatcher({ dispatcherId: id });
                             if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted', createdRide);
