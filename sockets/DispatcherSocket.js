@@ -54,7 +54,7 @@ module.exports = function (io) {
                         console.log("status ok pul");
                         pua.name = value[0].data.results[0].formatted_address;
                         pua.lat = value[0].data.results[0].geometry.location.lat;
-                        pua.long = value[0].data.results[0].geometry.location.long;
+                        pua.long = value[0].data.results[0].geometry.location.lng;
                     } else {
                         pua.name = "_";
                         console.log("wrong response pul", value[0])
@@ -64,7 +64,7 @@ module.exports = function (io) {
                         console.log("status ok pul");
                         doa.name = value[1].data.results[0].formatted_address;
                         doa.lat = value[1].data.results[0].geometry.location.lat;
-                        doa.long = value[1].data.results[0].geometry.location.long;
+                        doa.long = value[1].data.results[0].geometry.location.lng;
                     } else {
                         doa.name = "_";
                         console.log("wrong response dol", value[1])
