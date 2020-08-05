@@ -131,8 +131,10 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
-                            var passenger = getUser({ userId: res.passenger._id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            if (res.passenger) {
+                                var passenger = getUser({ userId: res.passenger._id });
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
@@ -154,8 +156,10 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
-                            var passenger = getUser({ userId: res.passenger._id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            if (res.passenger) {
+                                var passenger = getUser({ userId: res.passenger._id });
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
@@ -194,8 +198,10 @@ module.exports = function (io) {
                                 var driver = getDriver({ id: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
-                                var passenger = getUser({ userId: res.passenger._id });
-                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                if (res.passenger) {
+                                    var passenger = getUser({ userId: res.passenger._id });
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                }
                             }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -220,8 +226,10 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
-                            var passenger = getUser({ userId: res.passenger._id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            if (res.passenger) {
+                                var passenger = getUser({ userId: res.passenger._id });
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
