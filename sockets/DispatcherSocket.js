@@ -176,7 +176,7 @@ module.exports = function (io) {
                                 },
                                 dropOffAddress: {
                                     name: "String",
-                                    coordinate: location.dropOffLocation
+                                    coordinate: request.dropOffLocation
 
                                 },
                                 vehicleType: request.vehicleType,
