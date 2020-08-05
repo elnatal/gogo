@@ -87,13 +87,13 @@ module.exports = function (io) {
                     console.log({error});
                 });
 
-                sendRequest();
+                // sendRequest();
 
 
                 async function sendRequest() {
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pua, distance: 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
@@ -187,7 +187,7 @@ module.exports = function (io) {
                             const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType');
 
                             var dispatcher = getDispatcher({ dispatcherId: id });
-                            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted');
+                            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted', createdRide);
 
                             var driver = getDriver({ id: request.driverId })
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
