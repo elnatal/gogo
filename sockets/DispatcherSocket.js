@@ -184,10 +184,10 @@ module.exports = function (io) {
                             console.log({createdRide});
 
                             var dispatcher = getDispatcher({ dispatcherId: id });
-                            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestAccepted', createdRide);
+                            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('trip', createdRide);
 
                             var driver = getDriver({ id: request.driverId })
-                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestAccepted', createdRide);
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
                         } catch (error) {
                             console.log(error);
                         }
