@@ -5,6 +5,7 @@ const Request = require('../models/Request');
 const Ride = require('../models/Ride');
 const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
 const { default: Axios } = require('axios');
+const User = require('../models/User');
 
 module.exports = function (io) {
     return function (socket) {
@@ -29,6 +30,7 @@ module.exports = function (io) {
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
+                var passengerId = "";
                 var pua = {
                     lat: 0,
                     long: 0,
@@ -42,6 +44,16 @@ module.exports = function (io) {
                 }
 
                 var route;
+
+                const passenger = await User.findOne({phoneNumber: data.phone});
+                if (passenger) {
+                    passengerId = passenger._id;
+                } else {
+                    const newPassenger = await User.create({phoneNumber: data.phone, firstName: data.name});
+                    if (newPassenger) {
+                        passengerId = newPassenger._id;
+                    }
+                }
 
 
                 var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
@@ -108,7 +120,7 @@ module.exports = function (io) {
 
                     if (vehicle) {
                         var request = new Request({
-                            passengerId: id,
+                            passengerId: passengerId,
                             driverId: vehicle.driver,
                             vehicleId: vehicle._id,
                             pickUpAddress: {
@@ -168,8 +180,7 @@ module.exports = function (io) {
                         try {
                             var ride = await Ride.create({
                                 driver: request.driverId,
-                                passengerName: data.name,
-                                passengerPhone: data.phone,
+                                passenger: passengerId,
                                 vehicle: request.vehicleId,
                                 route: request.route,
                                 pickUpAddress: request.pickUpAddress,

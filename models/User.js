@@ -2,17 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = Schema({
-    firebaseId: {
-        type: String,
-        required: true
-    },
     firstName: {
         type: String,
         required: true
     },
     lastName: {
         type: String,
-        required: true
+        required: false
     },
     email: {
         type: String,
@@ -20,7 +16,8 @@ const userSchema = Schema({
     },
     phoneNumber: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     profileImage: {
         type: String,
