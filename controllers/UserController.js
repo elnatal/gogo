@@ -48,9 +48,9 @@ const index = async (req, res) => {
     };
 };
 
-const firebaseAuth = async (req, res) => {
+const auth = async (req, res) => {
     try {
-        var user = await User.findOne({firebaseId: req.params.firebaseId});
+        var user = await User.findOne({phoneNumber: req.params.phone});
         if (user) {
             res.send(user);
         } else {
@@ -134,4 +134,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, bookings, show, store, update, remove, rate };
+module.exports = { index, auth, bookings, show, store, update, remove, rate };

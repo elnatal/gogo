@@ -4,7 +4,7 @@ const UserController = require('../controllers/UserController');
 
 router.get('/', UserController.index);
 
-router.get('/firebase/:firebaseId', UserController.firebaseAuth);
+router.get('/auth/:phone', UserController.auth);
 
 router.get('/:id', UserController.show);
 
