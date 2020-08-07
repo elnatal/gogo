@@ -1,0 +1,90 @@
+const Corporate = require('../models/Corporate');
+
+const index = async (req, res) => {
+    try {
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
+        var nextPage;
+        var prevPage;
+
+        var corporates = Corporate.find();
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            page = parseInt(req.query.page);
+        }
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+
+        corporates.sort({ createdAt: 'desc' });
+        corporates.limit(limit);
+        corporates.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                corporates.populate(e);
+            });
+        }
+        Promise.all([
+            Corporate.countDocuments(),
+            corporates.exec()
+        ]).then(async (value) => {
+            if (value) {
+                if (((page * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+
+                res.send({ data: value[1], count: value[0], nextPage, prevPage });
+            }
+        });
+    } catch (error) {
+        res.send(error);
+    };
+}
+
+const show = async (req, res) => {
+    try {
+        var corporate = await Corporate.findById(req.params.id);
+        console.log(req.params.id);
+        res.send(corporate);
+    } catch (err) {
+        res.send('err ' + err);
+    };
+}
+
+const store = async (req, res) => {
+    try {
+        const savedCorporate = await Corporate.create(req.body);
+        res.send(savedCorporate);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+}
+
+const update = async (req, res) => {
+    try {
+        const updatedCorporate = await Corporate.updateOne({ '_id': req.params.id }, req.body);
+        res.send(updatedCorporate);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ "message": "error => " + err });
+    }
+}
+
+const remove = async (req, res) => {
+    try {
+        const deletedCorporate = await Corporate.remove({ _id: req.params.id });
+        res.send(deletedCorporate);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
+module.exports = { index, show, store, update, remove };

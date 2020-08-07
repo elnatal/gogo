@@ -77,6 +77,9 @@ module.exports = function (io) {
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
+                var corporate = false;
+
+                if (data.ticketNumber && data.ticketNumber != undefined) corporate = true;
 
                 var pickup = data.pickUpAddress.name;
                 var dropOff = data.dropOffAddress.name;
@@ -154,6 +157,8 @@ module.exports = function (io) {
                                 },
                             },
                             route: data.route,
+                            corporate,
+                            ticketNumber: corporate ? data.ticketNumber : null,
                             vehicleType: data.vehicleType,
                             dropOffAddress: {
                                 name: data.dropOffAddress.name,
@@ -210,6 +215,7 @@ module.exports = function (io) {
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,
                                 route: request.route,
+                                corporateTicket: request.ticketNumber,
                                 status: "Accepted",
                                 active: true,
                                 createdBy: "app",

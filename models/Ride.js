@@ -7,8 +7,6 @@ const RideSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Users"
     },
-    passengerName: String,
-    passengerPhone: String,
     driver: {
         type: Schema.Types.ObjectId,
         ref: "Drivers"
@@ -51,7 +49,6 @@ const RideSchema = Schema({
         ref: "Vehicles",
         required: true
     },
-    type: String,
     cancelledBy: String,
     cancelledReason: String,
     totalDistance: Number,
@@ -80,7 +77,11 @@ const RideSchema = Schema({
     passengerComment: String,
     payedToDriver: Number,
     collectFromDriver: Number,
-    corporateTicketNumber: Number,
+    corporate: Boolean,
+    corporateTicket: {
+        type: Schema.Types.ObjectId,
+        ref: "Tickets"
+    },
     transactionNumber: Number,
     bidNumber: Number,
     createdBy: String,
