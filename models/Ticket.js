@@ -11,6 +11,10 @@ const TicketSchema = Schema({
         ref: 'Corporates',
         required: true
     },
+    amount: {
+        type: Number,
+        default: 0
+    },
     active: {
         type: Boolean,
         default: true

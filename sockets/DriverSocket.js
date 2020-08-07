@@ -6,6 +6,7 @@ const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
 const { sendEmail } = require("../controllers/TripController");
 const Setting = require("../models/Setting");
+const Ticket = require("../models/Ticket");
 
 module.exports = function (io) {
     return function (socket) {
@@ -183,14 +184,22 @@ module.exports = function (io) {
                                 var date = new Date();
                                 var tsts = new Date(res.pickupTimestamp);
                                 var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
+                                var fare = 0;
+                                if (trip.corporateTicket) {
+                                    fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                } else {
+                                    fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
+                                }
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;
                                 res.discount = discount;
                                 res.tax = tax;
-                                res.fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
+                                res.fare = fare;
                                 res.endTimestamp = date;
                                 res.active = false;
                                 res.save();
+
+                                Ticket.update({_id: trip.corporateTicket}, {amount: fare});
 
                                 if (res.createdBy == "app") {
                                     sendEmail(res);
