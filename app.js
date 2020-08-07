@@ -31,8 +31,8 @@ mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlPar
 // Routes
 app.use('/', require('./routes/core'));
 app.use('/setting', require('./routes/settings'));
-// app.use('/tickets', request('./routes/tickets'));
-// app.use('/corporates', request('./routes/corporates'));
+app.use('/tickets', require('./routes/tickets'));
+app.use('/corporates', require('./routes/corporates'));
 app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
