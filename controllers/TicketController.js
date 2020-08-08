@@ -61,7 +61,7 @@ const show = async (req, res) => {
 
 const validate = async (req, res) => {
     try {
-        const ticket = await Ticket.findOne({ code: req.body.code });
+        const ticket = await Ticket.findOne({ code: req.params.code });
         if (ticket && ticket.active == true) {
             res.send(true);
         } else {
