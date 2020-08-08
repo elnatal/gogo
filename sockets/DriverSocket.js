@@ -199,7 +199,9 @@ module.exports = function (io) {
                                 res.active = false;
                                 res.save();
 
-                                Ticket.update({_id: trip.corporateTicket}, {amount: fare});
+                                if  (res.ticket) {
+                                    Ticket.updateOne({_id: res.ticket}, {amount: fare});
+                                }
 
                                 if (res.createdBy == "app") {
                                     sendEmail(res);

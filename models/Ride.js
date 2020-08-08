@@ -78,7 +78,7 @@ const RideSchema = Schema({
     payedToDriver: Number,
     collectFromDriver: Number,
     corporate: Boolean,
-    corporateTicket: {
+    ticket: {
         type: Schema.Types.ObjectId,
         ref: "Tickets"
     },

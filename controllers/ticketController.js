@@ -63,9 +63,9 @@ const validate = async (req, res) => {
     try {
         const ticket = await Ticket.findOne({ code: req.params.code });
         if (ticket && ticket.active == true) {
-            res.send(true);
+            res.send(ticket._id);
         } else {
-            res.send(false);
+            res.status(404).send(false);
         }
     } catch (error) {
         console.log(error);
