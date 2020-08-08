@@ -7,7 +7,7 @@ router.get('/', TicketController.index);
 
 router.get('/:id', AuthMiddleware([4, 5]), TicketController.show);
 
-router.get('/validate/:corporate/:code', TicketController.validate);
+router.get('/validate/:code', TicketController.validate);
 
 router.post('/', TicketController.store);
 

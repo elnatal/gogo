@@ -1,4 +1,5 @@
 const Ticket = require('../models/Ticket');
+const Corporate = require('../models/Corporate');
 
 const index = async (req, res) => {
     try {
@@ -60,8 +61,8 @@ const show = async (req, res) => {
 
 const validate = async (req, res) => {
     try {
-        const ticket = await Ticket.findOne({code: req.params.code}).populate("corporate");
-        if (ticket && ticket.active == true && ticket.corporate != undefined && ticket.corporate && ticket.corporate.shortName && ticket.corporate.shortName == req.params.corporate) {
+        const ticket = await Ticket.findOne({ code: req.body.code });
+        if (ticket && ticket.active == true) {
             res.send(true);
         } else {
             res.send(false);
@@ -75,24 +76,29 @@ const validate = async (req, res) => {
 const store = async (req, res) => {
     try {
         var data = req.body;
-        var code = Math.random().toString(36).substring(7);
-        var found = false;
-        console.log({code})
-
-        while (!found) {
-            var ticket = await Ticket.findOne({code});
-            console.log({ticket})
-            if (ticket) {
-                code = Math.random().toString(36).substring(7);
-            } else {
-                found = true;
+        var corporate = await Corporate.findById(data.corporate);
+        if (corporate) {
+            var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
+            var found = false;
+            console.log({ code })
+    
+            while (!found) {
+                var ticket = await Ticket.findOne({ code });
+                console.log({ ticket })
+                if (ticket) {
+                    code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
+                } else {
+                    found = true;
+                }
             }
+    
+            data["code"] = code;
+            console.log({ data });
+            const savedTicket = await Ticket.create(data);
+            res.send(savedTicket);
+        } else {
+            res.status(500).send({error: "Unknown corporate"})
         }
-
-        data["code"] = code;
-        console.log({data});
-        const savedTicket = await Ticket.create(data);
-        res.send(savedTicket);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
