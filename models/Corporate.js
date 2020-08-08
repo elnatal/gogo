@@ -6,6 +6,10 @@ const CorporateSchema = Schema({
         type: String,
         required: true
     },
+    shortName: {
+        type: String,
+        required: true
+    },
     email: {
         type: String,
         required: true,
