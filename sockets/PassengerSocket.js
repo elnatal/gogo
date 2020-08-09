@@ -75,6 +75,10 @@ module.exports = function (io) {
         socket.on('search', async (data) => {
             if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
                 console.log("search")
+                var type = "normal";
+                if (data.type && data.type != undefined) {
+                    type = data.type;
+                }
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
@@ -150,6 +154,8 @@ module.exports = function (io) {
                             passengerId: id,
                             driverId: vehicle.driver,
                             vehicleId: vehicle._id,
+                            type,
+                            bidAmount: data.bidAmount && type == "bid" ? data.bidAmount : null,
                             pickUpAddress: {
                                 name: data.pickUpAddress.name,
                                 coordinate: {
@@ -215,6 +221,8 @@ module.exports = function (io) {
                                 passenger: request.passengerId,
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
+                                type: request.type,
+                                bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,

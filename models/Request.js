@@ -8,13 +8,17 @@ class Request {
     vehicleId;
     corporate;
     ticket;
+    type;
+    bidAmount;
     #status;
     updateCallback;
-    constructor({passengerId, driverId, pickUpAddress, dropOffAddress, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
+    constructor({passengerId, driverId, pickUpAddress, dropOffAddress, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
         this.passengerId = passengerId;
         this.driverId = driverId;
         this.pickUpAddress = pickUpAddress;
         this.vehicleId = vehicleId;
+        this.type = type;
+        this.bidAmount = bidAmount;
         this.route = route;
         this.corporate = corporate;
         this.ticket = ticket;

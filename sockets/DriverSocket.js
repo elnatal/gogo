@@ -185,10 +185,12 @@ module.exports = function (io) {
                                 var tsts = new Date(res.pickupTimestamp);
                                 var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                                 var fare = 0;
-                                if (trip.corporateTicket) {
+                                if (trip.type == "corporate") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
-                                } else {
+                                } else if (trip.type == "normal") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
+                                } else if (trip.type == "bid") {
+                                    fare = trip.bidAmount;
                                 }
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;

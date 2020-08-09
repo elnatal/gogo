@@ -122,6 +122,7 @@ module.exports = function (io) {
                         var request = new Request({
                             passengerId: passengerId,
                             driverId: vehicle.driver,
+                            type: "normal",
                             vehicleId: vehicle._id,
                             pickUpAddress: {
                                 name: pua.name,

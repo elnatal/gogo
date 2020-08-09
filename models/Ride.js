@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const RideSchema = Schema({
     schedule: Date,
+    type: {
+        type: String,
+        default: "normal"
+    },
     passenger: {
         type: Schema.Types.ObjectId,
         ref: "Users"
@@ -83,7 +87,7 @@ const RideSchema = Schema({
         ref: "Tickets"
     },
     transactionNumber: Number,
-    bidNumber: Number,
+    bidAmount: Number,
     createdBy: String,
 },
 {
