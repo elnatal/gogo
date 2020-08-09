@@ -1,5 +1,6 @@
 const Ride = require('../models/Ride');
 const { request, json } = require('express');
+const { send } = require('../services/emailService');
 
 const index = (req, res) => {
     try {
@@ -102,8 +103,4 @@ const remove = async (req, res) => {
     }
 };
 
-const sendEmail = (data) => {
-
-}
-
-module.exports = { index, latest, show, store, update, remove, sendEmail };
+module.exports = { index, latest, show, store, update, remove };

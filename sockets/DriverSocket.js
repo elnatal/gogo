@@ -4,9 +4,9 @@ const { addDriver, removeDriver, getDriver } = require('../containers/driversCon
 const { getRequest, updateRequest, getDriverRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser } = require("../containers/usersContainer");
-const { sendEmail } = require("../controllers/TripController");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
+const { sendEmail } = require("../services/emailService");
 
 module.exports = function (io) {
     return function (socket) {
@@ -204,7 +204,7 @@ module.exports = function (io) {
                                 }
 
                                 if (res.createdBy == "app") {
-                                    sendEmail(res);
+                                    sendEmail("elnataldebebe@gmail.com", "test", "test email");
                                 }
                                 var driver = getDriver({ id: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
