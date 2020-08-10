@@ -202,7 +202,7 @@ module.exports = function (io) {
                     }
                 }
 
-                function updateCallback(request) {
+                async function updateCallback(request) {
                     console.log("changed", request);
                     console.log("status", request.getStatus());
                     var status = request.getStatus();
