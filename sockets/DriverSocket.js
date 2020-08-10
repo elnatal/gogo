@@ -51,9 +51,12 @@ module.exports = function (io) {
                             }
                         });
 
+                        console.log({res});
+                        console.log("status", res ? false : true);
+
                         if (res) {
                             socket.emit('trip', res);
-                            // console.log({res});
+                            console.log({res});
                             socket.emit('status', { "status": false });
                         } else {
                             var request = getDriverRequest({driverId: id});
