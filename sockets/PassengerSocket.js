@@ -235,8 +235,8 @@ module.exports = function (io) {
                                 vehicleType: request.vehicleType,
                                 route: request.route,
                                 ticket: request.ticket,
-                                status: "Accepted",
-                                active: true,
+                                status: request.schedule ? "Scheduled" : "Accepted",
+                                active: request.schedule ? false : true,
                                 createdBy: "app",
                             }, (err, ride) => {
                                 if (err) console.log(err);

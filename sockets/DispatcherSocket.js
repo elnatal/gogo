@@ -195,8 +195,8 @@ module.exports = function (io) {
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType,
-                                status: "Accepted",
-                                active: true,
+                                status: request.schedule ? "Scheduled" : "Accepted",
+                                active: request.schedule ? false : true,
                                 createdBy: "dispatcher",
                             });
 

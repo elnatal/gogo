@@ -57,7 +57,7 @@ const dispatcherSocket = io.of('/dispatcher-socket');
 dispatcherSocket.on('connection', dis);
 
 // Start cron
-runCrone();
+runCrone(io);
 
 // Listening
 const PORT = process.env.PORT || 3000;

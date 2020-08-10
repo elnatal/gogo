@@ -1,6 +1,9 @@
 const Ride = require('../models/Ride');
 const { request, json } = require('express');
 const { send } = require('../services/emailService');
+const { getDriver } = require('../containers/driversContainer');
+const { getUser } = require('../containers/usersContainer');
+const { sendNotificationById } = require('../services/notificationService');
 
 const index = (req, res) => {
     try {
@@ -49,10 +52,33 @@ const index = (req, res) => {
     };
 };
 
-const checkScheduledTrips = async () => {
+const checkScheduledTrips = async (io) => {
     try {
-        const trips = await Ride.find({status: "Scheduled"});
+        const trips = await Ride.find({status: "Scheduled"}).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
         console.log({trips});
+        trips.forEach((trip) => {
+            const driverId = (trip.driver) ? trip.driver._id : "";
+            const passengerId = (trip.passenger) ? trip.passenger._id : "";
+
+            var driver = getDriver({ id: driverId});
+            if (driver) {
+                io.of('/driver-socket').to(driver.socketId).emit('trip', trip);
+            } else if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
+                sendNotificationById(trip.vehicle.fcm, "Notification");
+            } else {
+                console.log("No socket and fcm found");
+            }
+
+            var passenger = getUser({ userId: passengerId });
+            if (passenger) {
+                io.of('/passenger-socket').to(passenger.socketId).emit('trip', trip);
+            } else if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
+                sendNotificationById(trip.passenger.fcm, "Notification");
+            } else {
+                console.log("No socket and fcm found");
+            }
+
+        });
     } catch (error) {
         console.error(error);
     }
