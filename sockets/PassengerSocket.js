@@ -186,6 +186,7 @@ module.exports = function (io) {
                         addRequest({ newRequest: request });
                         console.log({ request });
                         socket.emit("request", request);
+                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: false });
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
 
@@ -206,12 +207,15 @@ module.exports = function (io) {
                     console.log("status", request.getStatus());
                     var status = request.getStatus();
                     if (status == "Declined") {
+                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: false });
                         sendRequest();
                     } else if (status == "Expired") {
+                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: true });
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
                     } else if (status == "Canceled") {
                         canceled = true;
+                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: true });
                         var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
