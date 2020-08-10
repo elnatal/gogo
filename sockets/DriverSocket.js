@@ -36,9 +36,9 @@ module.exports = function (io) {
                 started = true;
 
                 try {
-                    Ride.findOne({ active: true, driver: id }, (err, res) => {
+                    Ride.findOne({ active: true, driver: id }, async (err, res) => {
                         if (err) console.log(err);
-                        Vehicle.updateOne({ _id: vehicleId }, {
+                        await Vehicle.updateOne({ _id: vehicleId }, {
                             fcm,
                             online: res ? false : true,
                             timestamp: new Date(),
