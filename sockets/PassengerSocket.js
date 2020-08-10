@@ -83,6 +83,11 @@ module.exports = function (io) {
                 var driverFound = false;
                 var canceled = false;
                 var corporate = false;
+                var schedule = null;
+
+                if (data.schedule && data.schedule != undefined) {
+                    schedule = data.schedule;
+                }
 
                 if (data.ticket && data.ticket != undefined) corporate = true;
 
@@ -155,6 +160,7 @@ module.exports = function (io) {
                             driverId: vehicle.driver,
                             vehicleId: vehicle._id,
                             type,
+                            schedule,
                             bidAmount: data.bidAmount && type == "bid" ? data.bidAmount : null,
                             pickUpAddress: {
                                 name: data.pickUpAddress.name,
@@ -222,6 +228,7 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
                                 type: request.type,
+                                schedule: request.schedule,
                                 bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,

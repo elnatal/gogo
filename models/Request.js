@@ -1,3 +1,5 @@
+const { schema } = require("./Vehicle");
+
 class Request {
     passengerId;
     driverId;
@@ -9,10 +11,11 @@ class Request {
     corporate;
     ticket;
     type;
+    schedule;
     bidAmount;
     #status;
     updateCallback;
-    constructor({passengerId, driverId, pickUpAddress, dropOffAddress, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
+    constructor({passengerId, driverId, pickUpAddress, schedule, dropOffAddress, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
         this.passengerId = passengerId;
         this.driverId = driverId;
         this.pickUpAddress = pickUpAddress;
@@ -21,6 +24,7 @@ class Request {
         this.bidAmount = bidAmount;
         this.route = route;
         this.corporate = corporate;
+        this.schedule = schedule;
         this.ticket = ticket;
         this.vehicleType = vehicleType;
         this.dropOffAddress = dropOffAddress;

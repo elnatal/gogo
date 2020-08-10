@@ -31,6 +31,12 @@ module.exports = function (io) {
                 var driverFound = false;
                 var canceled = false;
                 var passengerId = "";
+                var schedule = null;
+
+                if (data.schedule && data.schedule != undefined) {
+                    schedule = data.schedule;
+                }
+
                 var pua = {
                     lat: 0,
                     long: 0,
@@ -123,6 +129,7 @@ module.exports = function (io) {
                             passengerId: passengerId,
                             driverId: vehicle.driver,
                             type: "normal",
+                            schedule,
                             vehicleId: vehicle._id,
                             pickUpAddress: {
                                 name: pua.name,
@@ -183,6 +190,7 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 passenger: passengerId,
                                 vehicle: request.vehicleId,
+                                schedule: request.schedule,
                                 route: request.route,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
