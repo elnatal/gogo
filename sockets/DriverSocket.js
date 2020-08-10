@@ -40,7 +40,7 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         Vehicle.updateOne({ _id: vehicleId }, {
                             fcm,
-                            active: res ? false : true,
+                            online: res ? false : true,
                             timestamp: new Date(),
                             position: {
                                 type: "Point",
