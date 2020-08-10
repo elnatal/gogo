@@ -49,6 +49,15 @@ const index = (req, res) => {
     };
 };
 
+const checkScheduledTrips = async () => {
+    try {
+        const trips = await Ride.find({status: "Scheduled"});
+        console.log({trips});
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 
 const latest = (req, res) => {
     try {
@@ -103,4 +112,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, latest, show, store, update, remove };
+module.exports = { index, latest, show, store, update, remove, checkScheduledTrips };
