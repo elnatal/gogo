@@ -4,6 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const socketIO = require('socket.io');
 const { request } = require('express');
+const { runCrone } = require('./services/cronService');
 require('dotenv/config');
 
 const app = express();
@@ -54,6 +55,9 @@ passengerSocket.on('connection', ps);
 const dis = require('./sockets/DispatcherSocket')(io);
 const dispatcherSocket = io.of('/dispatcher-socket');
 dispatcherSocket.on('connection', dis);
+
+// Start cron
+runCrone();
 
 // Listening
 const PORT = process.env.PORT || 3000;
