@@ -242,8 +242,12 @@ module.exports = function (io) {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
+                            await Vehicle.updateOne({ _id: vehicleId }, { online: true });
                             var driver = getDriver({ id: res.driver._id });
-                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+                            if (driver) {
+                                io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+                                io.of('/driver-socket').to(driver.socketId).emit('status', {"status": true});
+                            }
 
                             if (res.passenger) {
                                 var passenger = getUser({ userId: res.passenger._id });
