@@ -3,6 +3,7 @@ const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
 const mongoose = require('mongoose');
 const Token = require('../models/Token');
+const Setting = require('../models/Setting');
 
 const index = async (req, res) => {
     try {
@@ -71,10 +72,11 @@ const firebaseAuth = async (req, res) => {
                 var driver = token.driver;
                 driver._doc["token"] = token._id;
                 var vehicle = await Vehicle.findOne({ driver: driver._id });
+                var setting = await Setting.findOne();
                 if (vehicle) {
-                    res.send({ driver, vehicle });
+                    res.send({ driver, vehicle, setting });
                 } else {
-                    res.send({ driver, vehicle: null });
+                    res.send({ driver, vehicle: null, setting });
                 }
             } else {
                 res.status(401).send("Unauthorized");

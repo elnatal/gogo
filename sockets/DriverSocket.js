@@ -36,11 +36,12 @@ module.exports = function (io) {
                 started = true;
 
                 try {
+                    var request = getDriverRequest({driverId: id});
                     Ride.findOne({ active: true, driver: id }, async (err, res) => {
                         if (err) console.log(err);
                         await Vehicle.updateOne({ _id: vehicleId }, {
                             fcm,
-                            online: res ? false : true,
+                            online: res || request ? false : true,
                             timestamp: new Date(),
                             position: {
                                 type: "Point",
@@ -57,11 +58,13 @@ module.exports = function (io) {
                         if (res) {
                             socket.emit('trip', res);
                             console.log({res});
-                            socket.emit('status', { "status": false });
+                            // socket.emit('status', { "status": false });
+                        } else if (request) {
+                            socket.emit('request', request);
+                            console.log({request});
                         } else {
-                            var request = getDriverRequest({driverId: id});
-                            if (request) socket.emit('request', request);
                             socket.emit('status', { "status": true });
+                            console.log("status", true);
                         }
 
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -108,7 +111,7 @@ module.exports = function (io) {
                     console.log('status', online);
                     const update = await Vehicle.updateOne({ _id: vehicleId }, { online });
                     socket.emit('status', { "status": online });
-                    // console.log("updated status", update);
+                    console.log("updated status", online);
                 } else {
                     console.log("incorrect data");
                 }
@@ -208,8 +211,8 @@ module.exports = function (io) {
                                     Ticket.updateOne({_id: res.ticket}, {amount: fare});
                                 }
 
-                                if (res.createdBy == "app") {
-                                    sendEmail("elnataldebebe@gmail.com", "test", "test email");
+                                if (res.createdBy == "app" && res.passenger && res.passenger.email) {
+                                    sendEmail(res.passenger.email, "Trip summery", "test email");
                                 }
                                 var driver = getDriver({ id: res.driver._id });
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
