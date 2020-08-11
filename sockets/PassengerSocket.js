@@ -280,7 +280,7 @@ module.exports = function (io) {
         socket.on('cancelTrip', async (trip) => {
             if (trip) {
                 try {
-                    Ride.findById(trip.id, (err, res) => {
+                    Ride.findById(trip.id, async (err, res) => {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Canceled";
