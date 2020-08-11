@@ -85,6 +85,8 @@ module.exports = function (io) {
                 var corporate = false;
                 var schedule = null;
 
+                const vehicleTypeData = await VehicleType.findById(data.vehicleType);
+
                 if (data.schedule && data.schedule != undefined) {
                     schedule = data.schedule;
                 }
@@ -172,7 +174,7 @@ module.exports = function (io) {
                             route: data.route,
                             corporate,
                             ticket: corporate ? data.ticket : null,
-                            vehicleType: data.vehicleType,
+                            vehicleType: vehicleTypeData,
                             dropOffAddress: {
                                 name: data.dropOffAddress.name,
                                 coordinate: {
@@ -236,7 +238,7 @@ module.exports = function (io) {
                                 bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
-                                vehicleType: request.vehicleType,
+                                vehicleType: request.vehicleType._id,
                                 route: request.route,
                                 ticket: request.ticket,
                                 status: request.schedule ? "Scheduled" : "Accepted",

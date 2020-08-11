@@ -37,6 +37,8 @@ module.exports = function (io) {
                     schedule = data.schedule;
                 }
 
+                const vehicleTypeData = await VehicleType.findById(data.vehicleType);
+
                 var pua = {
                     lat: 0,
                     long: 0,
@@ -139,7 +141,7 @@ module.exports = function (io) {
                                 },
                             },
                             route: route,
-                            vehicleType: data.vehicleType,
+                            vehicleType: vehicleTypeData,
                             dropOffAddress: {
                                 name: doa.name,
                                 coordinate: {
@@ -194,7 +196,7 @@ module.exports = function (io) {
                                 route: request.route,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
-                                vehicleType: request.vehicleType,
+                                vehicleType: request.vehicleType._id,
                                 status: request.schedule ? "Scheduled" : "Accepted",
                                 active: request.schedule ? false : true,
                                 createdBy: "dispatcher",
