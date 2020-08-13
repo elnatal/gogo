@@ -134,7 +134,7 @@ const bookings = (req, res) => {
     try {
         Ride.find({ driver: req.params.id }, 'type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (err, rides) => {
             res.send(rides);
-        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger');
+        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate({path: 'vehicleType', select: 'name -_id'});
     } catch (error) {
         res.status(500).send(error);
     }

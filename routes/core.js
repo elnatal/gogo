@@ -10,7 +10,7 @@ router.get('/dashboard', CoreController.dashboard);
 router.post('/route', CoreController.route);
 
 router.get('/notification', (req, res) => {
-    sendNotificationById("cW4H_tlGQICz4DRkktGy4F:APA91bGwKaB01nsYC-W0K4-1QWiFl8s6VBwrjqxTH8GHuKpt8-AsPMkI0eSlgmm3g8WAN0hRr7tWtCn-PvRTONLkNZcoKxbRZNzYOaVXTA9917slMYWjjoArhn8IBmaoRjj_itGrTTiK", {title: "test title", body: "test body"});
+    sendNotificationById("d_M4wZKnaNY:APA91bH3uC9hbHVlTvYLZYlbn2ZTIaeM1pBExOd6ZDOgAcCNzR5gBiDT-7wbovWXGQxUiUm1uXuzlcSMBY9VUAslK3aFP-Ow4jjF1ab0F94mSUepI-3BCQeNhWueCIh5U_GGHtSlBJ8e", {title: "test title", body: "test body"});
     res.send("done");
 })
 
