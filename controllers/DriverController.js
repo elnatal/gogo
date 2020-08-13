@@ -132,7 +132,7 @@ const show = (req, res) => {
 
 const bookings = (req, res) => {
     try {
-        Ride.find({ driver: req.params.id }, (err, rides) => {
+        Ride.find({ driver: req.params.id }, 'type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (err, rides) => {
             res.send(rides);
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger');
     } catch (error) {
