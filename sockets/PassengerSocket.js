@@ -210,6 +210,8 @@ module.exports = function (io) {
                     var status = request.getStatus();
                     if (status == "Declined") {
                         await Vehicle.updateOne({ _id: request.vehicleId }, { online: false });
+                        var driver = getDriver({ id: request.driverId });
+                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
                         sendRequest();
                     } else if (status == "Expired") {
                         await Vehicle.updateOne({ _id: request.vehicleId }, { online: true });
