@@ -110,7 +110,7 @@ module.exports = function (io) {
 
                 Promise.all([pickup, dropOff, route]).then(value => {
                     console.log(value[0].data);
-                    if (typeof (value[0].data) != typeof (" ")) {
+                    if (typeof(value[0]) != typeof(" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
                             data.pickUpAddress.name = value[0].data.results[0].formatted_address;
@@ -122,7 +122,7 @@ module.exports = function (io) {
                         console.log("wrong data pul", value[0])
                     }
 
-                    if (typeof (value[1].data) != typeof (" ")) {
+                    if (typeof(value[1]) != typeof(" ")) {
                         if (value[1].status == 200 && value[1].data.status == "OK") {
                             console.log("status ok pul");
                             data.dropOffAddress.name = value[1].data.results[0].formatted_address;
