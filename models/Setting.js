@@ -7,6 +7,10 @@ const SettingSchema = Schema({
     playStoreLink: String,
     appStoreLink: String,
     requestTimeout: Number,
+    waitingTime: {
+        type: Number,
+        default: 25
+    },
     searchRadius: Number,
     tax: Number,
     defaultCommission: Number,
