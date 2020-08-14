@@ -177,7 +177,7 @@ module.exports = function (io) {
 
         socket.on('tripEnded', async (trip) => {
             console.log("completed", trip)
-            if (started && trip && trip.id && trip.totalDistance) {
+            if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined && trip.totalDistance != "") {
                 try {
                     Ride.findById(trip.id, async (err, res) => {
                         if (err) console.log(err);
@@ -206,6 +206,8 @@ module.exports = function (io) {
                                 res.endTimestamp = date;
                                 res.active = false;
                                 res.save();
+
+                                console.log({res});
 
                                 if  (res.ticket) {
                                     Ticket.updateOne({_id: res.ticket}, {amount: fare});
