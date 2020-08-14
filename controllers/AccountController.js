@@ -1,4 +1,4 @@
-const Dispatcher = require('../models/Dispatcher');
+const Account = require('../models/Account');
 const bcrypt = require('bcryptjs');
 const Token = require('../models/Token');
 require('dotenv/config');
@@ -11,7 +11,7 @@ const index = (req, res) => {
         var nextPage;
         var prevPage;
 
-        var dispatchers = Dispatcher.find();
+        var accounts = Account.find();
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -25,18 +25,18 @@ const index = (req, res) => {
 
         skip = (page - 1) * limit;
 
-        dispatchers.sort({ createdAt: 'desc' });
-        dispatchers.limit(limit);
-        dispatchers.skip(skip);
+        accounts.sort({ createdAt: 'desc' });
+        accounts.limit(limit);
+        accounts.skip(skip);
         if (req.query.populate) {
             var populate = JSON.parse(req.query.populate)
             populate.forEach((e) => {
-                dispatchers.populate(e);
+                accounts.populate(e);
             });
         }
         Promise.all([
-            Dispatcher.countDocuments(),
-            dispatchers.exec()
+            Account.countDocuments(),
+            accounts.exec()
         ]).then(async (value) => {
             if (value) {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
@@ -49,13 +49,13 @@ const index = (req, res) => {
 
 const show = (req, res) => {
     try {
-        Dispatcher.findById(req.params.id, (err, dispatcher) => {
+        Account.findById(req.params.id, (err, account) => {
             if (err) console.log(err);
-            if (dispatcher) {
-                console.log({ "dispatcher": dispatcher });
-                res.send(dispatcher)
+            if (account) {
+                console.log({ "account": account });
+                res.send(account)
             } else {
-                res.status(404).send("Unknown dispatcher");
+                res.status(404).send("Unknown account");
             }
         });
     } catch (error) {
@@ -72,8 +72,8 @@ const store = async (req, res) => {
                 data["password"] = await bcrypt.hash(data["password"], 5);
             }
             console.log(data.password);
-            const savedDispatcher = await Dispatcher.create(data);
-            res.send(savedDispatcher);
+            const savedAccount = await Account.create(data);
+            res.send(savedAccount);
         }
     } catch (err) {
         console.log(err);
@@ -84,15 +84,15 @@ const store = async (req, res) => {
 const auth = (req, res) => {
     const data = req.body;
     if (data && data.email && data.password && data.role) {
-        Dispatcher.findOne({ email: data.email, roles: data.role }, async (err, dispatcher) => {
+        Account.findOne({ email: data.email, roles: data.role }, async (err, account) => {
             if (err) res.status(500).send(err);
-            if (dispatcher) {
-                if (bcrypt.compare(data.password, dispatcher.password)) {
-                    const dispatcherObject = dispatcher.toObject();
-                    delete dispatcherObject.password;
-                    delete dispatcherObject.roles;
-                    var token = await Token.create({ active: true, dispatcher: dispatcherObject._id, role: 3});
-                    res.send({dispatcher: dispatcherObject, role: data.role, token: token._id});
+            if (account) {
+                if (bcrypt.compare(data.password, account.password)) {
+                    const accountObject = account.toObject();
+                    delete accountObject.password;
+                    delete accountObject.roles;
+                    var token = await Token.create({ active: true, account: accountObject._id, role: 3});
+                    res.send({account: accountObject, role: data.role, token: token._id});
                 } else {
                     res.status(401).send({ error: "UNAUTHORIZED" });
                 }

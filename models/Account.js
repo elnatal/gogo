@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const DispatcherSchema = Schema({
+const AccountSchema = Schema({
     firstName: {
         type: String,
         required: true
@@ -37,4 +37,4 @@ const DispatcherSchema = Schema({
  timestamps: true
 });
 
-module.exports = mongoose.model('Dispatchers', DispatcherSchema);
+module.exports = mongoose.model('accounts', AccountSchema);

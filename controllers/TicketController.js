@@ -97,7 +97,7 @@ const store = async (req, res) => {
             const savedTicket = await Ticket.create(data);
             res.send(savedTicket);
         } else {
-            res.status(500).send({error: "Unknown corporate"})
+            res.status(500).send({error: "Unknown account"})
         }
     } catch (err) {
         console.log(err);

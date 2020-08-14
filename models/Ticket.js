@@ -6,9 +6,9 @@ const TicketSchema = Schema({
         type: String,
         required: true
     },
-    corporate: {
+    account: {
         type: Schema.Types.ObjectId,
-        ref: 'Corporates',
+        ref: 'Accounts',
         required: true
     },
     code: {
