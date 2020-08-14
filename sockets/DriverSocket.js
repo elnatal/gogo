@@ -191,12 +191,14 @@ module.exports = function (io) {
                                 var tsts = new Date(res.pickupTimestamp);
                                 var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                                 var fare = 0;
-                                if (trip.type == "corporate") {
+                                if (res.type == "corporate") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
-                                } else if (trip.type == "normal") {
+                                } else if (res.type == "normal") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
-                                } else if (trip.type == "bid") {
+                                } else if (res.type == "bid") {
                                     fare = trip.bidAmount;
+                                } else {
+                                    fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
                                 }
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;
