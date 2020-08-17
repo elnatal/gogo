@@ -68,7 +68,7 @@ const store = async (req, res) => {
     try {
         if (req.body) {
             const data = req.body;
-            console.log({data})
+            console.log({ data })
             if (data['password']) {
                 data["password"] = await bcrypt.hash(data["password"], 5);
             }
@@ -92,8 +92,8 @@ const auth = (req, res) => {
                     const accountObject = account.toObject();
                     delete accountObject.password;
                     delete accountObject.roles;
-                    var token = await Token.create({ active: true, account: accountObject._id, role: 3});
-                    res.send({account: accountObject, role: data.role, token: token._id});
+                    var token = await Token.create({ active: true, account: accountObject._id, role: 3 });
+                    res.send({ account: accountObject, role: data.role, token: token._id });
                 } else {
                     res.status(401).send({ error: "UNAUTHORIZED" });
                 }
@@ -106,4 +106,23 @@ const auth = (req, res) => {
     }
 }
 
-module.exports = { index, show, store, auth };
+const check = async (req, res) => {
+    try {
+        const token = await Token.findById(req.params.token);
+        if (token && token.active == true && token.account) {
+            const accountObject = await Account.findById(token.account).populate("corporate");
+            if (accountObject) {
+                res.send({ account: accountObject, role: token.role, token: token._id });
+            } else {
+                res.status(401).send({ error: "UNAUTHORIZED" });
+            }
+        } else {
+            res.status(401).send({ error: "UNAUTHORIZED" });
+        }
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
+module.exports = { index, show, store, auth, check };

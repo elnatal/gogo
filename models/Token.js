@@ -10,9 +10,9 @@ const TokenSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Drivers" 
     },
-    dispatcher: {
+    account: {
         type: Schema.Types.ObjectId,
-        ref: "Dispatchers" 
+        ref: "accounts" 
     },
     role: {
         type: Number,
