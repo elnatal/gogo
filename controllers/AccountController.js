@@ -1,6 +1,7 @@
 const Account = require('../models/Account');
 const bcrypt = require('bcryptjs');
 const Token = require('../models/Token');
+const { populate } = require('../models/Account');
 require('dotenv/config');
 
 const index = (req, res) => {
@@ -99,7 +100,7 @@ const auth = (req, res) => {
             } else {
                 res.status(401).send({ error: "UNAUTHORIZED" });
             }
-        });
+        }).catch.populate("corporate");
     } else {
         res.status(500).send({ error: "Invalid data" });
     }
