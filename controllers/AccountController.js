@@ -100,7 +100,7 @@ const auth = (req, res) => {
             } else {
                 res.status(401).send({ error: "UNAUTHORIZED" });
             }
-        }).catch.populate("corporate");
+        }).populate("corporate");
     } else {
         res.status(500).send({ error: "Invalid data" });
     }
