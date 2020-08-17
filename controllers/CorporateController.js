@@ -53,7 +53,8 @@ const index = async (req, res) => {
 const usedTickets = async (req, res) => {
     try {
         var filter = {
-            corporate: req.params.id
+            corporate: req.params.id,
+            active: false
         };
         if (req.query.start || req.query.end) {
             filter["timestamp"] = {};

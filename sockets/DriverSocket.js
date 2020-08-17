@@ -212,7 +212,8 @@ module.exports = function (io) {
                                 console.log({res});
 
                                 if  (res.ticket) {
-                                    Ticket.updateOne({_id: res.ticket}, {amount: fare, timestamp: new Date(), trip: res.id});
+                                    console.log("has ticket =========");
+                                    await Ticket.updateOne({_id: res.ticket}, {amount: fare, timestamp: new Date(), ride: res.id});
                                 }
 
                                 if (res.createdBy == "app" && res.passenger && res.passenger.email) {
