@@ -66,7 +66,7 @@ const validate = async (req, res) => {
         if (ticket && ticket.active == true && ticket.locked == false) {
             await Ticket.updateOne({_id: ticket._id}, {locked: true});
             res.send(ticket._id);
-        } else if (ticket.locked == true) {
+        } else if (ticket && ticket.locked == true) {
             res.send("locked");
         } else {
             res.send("invalid");
