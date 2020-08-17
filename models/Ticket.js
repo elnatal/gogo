@@ -6,10 +6,14 @@ const TicketSchema = Schema({
         type: String,
         required: true
     },
-    account: {
+    corporate: {
         type: Schema.Types.ObjectId,
-        ref: 'Accounts',
+        ref: 'Corporates',
         required: true
+    },
+    ride: {
+        type: Schema.Types.ObjectId,
+        ref: 'Rides'
     },
     code: {
         type: String,
@@ -23,7 +27,15 @@ const TicketSchema = Schema({
     active: {
         type: Boolean,
         default: true
-    }
+    },
+    locked: {
+        type: Boolean,
+        default: false
+    },
+    timestamp: Date
+},
+{
+    timestamps: true
 });
 
 module.exports = mongoose.model("Tickets", TicketSchema);

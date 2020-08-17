@@ -228,7 +228,7 @@ module.exports = function (io) {
                     } else if (status == "Accepted") {
                         driverFound = true;
                         if (request.corporate && request.ticket) {
-                            Ticket.updateOne({_id: request.ticket}, {active: false});
+                            await Ticket.updateOne({_id: request.ticket}, {active: false});
                         }
                         try {
                             Ride.create({

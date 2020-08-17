@@ -1,5 +1,6 @@
 const Corporate = require('../models/Corporate');
 const bcrypt = require('bcryptjs');
+const Ticket = require('../models/Ticket');
 
 const index = async (req, res) => {
     try {
@@ -49,6 +50,29 @@ const index = async (req, res) => {
     };
 }
 
+const usedTickets = async (req, res) => {
+    try {
+        var filter = {
+            corporate: req.params.id
+        };
+        if (req.query.start || req.query.end) {
+            filter["timestamp"] = {};
+        }
+        if (req.query.start) {
+            filter.timestamp["$gte"] = req.query.start;
+        }
+        if (req.query.end) {
+            filter.timestamp["$lte"] = req.query.end;
+        }
+        var tickets = await Ticket.find(filter).populate('ride');
+        console.log({tickets});
+        res.send(tickets);
+    } catch (error) {
+        console.log({error});
+        res.status(500).send({error});
+    }
+}
+
 const show = async (req, res) => {
     try {
         var corporate = await Corporate.findById(req.params.id);
@@ -95,4 +119,4 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, update, remove };
+module.exports = { index, show, store, update, remove, usedTickets };

@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const CorporateController = require('../controllers/CorporateController');
-const AuthMiddleware = require('../middleware/authMiddleware')
+const AuthMiddleware = require('../middleware/authMiddleware');
+const { route } = require('./tickets');
 
 router.get('/', CorporateController.index);
 
 router.get('/:id', AuthMiddleware([4, 5]), CorporateController.show);
+
+router.get('/:id/used-tickets', CorporateController.usedTickets)
 
 router.post('/', CorporateController.store);
 

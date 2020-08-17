@@ -212,7 +212,7 @@ module.exports = function (io) {
                                 console.log({res});
 
                                 if  (res.ticket) {
-                                    Ticket.updateOne({_id: res.ticket}, {amount: fare});
+                                    Ticket.updateOne({_id: res.ticket}, {amount: fare, timestamp: new Date(), trip: res.id});
                                 }
 
                                 if (res.createdBy == "app" && res.passenger && res.passenger.email) {

@@ -32,6 +32,11 @@ const AccountSchema = Schema({
         type: Boolean,
         default: true
     },
+    corporate: {
+        type: Schema.Types.ObjectId,
+        ref: 'Corporates',
+        required: false
+    }
 },
 {
  timestamps: true

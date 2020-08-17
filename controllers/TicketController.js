@@ -1,5 +1,6 @@
 const Ticket = require('../models/Ticket');
 const Corporate = require('../models/Corporate');
+const Account = require('../models/Account');
 
 const index = async (req, res) => {
     try {
@@ -62,10 +63,13 @@ const show = async (req, res) => {
 const validate = async (req, res) => {
     try {
         const ticket = await Ticket.findOne({ code: req.params.code });
-        if (ticket && ticket.active == true) {
+        if (ticket && ticket.active == true && ticket.locked == false) {
+            await Ticket.updateOne({_id: ticket._id}, {locked: true});
             res.send(ticket._id);
+        } else if (ticket.locked == true) {
+            res.send("locked");
         } else {
-            res.status(404).send(false);
+            res.send("invalid");
         }
     } catch (error) {
         console.log(error);
@@ -73,11 +77,12 @@ const validate = async (req, res) => {
     }
 }
 
-const store = async (req, res) => {
+const generate = async (req, res) => {
     try {
-        var data = req.body;
-        var corporate = await Corporate.findById(data.corporate);
-        if (corporate) {
+        var id = req.params.id;
+        var account = await Account.findById(id).populate('corporate');
+        if (corporate && account.corporate) {
+            var corporate = account.corporate
             var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
             var found = false;
             console.log({ code })
@@ -124,4 +129,4 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, update, remove, validate };
+module.exports = { index, show, generate, update, remove, validate };
