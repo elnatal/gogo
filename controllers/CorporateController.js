@@ -1,6 +1,7 @@
 const Corporate = require('../models/Corporate');
 const bcrypt = require('bcryptjs');
 const Ticket = require('../models/Ticket');
+const Ride = require('../models/Ride');
 
 const index = async (req, res) => {
     try {
@@ -50,29 +51,75 @@ const index = async (req, res) => {
     };
 }
 
-const usedTickets = async (req, res) => {
+const trips = async (req, res) => {
     try {
         var filter = {
-            corporate: req.params.id,
-            active: false
+            corporate: req.params.id
         };
         if (req.query.start || req.query.end) {
-            filter["timestamp"] = {};
+            filter["endTimestamp"] = {};
         }
         if (req.query.start) {
-            filter.timestamp["$gte"] = req.query.start;
+            filter.endTimestamp["$gte"] = req.query.start;
         }
         if (req.query.end) {
-            filter.timestamp["$lte"] = req.query.end;
+            filter.endTimestamp["$lte"] = req.query.end;
         }
-        var tickets = await Ticket.find(filter).populate('ride');
-        console.log({tickets});
-        res.send(tickets);
+        var rides = await Ride.find(filter);
+        console.log({rides});
+        res.send(rides);
     } catch (error) {
         console.log({error});
         res.status(500).send({error});
     }
 }
+
+const dashboard = async (req, res) => {
+    const now = new Date();
+    const start = now;
+    const end = now;
+
+    if (req.query.month) {
+        start.setMonth(parseInt(req.query.month))
+        end.setMonth(parseInt(req.query.month))
+    }
+
+    start.setDate(1);
+    end.setDate(31);
+
+    try {
+        Promise.all([
+            Ride.countDocuments({"corporate": req.params.id}),
+            Ride.where({
+                corporate: req.params.id,
+                endTimestamp: {$gte: start},
+                endTimestamp: {$lte: end}
+            }),
+            Ticket.countDocuments({"corporate": req.params.id})
+        ]).then((value) => {
+            if (value && value.length) {
+                var total = 0;
+                var totalTrips = 0;
+
+                if (value[1] && value[1].length) {
+                    value[1].forEach((trip) => {
+                        if (trip.fare) {
+                            totalTrips += 1;
+                            total += trip.fare;
+                        }
+                    })
+                }
+
+                res.send({totalTrips: value[0], monthlyTrip: totalTrips, tickets: value[2], monthlyCost: total});
+            } else {
+                res.status(500).send("Something went wrong!")
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+};
 
 const show = async (req, res) => {
     try {
@@ -120,4 +167,4 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, update, remove, usedTickets };
+module.exports = { index, show, store, update, remove, trips, dashboard };

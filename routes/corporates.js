@@ -8,7 +8,9 @@ router.get('/', CorporateController.index);
 
 router.get('/:id', AuthMiddleware([4, 5]), CorporateController.show);
 
-router.get('/:id/used-tickets', CorporateController.usedTickets)
+router.get('/:id/trips', CorporateController.trips)
+
+router.get('/:id/dashboard', CorporateController.dashboard)
 
 router.post('/', CorporateController.store);
 

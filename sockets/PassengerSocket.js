@@ -227,8 +227,13 @@ module.exports = function (io) {
                         if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                     } else if (status == "Accepted") {
                         driverFound = true;
+                        var ticket;
                         if (request.corporate && request.ticket) {
-                            await Ticket.updateOne({_id: request.ticket}, {active: false});
+                            ticket = await Ticket.findById(request.ticket, {active: false});
+                            if (ticket) {
+                                ticket.active = false;
+                                await ticket.save();
+                            }
                         }
                         try {
                             Ride.create({
@@ -236,6 +241,7 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
                                 type: request.type,
+                                corporate: ticket && ticket.corporate ? ticket.corporate : null,
                                 schedule: request.schedule,
                                 bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,

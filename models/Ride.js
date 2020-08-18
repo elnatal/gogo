@@ -86,6 +86,10 @@ const RideSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Tickets"
     },
+    corporate: {
+        type: Schema.Types.ObjectId,
+        ref: "Corporates"
+    },
     transactionNumber: Number,
     bidAmount: Number,
     createdBy: String,
