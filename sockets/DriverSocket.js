@@ -7,6 +7,7 @@ const { getUser, getUsers } = require("../containers/usersContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
 const { sendEmail } = require("../services/emailService");
+const Token = require("../models/Token");
 
 module.exports = function (io) {
     return function (socket) {
@@ -75,8 +76,9 @@ module.exports = function (io) {
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
-                function removeDriverCallback() {
+                await function removeDriverCallback() {
                     console.log("unauthorized", id);
+                    await Token.updateOne({_id: token}, {active: false});
                     socket.emit("unauthorized");
                     // socket.disconnect();
                 }
