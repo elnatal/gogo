@@ -2,13 +2,16 @@ const drivers = [];
 
 const addDriver = ({ newDriver }) => {
     console.log("before driver add", drivers);
-    const existingDriver = drivers.find((driver) => driver.id == newDriver.id);
-    if (existingDriver) {
-        if (existingDriver.token != newDriver.token) {
-            existingDriver.removeDriver();
+    const existingDrivers = drivers.filter((driver) => driver.id == newDriver.id);
+
+    existingDrivers.forEach((driver) => {
+        if (driver) {
+            if (driver.token != newDriver.token) {
+                driver.removeDriver();
+            }
+            removeDriver({id: driver.id});
         }
-        removeDriver({id: existingDriver.id});
-    }
+    })
     drivers.push(newDriver);
     console.log("after driver add", drivers);
     return newDriver;
