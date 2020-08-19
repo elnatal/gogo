@@ -4,8 +4,8 @@ const addDriver = ({ newDriver }) => {
     console.log("before driver add", drivers);
     const existingDriver = drivers.find((driver) => driver.id == newDriver.id);
     if (existingDriver) {
-        if (existingDriver.token != drivers[index].token) {
-            drivers[index].removeDriver();
+        if (existingDriver.token != newDriver.token) {
+            existingDriver.removeDriver();
         }
         removeDriver({id: existingDriver.id});
     }
