@@ -254,11 +254,11 @@ module.exports = function (io) {
                                 status: request.schedule ? "Scheduled" : "Accepted",
                                 active: request.schedule ? false : true,
                                 createdBy: "app",
-                            }, (err, ride) => {
+                            }, async (err, ride) => {
                                 if (err) console.log(err);
                                 if (ride) {
                                     console.log(ride);
-                                    Vehicle.update({ _id: request.vehicleId }, { online: false });
+                                    await Vehicle.update({ _id: request.vehicleId }, { online: request.schedule ? true : false });
                                     socket.emit('status', { "status": false });
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {

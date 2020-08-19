@@ -78,8 +78,8 @@ module.exports = function (io) {
 
                 async function removeDriverCallback() {
                     console.log("unauthorized", id);
-                    await Token.updateOne({_id: token}, {active: false});
                     socket.emit("unauthorized");
+                    await Token.updateOne({_id: token}, {active: false});
                     // socket.disconnect();
                 }
             } else {
