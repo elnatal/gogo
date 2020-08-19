@@ -6,6 +6,7 @@ const Ride = require('../models/Ride');
 const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
 const { default: Axios } = require('axios');
 const User = require('../models/User');
+const Setting = require('../models/Setting');
 
 module.exports = function (io) {
     return function (socket) {
@@ -32,6 +33,7 @@ module.exports = function (io) {
                 var canceled = false;
                 var passengerId = "";
                 var schedule = null;
+                var setting;
 
                 if (data.schedule && data.schedule != undefined) {
                     schedule = data.schedule;
@@ -68,7 +70,8 @@ module.exports = function (io) {
 
                 var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
 
-                Promise.all([pickup, dropOff]).then(value => {
+                Promise.all([pickup, dropOff, Setting.findOne()]).then(value => {
+                    setting = value[2];
                     console.log("promise")
                     if (value[0].status == 200 && value[0].data.status == "OK") {
                         console.log("status ok pul");
@@ -162,7 +165,7 @@ module.exports = function (io) {
                             if (!driverFound && !canceled) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                             }
-                        }, 10000);
+                        }, setting && setting.requestTimeout ? setting.requestTimeout : 10000);
                     } else {
                         console.log("no diver found");
                         socket.emit("noAvailableDriver");

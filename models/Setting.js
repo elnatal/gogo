@@ -6,7 +6,10 @@ const SettingSchema = Schema({
     favIcon: String,
     playStoreLink: String,
     appStoreLink: String,
-    requestTimeout: Number,
+    requestTimeout: {
+        type: Number,
+        default: 25
+    },
     waitingTime: {
         type: Number,
         default: 25

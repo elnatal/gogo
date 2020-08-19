@@ -9,6 +9,7 @@ const VehicleType = require('../models/VehicleType');
 const { default: Axios } = require('axios');
 const Vehicle = require('../models/Vehicle');
 const Ticket = require('../models/Ticket');
+const Setting = require('../models/Setting');
 
 module.exports = function (io) {
     return function (socket) {
@@ -84,6 +85,7 @@ module.exports = function (io) {
                 var canceled = false;
                 var corporate = false;
                 var schedule = null;
+                var setting;
 
                 const vehicleTypeData = await VehicleType.findById(data.vehicleType);
 
@@ -108,7 +110,7 @@ module.exports = function (io) {
 
                 var route = Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + data.pickUpAddress.long + ',' + data.pickUpAddress.lat + ';' + data.dropOffAddress.long + ',' + data.dropOffAddress.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug');
 
-                Promise.all([pickup, dropOff, route]).then(value => {
+                Promise.all([pickup, dropOff, route, Setting.findOne()]).then(value => {
                     console.log(value[0].data);
                     if (typeof (value[0]) != typeof (" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
@@ -138,6 +140,7 @@ module.exports = function (io) {
                         data.route = { coordinates: value[2].data.routes[0].geometry.coordinates, distance: value[2].data.routes[0].distance, duration: value[2].data.routes[0].duration };
                     }
                     console.log(data)
+                    setting = value[3];
                     sendRequest();
                 });
 
@@ -197,7 +200,7 @@ module.exports = function (io) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                                 sendRequest();
                             }
-                        }, 10000);
+                        }, setting && setting.requestTimeout ? setting.requestTimeout : 10000);
                     } else {
                         console.log("no diver found");
                         socket.emit("noAvailableDriver");
