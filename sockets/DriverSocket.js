@@ -76,7 +76,7 @@ module.exports = function (io) {
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
-                await function removeDriverCallback() {
+                async function removeDriverCallback() {
                     console.log("unauthorized", id);
                     await Token.updateOne({_id: token}, {active: false});
                     socket.emit("unauthorized");
