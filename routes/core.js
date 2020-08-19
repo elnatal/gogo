@@ -7,6 +7,8 @@ router.get('/getSettingsAndVehicleModels', CoreController.getSettingsAndVehicleM
 
 router.get('/dashboard', CoreController.dashboard);
 
+router.get('/godview', CoreController.godview);
+
 router.post('/route', CoreController.route);
 
 router.get('/notification', (req, res) => {

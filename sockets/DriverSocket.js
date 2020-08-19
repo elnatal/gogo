@@ -1,6 +1,6 @@
 const Vehicle = require("../models/Vehicle");
 const DriverObject = require('../models/DriverObject');
-const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
+const { addDriver, removeDriver, getDriver, getDrivers } = require('../containers/driversContainer');
 const { getRequest, updateRequest, getDriverRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser, getUsers } = require("../containers/usersContainer");
@@ -73,13 +73,24 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
+                const existingDrivers = getDrivers({ id });
+
+                existingDrivers.forEach(async (driver) => {
+                    if (driver && driver.token != token) {
+                        console.log("unauthorized", driver.token );
+                        io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
+                        removeDriver({ id: driver.id });
+                        await Token.updateOne({ _id: driver.token }, { active: false });
+                    }
+                })
+
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
                 async function removeDriverCallback() {
-                    console.log("unauthorized", {token});
-                    socket.emit("unauthorized");
-                    await Token.updateOne({_id: token}, {active: false});
+                    // console.log("unauthorized", { token });
+                    // socket.emit("unauthorized");
+                    // await Token.updateOne({ _id: token }, { active: false });
                     // socket.disconnect();
                 }
             } else {
@@ -183,7 +194,7 @@ module.exports = function (io) {
 
         socket.on('tripEnded', async (trip) => {
             console.log("completed", trip)
-            if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined && trip.totalDistance != "") {
+            if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined) {
                 try {
                     Ride.findById(trip.id, async (err, res) => {
                         if (err) console.log(err);

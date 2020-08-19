@@ -71,4 +71,14 @@ const route = (req, res) => {
     }
 };
 
-module.exports = { getSettingsAndVehicleModels, dashboard, route};
+const godview = async (req, res) => {
+    try {
+        var vehicles = await Vehicle.find({}).populate('driver');
+        res.send(vehicles);
+    } catch (error) {
+        res.status(500).send(error);
+        console.log(error);
+    }
+}
+
+module.exports = { getSettingsAndVehicleModels, dashboard, route, godview };
