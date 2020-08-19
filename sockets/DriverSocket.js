@@ -78,7 +78,7 @@ module.exports = function (io) {
                 function removeDriverCallback() {
                     console.log("unauthorized", id);
                     socket.emit("unauthorized");
-                    socket.disconnect();
+                    // socket.disconnect();
                 }
             } else {
                 return { error: "Invalid data" };
