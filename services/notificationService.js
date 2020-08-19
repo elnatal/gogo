@@ -1,6 +1,6 @@
 const { default: axios } = require('axios');
 
-const sendNotificationById = (token, message) => {
+const sendNotification = (to, message) => {
     // TODO:: Implement Push notification
     var data = { 
         "notification": { 
@@ -13,7 +13,7 @@ const sendNotificationById = (token, message) => {
             "id": "1", 
             "status": "done" 
         }, 
-        "to": token
+        "to": to
     };
 
     var config = {
@@ -28,7 +28,7 @@ const sendNotificationById = (token, message) => {
     }).then((res) => {
         console.log(res.status);
     });
-    console.log("notification", token, message)
+    console.log("notification", to, message)
 }
 
-module.exports = { sendNotificationById }
+module.exports = { sendNotification };

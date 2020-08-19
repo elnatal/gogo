@@ -33,6 +33,7 @@ mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlPar
 app.use('/', require('./routes/core'));
 app.use('/setting', require('./routes/settings'));
 app.use('/tickets', require('./routes/tickets'));
+app.use('/notifications', require('./routes/notifications'));
 app.use('/corporates', require('./routes/corporates'));
 app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
