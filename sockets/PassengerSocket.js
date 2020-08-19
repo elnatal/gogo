@@ -1,4 +1,4 @@
-const { addUser, removeUser, getUser } = require('../containers/usersContainer');
+const { addUser, removeUser, getUser, getUsers } = require('../containers/usersContainer');
 const { getDriver } = require('../containers/driversContainer');
 const { addRequest, updateRequest, getRequest, removeRequest } = require('../containers/requestContainer');
 const { getNearbyDrivers, search } = require('./core');
@@ -110,7 +110,7 @@ module.exports = function (io) {
 
                 Promise.all([pickup, dropOff, route]).then(value => {
                     console.log(value[0].data);
-                    if (typeof(value[0]) != typeof(" ")) {
+                    if (typeof (value[0]) != typeof (" ")) {
                         if (value[0].status == 200 && value[0].data.status == "OK") {
                             console.log("status ok pul");
                             data.pickUpAddress.name = value[0].data.results[0].formatted_address;
@@ -122,7 +122,7 @@ module.exports = function (io) {
                         console.log("wrong data pul", value[0])
                     }
 
-                    if (typeof(value[1]) != typeof(" ")) {
+                    if (typeof (value[1]) != typeof (" ")) {
                         if (value[1].status == 200 && value[1].data.status == "OK") {
                             console.log("status ok pul");
                             data.dropOffAddress.name = value[1].data.results[0].formatted_address;
@@ -223,13 +223,15 @@ module.exports = function (io) {
                         var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
-                        var passenger = getUser({ userId: request.passengerId });
-                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
+                        var passengers = getUsers({ userId: request.passengerId });
+                        passengers.forEach((passenger) => {
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
+                        })
                     } else if (status == "Accepted") {
                         driverFound = true;
                         var ticket;
                         if (request.corporate && request.ticket) {
-                            ticket = await Ticket.findById(request.ticket, {active: false});
+                            ticket = await Ticket.findById(request.ticket, { active: false });
                             if (ticket) {
                                 ticket.active = false;
                                 await ticket.save();
@@ -261,8 +263,11 @@ module.exports = function (io) {
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {
                                             console.log("ride", createdRide);
-                                            var passenger = getUser({ userId: id });
-                                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+
+                                            var passengers = getUsers({ userId: id });
+                                            passengers.forEach((passenger) => {
+                                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+                                            })
 
                                             var driver = getDriver({ id: request.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
@@ -303,11 +308,13 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-                                io.of('/driver-socket').to(driver.socketId).emit('status', {"status": true});
+                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                             }
 
-                            var passenger = getUser({ userId: res.passenger._id });
-                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            var passengers = getUsers({ userId: res.passenger._id });
+                            passengers.forEach((passenger) => {
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                            })
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 } catch (error) {
@@ -318,7 +325,7 @@ module.exports = function (io) {
 
         socket.on('disconnect', () => {
             clearInterval(interval);
-            removeUser({ userId: id });
+            removeUser({ fcm });
             console.log("Passenger disconnected", id);
         })
     }

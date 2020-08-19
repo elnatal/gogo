@@ -6,8 +6,8 @@ const addUser = ({userId, socketId, fcm}) => {
     return user;
 }
 
-const removeUser = ({userId}) => {
-    const index = users.findIndex((user) => user.userId == userId);
+const removeUser = ({fcm}) => {
+    const index = users.findIndex((user) => user.fcm == fcm);
 
     if (index != -1) {
         return users.splice(index, 1)[0];
@@ -16,4 +16,6 @@ const removeUser = ({userId}) => {
 
 const getUser = ({userId}) => users.find((user) => user.userId == userId);
 
-module.exports = {addUser, removeUser, getUser};
+const getUsers = ({userId}) => users.filter((user) => user.userId == userId);
+
+module.exports = {addUser, removeUser, getUser, getUsers};

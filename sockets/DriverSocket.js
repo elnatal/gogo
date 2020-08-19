@@ -3,7 +3,7 @@ const DriverObject = require('../models/DriverObject');
 const { addDriver, removeDriver, getDriver } = require('../containers/driversContainer');
 const { getRequest, updateRequest, getDriverRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
-const { getUser } = require("../containers/usersContainer");
+const { getUser, getUsers } = require("../containers/usersContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
 const { sendEmail } = require("../services/emailService");
@@ -36,7 +36,7 @@ module.exports = function (io) {
                 started = true;
 
                 try {
-                    var request = getDriverRequest({driverId: id});
+                    var request = getDriverRequest({ driverId: id });
                     Ride.findOne({ active: true, driver: id }, async (err, res) => {
                         if (err) console.log(err);
                         await Vehicle.updateOne({ _id: vehicleId }, {
@@ -52,16 +52,16 @@ module.exports = function (io) {
                             }
                         });
 
-                        console.log({res});
+                        console.log({ res });
                         console.log("status", res ? false : true);
 
                         if (res) {
                             socket.emit('trip', res);
-                            console.log({res});
+                            console.log({ res });
                             // socket.emit('status', { "status": false });
                         } else if (request) {
                             socket.emit('request', request);
-                            console.log({request});
+                            console.log({ request });
                         } else {
                             socket.emit('status', { "status": true });
                             console.log("status", true);
@@ -139,8 +139,10 @@ module.exports = function (io) {
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
                             if (res.passenger) {
-                                var passenger = getUser({ userId: res.passenger._id });
-                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                var passengers = getUsers({ userId: res.passenger._id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                })
                             }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -164,8 +166,10 @@ module.exports = function (io) {
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
                             if (res.passenger) {
-                                var passenger = getUser({ userId: res.passenger._id });
-                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                var passengers = getUsers({ userId: res.passenger._id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                })
                             }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -209,11 +213,11 @@ module.exports = function (io) {
                                 res.active = false;
                                 res.save();
 
-                                console.log({res});
+                                console.log({ res });
 
-                                if  (res.ticket) {
+                                if (res.ticket) {
                                     console.log("has ticket =========");
-                                    await Ticket.updateOne({_id: res.ticket}, {amount: fare, timestamp: new Date(), ride: res.id});
+                                    await Ticket.updateOne({ _id: res.ticket }, { amount: fare, timestamp: new Date(), ride: res.id });
                                 }
 
                                 if (res.createdBy == "app" && res.passenger && res.passenger.email) {
@@ -223,8 +227,10 @@ module.exports = function (io) {
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
                                 if (res.passenger) {
-                                    var passenger = getUser({ userId: res.passenger._id });
-                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                    var passengers = getUsers({ userId: res.passenger._id });
+                                    passengers.forEach((passenger) => {
+                                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                    })
                                 }
                             }
                         }
@@ -251,12 +257,14 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-                                io.of('/driver-socket').to(driver.socketId).emit('status', {"status": true});
+                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                             }
 
                             if (res.passenger) {
-                                var passenger = getUser({ userId: res.passenger._id });
-                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                var passengers = getUsers({ userId: res.passenger._id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                })
                             }
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
