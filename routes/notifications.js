@@ -6,4 +6,6 @@ router.post('/topic/:topic', NotificationController.sendByTopic);
 
 router.post('/user/:token', NotificationController.sendByToken);
 
+router.get('/', NotificationController.index);
+
 module.exports = router;
