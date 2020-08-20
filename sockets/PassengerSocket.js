@@ -192,6 +192,7 @@ module.exports = function (io) {
                         console.log({ request });
                         socket.emit("request", request);
                         var driver = getDriver({ id: request.driverId })
+                        console.log({driver});
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
                         Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => {});
 
@@ -200,14 +201,14 @@ module.exports = function (io) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                                 sendRequest();
                             }
-                        }, setting && setting.requestTimeout ? setting.requestTimeout : 10000);
+                        }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                     } else {
                         console.log("no diver found");
                         socket.emit("noAvailableDriver");
                     }
                 }
 
-                async function updateCallback(request) {
+                function updateCallback(request) {
                     console.log("changed", request);
                     console.log("status", request.getStatus());
                     var status = request.getStatus();

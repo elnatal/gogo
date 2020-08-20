@@ -87,6 +87,9 @@ module.exports = function (io) {
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
+                console.log("driver", getDriver({id}));
+                console.log("drivers", getDrivers({id}));
+
                 async function removeDriverCallback() {
                     // console.log("unauthorized", { token });
                     // socket.emit("unauthorized");
