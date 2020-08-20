@@ -237,7 +237,7 @@ module.exports = function (io) {
                             Ticket.findById(request.ticket, (err, ticket) => {
                             if (ticket) {
                                 ticket.active = false;
-                                await ticket.save();
+                                ticket.save();
                             }
                             });
                         }
