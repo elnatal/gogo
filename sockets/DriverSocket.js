@@ -73,16 +73,16 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
-                const existingDrivers = getDrivers({ id });
+                // const existingDrivers = getDrivers({ id });
 
-                existingDrivers.forEach(async (driver) => {
-                    if (driver && driver.token != token) {
-                        console.log("unauthorized", driver.token );
-                        io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
-                        removeDriver({ id: driver.id });
-                        await Token.updateOne({ _id: driver.token }, { active: false });
-                    }
-                })
+                // existingDrivers.forEach(async (driver) => {
+                //     if (driver && driver.token != token) {
+                //         console.log("unauthorized", driver.token );
+                //         io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
+                //         removeDriver({ id: driver.id });
+                //         await Token.updateOne({ _id: driver.token }, { active: false });
+                //     }
+                // })
 
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
