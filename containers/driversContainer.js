@@ -30,6 +30,6 @@ const removeDriver = ({id}) => {
 
 const getDriver = ({id}) => drivers.find((driver) => driver.id == id);
 
-const getDrivers = ({id}) => drivers.find((driver) => driver.id == id);
+const getDrivers = ({id}) => drivers.filter((driver) => driver.id == id);
 
 module.exports = {addDriver, removeDriver, getDriver, getDrivers};
