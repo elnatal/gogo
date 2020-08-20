@@ -257,12 +257,12 @@ module.exports = function (io) {
                                 status: request.schedule ? "Scheduled" : "Accepted",
                                 active: request.schedule ? false : true,
                                 createdBy: "app",
-                            }, async (err, ride) => {
+                            }, (err, ride) => {
                                 if (err) console.log(err);
                                 if (ride) {
                                     console.log(ride);
                                     socket.emit('status', { "status": false });
-                                    Ride.findById(ride._id, (err, createdRide) => {
+                                    Ride.findById(ride._id, async (err, createdRide) => {
                                         if (createdRide) {
                                             console.log("ride", createdRide);
 
