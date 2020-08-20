@@ -3,9 +3,22 @@ const Schema = mongoose.Schema;
 
 const NotificationSchema = Schema(
     {
-        title: String,
-        body: String,
-        to: String
+        title: {
+            type: String,
+            required: true
+        },
+        body: {
+            type: String,
+            required: true
+        },
+        to: {
+            type: String,
+            required: true
+        },
+        type: {
+            type: String,
+            required: true
+        }
     },
     {
         timestamps: true

@@ -43,20 +43,46 @@ const index = async (req, res) => {
 }
 
 const sendByToken = (req, res) => {
-    if (req.params.token && req.body && req.body.title && req.body.body) {
-        sendNotification(req.params.token, req.body);
-        res.send("Notification sent")
-    } else {
-        res.status(500).send("Invalid data");
+    try {
+        if (req.params.token && req.body && req.body.title && req.body.body) {
+            Notification.create({title: req.body.title, body: req.body.body, to: req.params.token, type: "token"}, (err, notification) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send(err);
+                }
+                if (notification) {
+                    sendNotification(req.params.token, req.body);
+                    res.send("Notification sent");
+                }
+            })
+        } else {
+            res.status(500).send("Invalid data");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
 const sendByTopic = (req, res) => {
-    if (req.params.topic && req.body && req.body.title && req.body.body) {
-        sendNotification('/topics/' + req.params.topic, req.body);
-        res.send("Notification sent")
-    } else {
-        res.status(500).send("Invalid data");
+    try {
+        if (req.params.topic && req.body && req.body.title && req.body.body) {
+            Notification.create({title: req.body.title, body: req.body.body, to: req.params.topic, type: "topic"}, (err, notification) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send(err);
+                }
+                if (notification) {
+                    sendNotification('/topics/' + req.params.topic, req.body);
+                    res.send("Notification sent");
+                }
+            })
+        } else {
+            res.status(500).send("Invalid data");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
