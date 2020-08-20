@@ -261,7 +261,6 @@ module.exports = function (io) {
                                 if (err) console.log(err);
                                 if (ride) {
                                     console.log(ride);
-                                    await Vehicle.update({ _id: request.vehicleId }, { online: request.schedule ? true : false });
                                     socket.emit('status', { "status": false });
                                     Ride.findById(ride._id, (err, createdRide) => {
                                         if (createdRide) {
@@ -274,6 +273,8 @@ module.exports = function (io) {
 
                                             var driver = getDriver({ id: request.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+
+                                            await Vehicle.update({ _id: request.vehicleId }, { online: request.schedule ? true : false });
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                                 }
