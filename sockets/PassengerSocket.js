@@ -193,7 +193,7 @@ module.exports = function (io) {
                         socket.emit("request", request);
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
-                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: false });
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => {});
 
                         setTimeout(() => {
                             if (!driverFound && !canceled) {
@@ -212,17 +212,16 @@ module.exports = function (io) {
                     console.log("status", request.getStatus());
                     var status = request.getStatus();
                     if (status == "Declined") {
-                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: false });
                         var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
                         sendRequest();
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => {});
                     } else if (status == "Expired") {
-                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: true });
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => {});
                     } else if (status == "Canceled") {
                         canceled = true;
-                        await Vehicle.updateOne({ _id: request.vehicleId }, { online: true });
                         var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
@@ -230,15 +229,17 @@ module.exports = function (io) {
                         passengers.forEach((passenger) => {
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                         })
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => {});
                     } else if (status == "Accepted") {
                         driverFound = true;
                         var ticket;
                         if (request.corporate && request.ticket) {
-                            ticket = await Ticket.findById(request.ticket, { active: false });
+                            Ticket.findById(request.ticket, (err, ticket) => {
                             if (ticket) {
                                 ticket.active = false;
                                 await ticket.save();
                             }
+                            });
                         }
                         try {
                             Ride.create({
@@ -274,7 +275,7 @@ module.exports = function (io) {
                                             var driver = getDriver({ id: request.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
 
-                                            await Vehicle.update({ _id: request.vehicleId }, { online: request.schedule ? true : false });
+                                            Vehicle.update({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => {});
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                                 }
