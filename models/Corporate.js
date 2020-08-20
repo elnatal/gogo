@@ -4,11 +4,13 @@ const Schema = mongoose.Schema;
 const CorporateSchema = Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     shortName: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     }
 },
 {

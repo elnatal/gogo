@@ -2,6 +2,7 @@ const Corporate = require('../models/Corporate');
 const bcrypt = require('bcryptjs');
 const Ticket = require('../models/Ticket');
 const Ride = require('../models/Ride');
+const Account = require('../models/Account');
 
 const index = async (req, res) => {
     try {
@@ -135,13 +136,44 @@ const store = async (req, res) => {
     try {
         const data = req.body;
         console.log({ data })
-        if (data['password']) {
+        if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email && data.roles) {
             data["password"] = await bcrypt.hash(data["password"], 5);
-        }
-        console.log(data.password);
 
-        const savedCorporate = await Corporate.create(data);
-        res.send(savedCorporate);
+            Corporate.create({  
+                name: data.name,
+                shortName: data.shortName
+            }, (err, corporate) => {
+                if (err) {
+                    console.log({err});
+                    res.status(500).send(err);
+                }
+                if (corporate) {
+                    Account.create({
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        password: data.password,
+                        email: data.email,
+                        roles: [4],
+                        profileImage: data.profileImage,
+                        corporate: corporate._id
+                    }, (err, account) => {
+                        if (err) {
+                            console.log({err});
+                            Corporate.deleteOne({_id: corporate._id}, (err, res) => {
+                                if (err) console.log({err});
+                                if (res) console.log("deleted");
+                            })
+                            res.status(500).send(err);
+                        }
+                        if (account) {
+                            res.send({account, corporate});
+                        }
+                    })
+                }
+            })
+        } else {
+            res.status(500).send("Invalid data")
+        }
     } catch (err) {
         console.log(err);
         res.status(500).send(err);

@@ -36,7 +36,7 @@ module.exports = function (io) {
                 var setting;
 
                 if (data.schedule && data.schedule != undefined) {
-                    schedule = data.schedule;
+                    schedule = new Date(data.schedule);
                 }
 
                 const vehicleTypeData = await VehicleType.findById(data.vehicleType);
@@ -121,7 +121,7 @@ module.exports = function (io) {
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
-                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
+                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
                             requestedDrivers.push(v._id)

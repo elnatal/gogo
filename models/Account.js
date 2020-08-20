@@ -17,7 +17,7 @@ const AccountSchema = Schema({
     email: {
         type: String,
         unique: true,
-        required: false
+        required: true
     },
     roles: {
         type: [Number],

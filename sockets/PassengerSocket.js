@@ -19,20 +19,19 @@ module.exports = function (io) {
         var location = null;
         var started = false;
 
-        io.of('/passenger-socket').to(socket.id).emit('test');
-
-        var interval = setInterval(async () => {
+        var interval = setInterval(() => {
             if (id && location) {
                 try {
-                    var drivers = await getNearbyDrivers({ location, distance: 100000 });
-                    socket.emit('nearDrivers', drivers);
+                    getNearbyDrivers({ location, distance: 100000 }).then((drivers) => {
+                        socket.emit('nearDrivers', drivers);
+                    });
                 } catch (err) {
                     console.log(err);
                 }
             }
         }, 5000)
 
-        socket.on("init", async (passengerInfo) => {
+        socket.on("init", (passengerInfo) => {
             console.log(passengerInfo)
             if (passengerInfo && passengerInfo.id && passengerInfo.fcm && passengerInfo.location && passengerInfo.location.lat && passengerInfo.location.long) {
                 id = passengerInfo.id;
@@ -47,25 +46,30 @@ module.exports = function (io) {
                         }
                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
-                    var drivers = await getNearbyDrivers({ location, distance: 100 });
-                    socket.emit('nearDrivers', drivers);
+                    getNearbyDrivers({ location, distance: 100 }).then((drivers) => {
+                        socket.emit('nearDrivers', drivers);
+                    });
                 } catch (err) {
                     console.log(err);
                 }
-                User.update({ "_id": id }, { fcm });
+                User.updateOne({ "_id": id }, { fcm }, (err, res) => {
+                    if (err) console.log({err});
+                    if (res) console.log("fcm updated");
+                });
                 addUser({ userId: id, socketId: socket.id, fcm });
             } else {
                 return { error: "Invalid data" };
             }
         });
 
-        socket.on('changeLocation', async (newLocation) => {
+        socket.on('changeLocation', (newLocation) => {
             if (newLocation && newLocation.lat, newLocation.long) {
                 location = newLocation;
                 if (started) {
                     try {
-                        var drivers = await getNearbyDrivers({ location, distance: 100 });
-                        socket.emit('nearDrivers', drivers);
+                        getNearbyDrivers({ location, distance: 100 }).then((drivers) => {
+                            socket.emit('nearDrivers', drivers);
+                        });
                     } catch (err) {
                         console.log(err);
                     }
@@ -90,7 +94,7 @@ module.exports = function (io) {
                 const vehicleTypeData = await VehicleType.findById(data.vehicleType);
 
                 if (data.schedule && data.schedule != undefined) {
-                    schedule = data.schedule;
+                    schedule = new Date(data.schedule);
                 }
 
                 if (data.ticket && data.ticket != undefined) corporate = true;
@@ -151,7 +155,7 @@ module.exports = function (io) {
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
-                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((data.vehicleType == "5f14516e312e7600177815b6") ? true : v.vehicleType == data.vehicleType)) {
+                        if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                             console.log("here");
                             vehicle = v;
                             requestedDrivers.push(v._id)

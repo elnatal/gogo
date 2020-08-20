@@ -38,9 +38,9 @@ module.exports = function (io) {
 
                 try {
                     var request = getDriverRequest({ driverId: id });
-                    Ride.findOne({ active: true, driver: id }, async (err, res) => {
+                    Ride.findOne({ active: true, driver: id }, (err, res) => {
                         if (err) console.log(err);
-                        await Vehicle.updateOne({ _id: vehicleId }, {
+                        Vehicle.updateOne({ _id: vehicleId }, {
                             fcm,
                             online: res || request ? false : true,
                             timestamp: new Date(),
@@ -50,6 +50,11 @@ module.exports = function (io) {
                                     location.long,
                                     location.lat
                                 ]
+                            }
+                        }, (err, res) => {
+                            if (err) console.log({ err });
+                            if (res) {
+                                console.log("vehicle updated, status ", res || request ? false : true);
                             }
                         });
 
@@ -73,22 +78,24 @@ module.exports = function (io) {
                     console.log(error);
                 }
 
-                // const existingDrivers = getDrivers({ id });
+                const existingDrivers = getDrivers({ id });
 
-                // existingDrivers.forEach(async (driver) => {
-                //     if (driver && driver.token != token) {
-                //         console.log("unauthorized", driver.token );
-                //         io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
-                //         removeDriver({ id: driver.id });
-                //         await Token.updateOne({ _id: driver.token }, { active: false });
-                //     }
-                // })
+                existingDrivers.forEach((driver) => {
+                    if (driver && driver.token != token) {
+                        console.log("unauthorized", driver.token);
+                        io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
+                        removeDriver({ id: driver.id });
+                        Token.updateOne({ _id: driver.token }, { active: false }, (err, res) => {
+                            if (err) console.log({ err });
+                            if (res) console.log("token removed", driver.token);
+                        });
+                    }
+                })
 
                 addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
                 // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
 
-                console.log("driver", getDriver({id}));
-                console.log("drivers", getDrivers({id}));
+                // console.log("driver", getDriver({ id }));
 
                 async function removeDriverCallback() {
                     // console.log("unauthorized", { token });
@@ -115,19 +122,24 @@ module.exports = function (io) {
                     }
                 }, (err, res) => {
                     if (err) console.log({ err });
+                    if (res) console.log("location updated", vehicleId);
                 });
             }
         });
 
-        socket.on('changeStatus', async (online) => {
+        socket.on('changeStatus', (online) => {
             console.log(typeof (online));
             console.log('vehicle id', vehicleId);
             if (started) {
                 if (online != null && vehicleId) {
                     console.log('status', online);
-                    const update = await Vehicle.updateOne({ _id: vehicleId }, { online });
-                    socket.emit('status', { "status": online });
-                    console.log("updated status", online);
+                    Vehicle.updateOne({ _id: vehicleId }, { online }, (err, res) => {
+                        if (err) console.log({ err });
+                        if (res) {
+                            socket.emit('status', { "status": online });
+                            console.log("updated status", online);
+                        }
+                    });
                 } else {
                     console.log("incorrect data");
                 }
@@ -142,7 +154,7 @@ module.exports = function (io) {
             // getRequest().updateStatus(request.status);
         });
 
-        socket.on('arrived', async (trip) => {
+        socket.on('arrived', (trip) => {
             console.log("arrived", trip)
             if (started && trip && trip.id) {
                 try {
@@ -168,7 +180,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('startTrip', async (trip) => {
+        socket.on('startTrip', (trip) => {
             console.log("start trip", trip)
             if (started && trip && trip.id) {
                 try {
@@ -195,7 +207,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('tripEnded', async (trip) => {
+        socket.on('tripEnded', (trip) => {
             console.log("completed", trip)
             if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined) {
                 try {
@@ -233,8 +245,18 @@ module.exports = function (io) {
 
                                 if (res.ticket) {
                                     console.log("has ticket =========");
-                                    await Ticket.updateOne({ _id: res.ticket }, { amount: fare, timestamp: new Date(), ride: res.id });
+                                    Ticket.updateOne({ _id: res.ticket }, { amount: fare, timestamp: new Date(), ride: res.id }, (err, res) => {
+                                        if (err) console.log({ err });
+                                        if (res) {
+                                            console.log("ticket updated");
+                                        }
+                                    });
                                 }
+
+                                Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
+                                    if (err) console.log({ err });
+                                    if (res) console.log("status updated", true, vehicleId);
+                                });
 
                                 if (res.createdBy == "app" && res.passenger && res.passenger.email) {
                                     sendEmail(res.passenger.email, "Trip summery", "test email");
@@ -257,10 +279,10 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('cancelTrip', async (trip) => {
+        socket.on('cancelTrip', (trip) => {
             if (started && trip) {
                 try {
-                    Ride.findById(trip.id, async (err, res) => {
+                    Ride.findById(trip.id, (err, res) => {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Canceled";
@@ -269,7 +291,10 @@ module.exports = function (io) {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
-                            await Vehicle.updateOne({ _id: vehicleId }, { online: true });
+                            Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
+                                if (err) console.log({ err });
+                                if (res) console.log("status updated", true, vehicleId);
+                            });
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('trip', res);
@@ -290,12 +315,16 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('disconnect', async () => {
+        socket.on('disconnect', () => {
             if (started) {
                 removeDriver({ id });
-                await Vehicle.updateOne({ _id: vehicleId }, { online: false });
+                Vehicle.updateOne({ _id: vehicleId }, { online: false }, (err, res) => {
+                    if (err) console.log("error on disconnect ", err);
+                    if (res) {
+                        console.log("Driver disconnected", id, vehicleId);
+                    }
+                });
             }
-            console.log("Driver disconnected", id, vehicleId);
         });
     }
 }
