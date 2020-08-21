@@ -99,6 +99,7 @@ module.exports = function (io) {
                             console.log({pua});
                             console.log({doa});
                             console.log({route});
+                            socket.emit("searching");
                             sendRequest();
                         } else {
                             console.log("========================== something went wrong =============================")

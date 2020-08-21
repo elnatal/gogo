@@ -60,20 +60,22 @@ const checkScheduledTrips = async (io) => {
             const driverId = (trip.driver) ? trip.driver._id : "";
             const passengerId = (trip.passenger) ? trip.passenger._id : "";
 
-            var driver = getDriver({ id: driverId});
-            if (driver) {
-                io.of('/driver-socket').to(driver.socketId).emit('trip', trip);
-            } else if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
-                sendNotification(trip.vehicle.fcm, "Notification");
+            // var driver = getDriver({ id: driverId});
+            // if (driver) {
+            //     io.of('/driver-socket').to(driver.socketId).emit('trip', trip);
+            // } else 
+            if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
+                sendNotification(trip.vehicle.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
                 console.log("No socket and fcm found");
             }
 
-            var passenger = getUser({ userId: passengerId });
-            if (passenger) {
-                io.of('/passenger-socket').to(passenger.socketId).emit('trip', trip);
-            } else if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
-                sendNotification(trip.passenger.fcm, "Notification");
+            // var passenger = getUser({ userId: passengerId });
+            // if (passenger) {
+            //     io.of('/passenger-socket').to(passenger.socketId).emit('trip', trip);
+            // } else 
+            if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
+                sendNotification(trip.passenger.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
                 console.log("No socket and fcm found");
             }
