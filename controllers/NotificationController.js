@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification");
+const { sendNotification } = require("../services/notificationService");
 
 const index = async (req, res) => {
     try {

@@ -162,6 +162,7 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Arrived";
+                            res.active = true;
                             res.save();
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
@@ -188,6 +189,7 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             res.status = "Started";
+                            res.active = true;
                             res.pickupTimestamp = new Date();
                             res.save();
                             var driver = getDriver({ id: res.driver._id });
