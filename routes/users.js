@@ -14,6 +14,8 @@ router.post('/:id/rate', UserController.rate);
 
 router.get('/:id/bookings', UserController.bookings);
 
+router.get('/:id/scheduled-trips', UserController.scheduledTrips);
+
 router.post('/', UserController.store);
 
 router.patch('/:id', UserController.update);

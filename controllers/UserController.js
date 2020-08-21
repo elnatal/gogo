@@ -114,9 +114,27 @@ const bookings = (req, res) => {
             res.send(rides);
         }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log(error);
+        console.log({error});
     }
 };
+
+const scheduledTrips = (req, res) => {
+    try {
+        Ride.find({passenger: req.params.id, status: "Scheduled"}, (error, trips) => {
+            if (error) {
+                console.log({error});
+                res.status(500).send({error});
+            }
+
+            if (trips) {
+                res.send(trips);
+            }
+        }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
+    } catch (error) {
+        console.log({error});
+        res.status(500).send({error});
+    }
+}
 
 const rate = async (req, res) => {
     try {
@@ -172,4 +190,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, auth, bookings, show, store, update, remove, rate, search };
+module.exports = { index, auth, bookings, show, store, update, remove, rate, search, scheduledTrips };

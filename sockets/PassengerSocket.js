@@ -333,6 +333,10 @@ module.exports = function (io) {
             }
         });
 
+        socket.on('rent', async (data) => {
+
+        });
+
         socket.on('disconnect', () => {
             clearInterval(interval);
             removeUser({ fcm });
