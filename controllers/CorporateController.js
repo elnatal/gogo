@@ -136,7 +136,7 @@ const store = async (req, res) => {
     try {
         const data = req.body;
         console.log({ data })
-        if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email && data.roles) {
+        if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email) {
             data["password"] = await bcrypt.hash(data["password"], 5);
 
             Corporate.create({  
