@@ -6,6 +6,8 @@ router.get('/', UserController.index);
 
 router.get('/auth/:phone', UserController.auth);
 
+router.get('/search', UserController.search);
+
 router.get('/:id', UserController.show);
 
 router.post('/:id/rate', UserController.rate);

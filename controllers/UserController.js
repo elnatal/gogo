@@ -9,7 +9,7 @@ const index = async (req, res) => {
         var nextPage;
         var prevPage;
 
-        var user =  User.find();
+        var user = User.find();
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -22,8 +22,8 @@ const index = async (req, res) => {
         }
 
         skip = (page - 1) * limit;
-        
-        user.sort({createdAt: 'desc'});
+
+        user.sort({ createdAt: 'desc' });
         user.limit(limit);
         user.skip(skip);
         if (req.query.populate) {
@@ -37,44 +37,82 @@ const index = async (req, res) => {
             user.exec()
         ]).then((value) => {
             if (value) {
-                if (((page  * limit) <= value[0])) {
+                if (((page * limit) <= value[0])) {
                     nextPage = page + 1;
                 }
-                res.send({data: value[1], count: value[0], nextPage, prevPage});
+                res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         });
-    } catch(err) {
+    } catch (err) {
         res.send('err ' + err);
     };
 };
 
 const auth = async (req, res) => {
     try {
-        var user = await User.findOne({phoneNumber: req.params.phone});
+        var user = await User.findOne({ phoneNumber: req.params.phone });
         if (user) {
             res.send(user);
         } else {
             res.status(404).send("User doesn't exist");
         }
-    } catch(error) {
+    } catch (error) {
         res.send(error);
     };
 };
+
+const search = (req, res) => {
+    try {
+        User.find({
+            $or: [
+                {
+                    firstName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    lastName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    phoneNumber: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    email: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        }, (error, users) => {
+            if (error) {
+                console.log({ error });
+                res.status(500).send({ error });
+            }
+
+            if (users) {
+                res.send(users);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
 
 const show = async (req, res) => {
     try {
         var user = await User.findById(req.params.id);
         res.send(user);
-    } catch(err) {
+    } catch (err) {
         res.send('err ' + err);
     };
 };
 
 const bookings = (req, res) => {
     try {
-        Ride.find({passenger: req.params.id}, (err, rides) => {
+        Ride.find({ passenger: req.params.id }, (err, rides) => {
             res.send(rides);
-        }).sort({createdAt: 'desc'}).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
+        }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
         console.log(error);
     }
@@ -108,7 +146,7 @@ const store = async (req, res) => {
     try {
         const savedUser = await User.create(req.body);
         res.send(savedUser);
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.send(err);
     }
@@ -116,22 +154,22 @@ const store = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        await User.updateOne({'_id': req.params.id}, req.body);
+        await User.updateOne({ '_id': req.params.id }, req.body);
         const user = await User.findById(req.params.id);
         res.send(user);
-    } catch(err) {
+    } catch (err) {
         console.log(err);
-        res.send({"message": "error => " + err});
+        res.send({ "message": "error => " + err });
     }
 };
 
 const remove = async (req, res) => {
     try {
-        const deletedUser = await User.remove({_id: req.params.id});
+        const deletedUser = await User.remove({ _id: req.params.id });
         res.send(deletedUser);
-    } catch(err) {
+    } catch (err) {
         res.send(err);
     }
 };
 
-module.exports = { index, auth, bookings, show, store, update, remove, rate };
+module.exports = { index, auth, bookings, show, store, update, remove, rate, search };

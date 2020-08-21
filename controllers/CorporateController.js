@@ -67,11 +67,11 @@ const trips = async (req, res) => {
             filter.endTimestamp["$lte"] = req.query.end;
         }
         var rides = await Ride.find(filter);
-        console.log({rides});
+        console.log({ rides });
         res.send(rides);
     } catch (error) {
-        console.log({error});
-        res.status(500).send({error});
+        console.log({ error });
+        res.status(500).send({ error });
     }
 }
 
@@ -90,13 +90,13 @@ const dashboard = async (req, res) => {
 
     try {
         Promise.all([
-            Ride.countDocuments({"corporate": req.params.id}),
+            Ride.countDocuments({ "corporate": req.params.id }),
             Ride.where({
                 corporate: req.params.id,
-                endTimestamp: {$gte: start},
-                endTimestamp: {$lte: end}
+                endTimestamp: { $gte: start },
+                endTimestamp: { $lte: end }
             }),
-            Ticket.countDocuments({"corporate": req.params.id})
+            Ticket.countDocuments({ "corporate": req.params.id })
         ]).then((value) => {
             if (value && value.length) {
                 var total = 0;
@@ -111,24 +111,43 @@ const dashboard = async (req, res) => {
                     })
                 }
 
-                res.send({totalTrips: value[0], monthlyTrip: totalTrips, tickets: value[2], monthlyCost: total});
+                res.send({ totalTrips: value[0], monthlyTrip: totalTrips, tickets: value[2], monthlyCost: total });
             } else {
                 res.status(500).send("Something went wrong!")
             }
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send(error);
+        res.status(500).send({ error });
     }
 };
+
+const search = (req, res) => {
+    try {
+        Corporate.find({ name: { $regex: req.query.q ? req.query.q : "", $options: "i" } }, (error, corporates) => {
+            if (error) {
+                console.log({error});
+                res.status(500).send({ error });
+            }
+
+            if (corporates) {
+                res.send(corporates);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 
 const show = async (req, res) => {
     try {
         var corporate = await Corporate.findById(req.params.id);
         console.log(req.params.id);
         res.send(corporate);
-    } catch (err) {
-        res.send('err ' + err);
+    } catch (error) {
+        res.status(500).send({ error });
     };
 }
 
@@ -139,12 +158,12 @@ const store = async (req, res) => {
         if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email) {
             data["password"] = await bcrypt.hash(data["password"], 5);
 
-            Corporate.create({  
+            Corporate.create({
                 name: data.name,
                 shortName: data.shortName
             }, (err, corporate) => {
                 if (err) {
-                    console.log({err});
+                    console.log({ err });
                     res.status(500).send(err);
                 }
                 if (corporate) {
@@ -158,15 +177,15 @@ const store = async (req, res) => {
                         corporate: corporate._id
                     }, (err, account) => {
                         if (err) {
-                            console.log({err});
-                            Corporate.deleteOne({_id: corporate._id}, (err, res) => {
-                                if (err) console.log({err});
+                            console.log({ err });
+                            Corporate.deleteOne({ _id: corporate._id }, (err, res) => {
+                                if (err) console.log({ err });
                                 if (res) console.log("deleted");
                             })
                             res.status(500).send(err);
                         }
                         if (account) {
-                            res.send({account, corporate});
+                            res.send({ account, corporate });
                         }
                     })
                 }
@@ -174,9 +193,9 @@ const store = async (req, res) => {
         } else {
             res.status(500).send("Invalid data")
         }
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
     }
 }
 
@@ -184,9 +203,9 @@ const update = async (req, res) => {
     try {
         const updatedCorporate = await Corporate.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedCorporate);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ "message": "error => " + err });
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
     }
 }
 
@@ -194,9 +213,9 @@ const remove = async (req, res) => {
     try {
         const deletedCorporate = await Corporate.remove({ _id: req.params.id });
         res.send(deletedCorporate);
-    } catch (err) {
-        res.status(500).send(err);
+    } catch (error) {
+        res.status(500).send({ error });
     }
 }
 
-module.exports = { index, show, store, update, remove, trips, dashboard };
+module.exports = { index, show, store, update, remove, trips, dashboard, search };

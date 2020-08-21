@@ -6,6 +6,8 @@ const { route } = require('./tickets');
 
 router.get('/', CorporateController.index);
 
+router.get('/search', CorporateController.search)
+
 router.get('/:id', AuthMiddleware([4, 5]), CorporateController.show);
 
 router.get('/:id/trips', CorporateController.trips)

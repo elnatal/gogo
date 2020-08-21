@@ -7,6 +7,8 @@ router.get('/', DriverController.index);
 
 router.get('/firebase/:firebaseId', DriverController.firebaseAuth);
 
+router.get('/search', DriverController.search);
+
 router.get('/:id', AuthMiddleware([4, 5]), DriverController.show);
 
 router.get('/:id/bookings', DriverController.bookings);

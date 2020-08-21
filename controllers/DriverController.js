@@ -107,6 +107,44 @@ const firebaseAuth = async (req, res) => {
     };
 };
 
+const search = (req, res) => {
+    try {
+        Driver.find({
+            $or: [
+                {
+                    firstName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    lastName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    phoneNumber: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    email: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        }, (error, drivers) => {
+            if (error) {
+                console.log({ error });
+                res.status(500).send({ error });
+            }
+
+            if (drivers) {
+                res.send(drivers);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const show = (req, res) => {
     try {
         Driver.findById(req.params.id, (err, driver) => {
@@ -195,4 +233,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search };
