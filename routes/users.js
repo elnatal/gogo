@@ -12,6 +12,8 @@ router.get('/:id', UserController.show);
 
 router.post('/:id/rate', UserController.rate);
 
+router.get('/:id/rents', UserController.rents);
+
 router.get('/:id/bookings', UserController.bookings);
 
 router.get('/:id/scheduled-trips', UserController.scheduledTrips);

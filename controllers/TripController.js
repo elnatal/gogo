@@ -13,7 +13,11 @@ const index = (req, res) => {
         var nextPage;
         var prevPage;
 
-        var trip =  Ride.find();
+        var trip =  Ride.find({
+            status: {
+                $regex: req.query.status ? req.query.status : "", $options: "i"
+            }
+        });
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }

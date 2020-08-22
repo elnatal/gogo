@@ -41,6 +41,10 @@ const RentSchema = Schema({
         type: Boolean,
         default: true
     }
-})
+},
+    {
+        timestamps: true
+    }
+)
 
 module.exports = mongoose.model("Rents", RentSchema);

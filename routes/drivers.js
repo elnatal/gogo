@@ -17,6 +17,8 @@ router.get('/:id/scheduled-trips', DriverController.scheduledTrips);
 
 router.post('/:id/rate', DriverController.rate);
 
+router.get('/:id/rents', DriverController.rents);
+
 router.post('/', DriverController.store);
 
 router.patch('/:id', DriverController.update);

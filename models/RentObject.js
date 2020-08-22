@@ -10,7 +10,7 @@ class RentObject {
     #status;
     updateCallback;
 
-    RentObject({passengerId, driverId, startTimestamp, note, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
+    constructor({passengerId, driverId, startTimestamp, note, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
         this.passengerId = passengerId,
         this.driverId = driverId;
         this.vehicleId = vehicleId;

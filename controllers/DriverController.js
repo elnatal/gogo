@@ -4,6 +4,7 @@ const Ride = require('../models/Ride');
 const mongoose = require('mongoose');
 const Token = require('../models/Token');
 const Setting = require('../models/Setting');
+const Rent = require('../models/Rent');
 
 const index = async (req, res) => {
     try {
@@ -196,6 +197,23 @@ const scheduledTrips = (req, res) => {
     }
 }
 
+const rents = (req, res) => {
+    try {
+        Rent.find({driver: req.params.id}, (error, rents) => {
+            if (error) {
+                console.log({ error });
+                res.status(500).send({ error });
+            }
+            if (rents) {
+                res.send(rents);
+            }
+        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle')
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const rate = async (req, res) => {
     try {
         if (req.params.id && req.body && req.body.tripId && req.body.rate) {
@@ -251,4 +269,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents };

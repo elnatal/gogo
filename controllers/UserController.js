@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Ride = require('../models/Ride');
+const Rent = require('../models/Rent');
 
 const index = async (req, res) => {
     try {
@@ -99,6 +100,23 @@ const search = (req, res) => {
     }
 }
 
+const rents = (req, res) => {
+    try {
+        Rent.find({passenger: req.params.id}, (error, rents) => {
+            if (error) {
+                console.log({ error });
+                res.status(500).send({ error });
+            }
+            if (rents) {
+                res.send(rents);
+            }
+        }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle')
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const show = async (req, res) => {
     try {
         var user = await User.findById(req.params.id);
@@ -190,4 +208,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, auth, bookings, show, store, update, remove, rate, search, scheduledTrips };
+module.exports = { index, auth, bookings, show, store, update, remove, rate, search, scheduledTrips, rents };
