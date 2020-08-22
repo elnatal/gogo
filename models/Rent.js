@@ -16,6 +16,7 @@ const RentSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "VehicleTypes"
     },
+    note: String,
     pickUpAddress: {
         type: {
             name: String,

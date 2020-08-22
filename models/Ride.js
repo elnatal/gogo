@@ -86,6 +86,7 @@ const RideSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Tickets"
     },
+    note: String,
     corporate: {
         type: Schema.Types.ObjectId,
         ref: "Corporates"

@@ -6,15 +6,17 @@ class RentObject {
     vehicleType;
     pickUpAddress;
     vehicleId;
+    note;
     #status;
     updateCallback;
 
-    RentObject({passengerId, driverId, startTimestamp, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
+    RentObject({passengerId, driverId, startTimestamp, note, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
         this.passengerId = passengerId,
         this.driverId = driverId;
         this.vehicleId = vehicleId;
         this.vehicleType = vehicleType;
         this.pickUpAddress = pickUpAddress;
+        this.note = note;
         this.startTimestamp = startTimestamp;
         this.endTimestamp = endTimestamp;
         this.#status = status;
