@@ -344,7 +344,6 @@ module.exports = function (io) {
                 var driverFound = false;
                 var canceled = false;
                 var vehicleTypeData;
-                var setting;
 
                 VehicleType.findById(data.vehicleType).then((res) => {
                     vehicleTypeData = res;
