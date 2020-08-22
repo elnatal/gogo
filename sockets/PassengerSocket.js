@@ -371,8 +371,8 @@ module.exports = function (io) {
                             driverId: vehicle.driver,
                             startTimestamp: data.startTimestamp,
                             endTimestamp: data.endTimestamp,
-                            vehicleId = vehicle._id,
-                            vehicleType = vehicleTypeData,
+                            vehicleId: vehicle._id,
+                            vehicleType: vehicleTypeData,
                             status: "inRequest",
                             updateCallback
                         });
