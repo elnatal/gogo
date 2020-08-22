@@ -4,10 +4,12 @@ const { addDriver, removeDriver, getDriver, getDrivers } = require('../container
 const { getRequest, updateRequest, getDriverRequest } = require('../containers/requestContainer');
 const Ride = require('../models/Ride');
 const { getUser, getUsers } = require("../containers/usersContainer");
+const { updateRent } = require("../containers/rentContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
 const { sendEmail } = require("../services/emailService");
 const Token = require("../models/Token");
+const { request } = require("express");
 
 module.exports = function (io) {
     return function (socket) {
@@ -151,7 +153,11 @@ module.exports = function (io) {
         socket.on('updateRequest', (request) => {
             console.log("request update", request);
             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: request.status });
-            // getRequest().updateStatus(request.status);
+        });
+
+        socket.on('updateRent', (rentObject) => {
+            console.log("request update", rentObject);
+            updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: rentObject.status });
         });
 
         socket.on('arrived', (trip) => {

@@ -12,7 +12,16 @@ const RentSchema = Schema({
     },
     startTimestamp: Date,
     endTimestamp: Date,
-    status: String
+    vehicleType: {
+        type: Schema.Types.ObjectId,
+        ref: "VehicleTypes"
+    },
+    vehicle: {
+        type: Schema.Types.ObjectId,
+        ref: "Vehicles"
+    },
+    fare: Number,
+    tax: Number,
 })
 
 module.exports = mongoose.model("Rents", RentSchema);
