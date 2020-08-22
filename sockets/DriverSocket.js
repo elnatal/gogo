@@ -326,7 +326,7 @@ module.exports = function (io) {
                         if (res) {
                             if (res.status != "Completed") {
                                 var tax = setting.tax ? setting.tax : 15;
-                                var fare = ((rent.months * (rent.vehicleType.rentPerDay * 30)) + (rent.hours.rentPerHour * rent.vehicleType) + (rent.days.rentPerDay * rent.vehicleType)) * rent.months > 0 ? rent.vehicleType.rentDiscount / 100 : 1;
+                                var fare = ((rent.months * (rent.vehicleType.rentPerDay * 30)) + (rent.hours * rent.vehicleType.rentPerHour) + (rent.days * rent.vehicleType.rentPerDay)) * rent.months > 0 ? rent.vehicleType.rentDiscount / 100 : 1;
 
                                 res.status = "Completed";
                                 res.tax = tax;
