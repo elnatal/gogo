@@ -106,12 +106,12 @@ module.exports = function (io) {
                 var dropOff = data.dropOffAddress.name;
 
                 if (!pickup) {
-                    pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+                    pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=" + setting.mapKey);
                     console.log("pickup", pickup);
                 }
 
                 if (!dropOff) {
-                    dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffAddress.lat + "," + data.dropOffAddress.long + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+                    dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.dropOffAddress.lat + "," + data.dropOffAddress.long + "&key=" + setting.mapKey);
                     console.log("drpOff", dropOff);
                 }
 
@@ -353,7 +353,7 @@ module.exports = function (io) {
                 var pickUpAddress = data.pickUpAddress;
 
                 if (!pickUpAddress.name) {
-                    Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc").then((res) => {
+                    Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=" + setting.mapKey).then((res) => {
                         pickUpAddress.name = res.data.results[0].formatted_address;
                         sendRequest()
                     });
@@ -383,7 +383,13 @@ module.exports = function (io) {
                             startTimestamp: data.startTimestamp,
                             note: data.note ? data.note : "",
                             endTimestamp: data.endTimestamp,
-                            pickUpAddress: pickUpAddress,
+                            pickUpAddress: {
+                                name: pickUpAddress.name,
+                                coordinate: {
+                                    lat: pickUpAddress.lat,
+                                    long: pickUpAddress.long
+                                },
+                            },
                             vehicleId: vehicle._id,
                             vehicleType: vehicleTypeData,
                             status: "inRequest",
