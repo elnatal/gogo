@@ -353,7 +353,13 @@ module.exports = function (io) {
 
                 if (!pickUpAddress.name) {
                     Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + data.pickUpAddress.lat + "," + data.pickUpAddress.long + "&key=" + setting.mapKey).then((res) => {
-                        pickUpAddress.name = res.data.results[0].formatted_address;
+                        if (res.status == 200 && res.data.status == "OK") {
+                            console.log("status ok pul");
+                            pickUpAddress.name = res.data.results[0].formatted_address;
+                        } else {
+                            pickUpAddress.name = "_";
+                            console.log("wrong response pul", res)
+                        }
                         sendRequest()
                     });
                 } else {
@@ -459,9 +465,9 @@ module.exports = function (io) {
                                 if (error) console.log({ rent });
                                 if (rent) {
                                     Rent.findById(rent._id, async (error, createdRent) => {
-                                        if (error) console.log({error});
+                                        if (error) console.log({ error });
                                         if (createdRent) {
-                                            console.log({createdRent});
+                                            console.log({ createdRent });
 
                                             var passengers = getUsers({ userId: id });
                                             passengers.forEach((passenger) => {
