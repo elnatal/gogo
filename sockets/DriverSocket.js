@@ -10,6 +10,7 @@ const Ticket = require("../models/Ticket");
 const { sendEmail } = require("../services/emailService");
 const Token = require("../models/Token");
 const { request } = require("express");
+const Rent = require("../models/Rent");
 
 module.exports = function (io) {
     return function (socket) {
@@ -20,6 +21,7 @@ module.exports = function (io) {
         var location = null;
         var started = false;
         var token = "";
+        var setting = Setting.findOne();
         var inTrip = false;
 
         socket.on('init', async (driverInfo) => {
@@ -40,11 +42,13 @@ module.exports = function (io) {
 
                 try {
                     var request = getDriverRequest({ driverId: id });
-                    Ride.findOne({ active: true, driver: id }, (err, res) => {
-                        if (err) console.log(err);
+                    var trip = Ride.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                    var rent = Rent.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                    Promise.all([rent, trip]).then((values) => {
+                        console.log("status", values[0] || values[1] || request ? false : true);
                         Vehicle.updateOne({ _id: vehicleId }, {
                             fcm,
-                            online: res || request ? false : true,
+                            online: values[0] || values[1] || request ? false : true,
                             timestamp: new Date(),
                             position: {
                                 type: "Point",
@@ -60,12 +64,12 @@ module.exports = function (io) {
                             }
                         });
 
-                        console.log({ res });
-                        console.log("status", res ? false : true);
-
-                        if (res) {
-                            socket.emit('trip', res);
-                            console.log({ res });
+                        if (values[0]) {
+                            socket.emit('rent', values[0]);
+                            console.log("rent", values[0]);
+                        } else if (values[1]) {
+                            socket.emit('trip', values[1]);
+                            console.log("trip", values[1]);
                             // socket.emit('status', { "status": false });
                         } else if (request) {
                             socket.emit('request', request);
@@ -74,8 +78,7 @@ module.exports = function (io) {
                             socket.emit('status', { "status": true });
                             console.log("status", true);
                         }
-
-                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                    })
                 } catch (error) {
                     console.log(error);
                 }
@@ -215,6 +218,34 @@ module.exports = function (io) {
             }
         });
 
+        socket.on('startRent', (rent) => {
+            console.log("start rent", rent)
+            if (started && rent && rent.id) {
+                try {
+                    Rent.findById(rent.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Started";
+                            res.active = true;
+                            res.startTimestamp = new Date();
+                            res.save();
+                            var driver = getDriver({ id: res.driver._id });
+                            if (driver) io.of('/driver-socket').to(driver.socketId).emit('rent', res);
+
+                            if (res.passenger) {
+                                var passengers = getUsers({ userId: res.passenger._id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                                })
+                            }
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+
         socket.on('tripEnded', (trip) => {
             console.log("completed", trip)
             if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined) {
@@ -223,7 +254,6 @@ module.exports = function (io) {
                         if (err) console.log(err);
                         if (res) {
                             if (res.status != "Completed") {
-                                var setting = await Setting.findOne();
                                 var discount = setting.discount ? setting.discount : 0;
                                 var tax = setting.tax ? setting.tax : 15;
                                 var discount = setting.discount ? setting.discount : 0;
@@ -276,6 +306,52 @@ module.exports = function (io) {
                                     var passengers = getUsers({ userId: res.passenger._id });
                                     passengers.forEach((passenger) => {
                                         if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                    })
+                                }
+                            }
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+
+        socket.on('endRent', (rent) => {
+            console.log("completed", rent)
+            if (started && rent && rent.id && rent.months != null && rent.days != null, rent.hours != null) {
+                try {
+                    Rent.findById(rent.id, async (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            if (res.status != "Completed") {
+                                var tax = setting.tax ? setting.tax : 15;
+                                var fare = ((rent.months * (rent.vehicleType.rentPerDay * 30)) + (rent.hours.rentPerHour * rent.vehicleType) + (rent.days.rentPerDay * rent.vehicleType)) * rent.months > 0 ? rent.vehicleType.rentDiscount / 100 : 1;
+
+                                res.status = "Completed";
+                                res.tax = tax;
+                                res.fare = fare;
+                                res.endTimestamp = new Date();
+                                res.active = false;
+                                res.save();
+
+                                console.log({ res });
+
+                                Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
+                                    if (err) console.log({ err });
+                                    if (res) console.log("status updated", true, vehicleId);
+                                });
+
+                                if (res.passenger && res.passenger.email) {
+                                    sendEmail(res.passenger.email, "rent summery", "test email");
+                                }
+                                var driver = getDriver({ id: res.driver._id });
+                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('rent', res);
+
+                                if (res.passenger) {
+                                    var passengers = getUsers({ userId: res.passenger._id });
+                                    passengers.forEach((passenger) => {
+                                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
                                     })
                                 }
                             }

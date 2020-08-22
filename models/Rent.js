@@ -16,12 +16,30 @@ const RentSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "VehicleTypes"
     },
+    pickUpAddress: {
+        type: {
+            name: String,
+            coordinate: {
+                type: {
+                    lat: Number,
+                    long: Number
+                },
+                required: true
+            }
+        },
+        required: true
+    },
     vehicle: {
         type: Schema.Types.ObjectId,
         ref: "Vehicles"
     },
     fare: Number,
     tax: Number,
+    status: String,
+    active: {
+        type: Boolean,
+        default: true
+    }
 })
 
 module.exports = mongoose.model("Rents", RentSchema);

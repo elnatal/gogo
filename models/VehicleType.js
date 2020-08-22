@@ -46,17 +46,17 @@ const VehicleTypeSchema = Schema({
         type: Number,
         required: true
     },
-    rentPerHourCost: {
+    rentPerHour: {
+        type: Number,
+        default: 0
+    },
+    rentPerDay: {
         type: Number,
         required: true
     },
-    rentPerDayCost: {
+    rentDiscount: {
         type: Number,
-        required: true
-    },
-    rentPerMonthCost: {
-        type: Number,
-        required: true
+        default: 0
     }
 },
 {

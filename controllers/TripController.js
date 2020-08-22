@@ -54,11 +54,11 @@ const index = (req, res) => {
 
 const checkScheduledTrips = async (io) => {
     try {
-        const trips = await Ride.find({status: "Scheduled"}).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+        const trips = await Ride.find({status: "Scheduled"}).populate('passenger').populate('vehicle');
         console.log({trips});
         trips.forEach((trip) => {
-            const driverId = (trip.driver) ? trip.driver._id : "";
-            const passengerId = (trip.passenger) ? trip.passenger._id : "";
+            // const driverId = (trip.driver) ? trip.driver._id : "";
+            // const passengerId = (trip.passenger) ? trip.passenger._id : "";
 
             // var driver = getDriver({ id: driverId});
             // if (driver) {
@@ -67,7 +67,7 @@ const checkScheduledTrips = async (io) => {
             if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
                 sendNotification(trip.vehicle.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
-                console.log("No socket and fcm found");
+                console.log("No driver fcm found");
             }
 
             // var passenger = getUser({ userId: passengerId });
@@ -77,7 +77,7 @@ const checkScheduledTrips = async (io) => {
             if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
                 sendNotification(trip.passenger.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
-                console.log("No socket and fcm found");
+                console.log("No passenger fcm found");
             }
 
         });
