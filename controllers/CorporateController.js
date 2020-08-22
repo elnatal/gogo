@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const Ticket = require('../models/Ticket');
 const Ride = require('../models/Ride');
 const Account = require('../models/Account');
+const CorporatePayment = require('../models/CorporatePayment');
 
 const index = async (req, res) => {
     try {
@@ -126,7 +127,7 @@ const search = (req, res) => {
     try {
         Corporate.find({ name: { $regex: req.query.q ? req.query.q : "", $options: "i" } }, (error, corporates) => {
             if (error) {
-                console.log({error});
+                console.log({ error });
                 res.status(500).send({ error });
             }
 
@@ -199,6 +200,39 @@ const store = async (req, res) => {
     }
 }
 
+const pay = (req, res) => {
+    try {
+        if (req.params.id && req.body.amount && req.body.year && req.body.month) {
+            var start = new Date(req.body.year, req.body.month, 1);
+            var end = new Date(req.body.year, req.body.month + 1, 0);
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            CorporatePayment.create({
+                corporate: req.params.id,
+                startTimestamp: start,
+                endTimestamp: end,
+                amount: req.body.amount,
+                month: monthNames[req.body.month]
+            }, (error, payment) => {
+                if (error) {
+                    console.log({ error });
+                    res.status(500).send({ error });
+                }
+
+                if (payment) {
+                    res.send(payment);
+                }
+            })
+        } else {
+            res.status(500).send("Invalid data");
+        }
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const update = async (req, res) => {
     try {
         const updatedCorporate = await Corporate.updateOne({ '_id': req.params.id }, req.body);
@@ -218,4 +252,4 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, update, remove, trips, dashboard, search };
+module.exports = { index, show, store, update, remove, trips, dashboard, search, pay };

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const CorporateController = require('../controllers/CorporateController');
 const AuthMiddleware = require('../middleware/authMiddleware');
-const { route } = require('./tickets');
 
 router.get('/', CorporateController.index);
 
@@ -11,6 +10,8 @@ router.get('/search', CorporateController.search)
 router.get('/:id', AuthMiddleware([4, 5]), CorporateController.show);
 
 router.get('/:id/trips', CorporateController.trips)
+
+router.post('/"id/pay', CorporateController.pay);
 
 router.get('/:id/dashboard', CorporateController.dashboard)
 

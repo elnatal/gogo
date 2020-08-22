@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Token = require('../models/Token');
 const Setting = require('../models/Setting');
 const Rent = require('../models/Rent');
+const WalletHistory = require('../models/WalletHistory');
 
 const index = async (req, res) => {
     try {
@@ -214,6 +215,55 @@ const rents = (req, res) => {
     }
 }
 
+const topUp = (req, res) => {
+    try {
+        if (req.params.id && req.body.amount) {
+            Driver.findById(req.params.id, async (error, driver) => {
+                if (error) {
+                    console.log({ error });
+                    res.status(500).send({ error });
+                }
+                if (driver) {
+                    driver.balance = driver.balance + req.body.amount;
+                    await driver.save();
+                    WalletHistory.create({driver: req.params.id, amount: req.body.amount}, (error, wallet) => {
+                        if (error) {
+                            console.log({ error });
+                            res.status(500).send({ error });
+                        }
+                        if (wallet) {
+                            console.log("balance", driver.balance);
+                            res.send({"ballance": driver.balance});
+                        }
+                    })
+                }
+            });
+        } else {
+            res.status(500).send("Invalid data");
+        }
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
+const walletHistory = (req, res) => {
+    try {
+        WalletHistory.find({driver: req.params.id}, (error, walletHistory) => {
+            if (error) {
+                console.log({ error });
+                res.status(500).send({ error });
+            }
+            if (walletHistory) {
+                res.send(walletHistory);
+            }
+        }).limit(20);
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const rate = async (req, res) => {
     try {
         if (req.params.id && req.body && req.body.tripId && req.body.rate) {
@@ -269,4 +319,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory };
