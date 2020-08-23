@@ -528,7 +528,7 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('cancelRequest', (rentObject) => {
+        socket.on('cancelRentRequest', (rentObject) => {
             updateRent({ passengerId: rentObject.passengerId, driverId: null, status: "Canceled" });
         });
 
