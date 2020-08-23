@@ -17,6 +17,8 @@ const RentSchema = Schema({
         ref: "VehicleTypes"
     },
     note: String,
+    cancelledBy: String,
+    cancelledReason: String,
     pickUpAddress: {
         type: {
             name: String,

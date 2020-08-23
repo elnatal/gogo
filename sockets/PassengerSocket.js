@@ -337,6 +337,37 @@ module.exports = function (io) {
             }
         });
 
+        socket.on('cancelRent', async (rent) => {
+            if (rent) {
+                try {
+                    Rent.findById(rent.id, async (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Canceled";
+                            res.endTimestamp = new Date();
+                            res.cancelledBy = "Passenger";
+                            res.cancelledReason = rent.reason ? rent.reason : "";
+                            res.active = false;
+                            res.save();
+                            await Vehicle.updateOne({ _id: rent.vehicle._id }, { online: true });
+                            var driver = getDriver({ id: res.driver._id });
+                            if (driver) {
+                                io.of('/driver-socket').to(driver.socketId).emit('rent', res);
+                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
+                            }
+
+                            var passengers = getUsers({ userId: res.passenger._id });
+                            passengers.forEach((passenger) => {
+                                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                            })
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+
         socket.on('rent', async (data) => {
             if (started && data && data.pickUpAddress && data.vehicleType && data.startTimestamp && data.endTimestamp) {
                 console.log("starting rent");

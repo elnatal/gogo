@@ -399,6 +399,42 @@ module.exports = function (io) {
             }
         });
 
+        socket.on('cancelRent', (rent) => {
+            if (started && rent) {
+                try {
+                    Rent.findById(rent.id, (err, res) => {
+                        if (err) console.log(err);
+                        if (res) {
+                            res.status = "Canceled";
+                            res.endTimestamp = new Date();
+                            res.cancelledBy = "Driver";
+                            res.cancelledReason = rent.reason ? rent.reason : "";
+                            res.active = false;
+                            res.save();
+                            Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
+                                if (err) console.log({ err });
+                                if (res) console.log("status updated", true, vehicleId);
+                            });
+                            var driver = getDriver({ id: res.driver._id });
+                            if (driver) {
+                                io.of('/driver-socket').to(driver.socketId).emit('rent', res);
+                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
+                            }
+
+                            if (res.passenger) {
+                                var passengers = getUsers({ userId: res.passenger._id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                                })
+                            }
+                        }
+                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+
         socket.on('disconnect', () => {
             if (started) {
                 removeDriver({ id });
