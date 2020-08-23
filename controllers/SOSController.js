@@ -44,15 +44,36 @@ const index = async (req, res) => {
 
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(500).send(error);
     };
+}
+
+const show = (req, res) => {
+    try {
+        SOS.findById(req.parse.id, (error, sos) => {
+            if (error) {
+                console.log(error);
+                res.status(500).send(error);
+            }
+            if (sos) {
+                res.send(sos);
+            }
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
 }
 
 const store = (req, res) => {
     try {
-        if (req.body && (req.body.tripId || req.body.rentId) && req.body.location && req.body.location.lat && req.body.location.long) {
+        if (req.body && (req.body.tripId || req.body.rentId) && req.body.location && req.body.location.lat && req.body.location.long && req.body.type) {
             if (req.body.tripId) {
                 Ride.findById(req.body.tripId, (error, trip) => {
                     if (error) {
@@ -64,6 +85,7 @@ const store = (req, res) => {
                         SOS.create({
                             driver: trip.driver,
                             passenger: trip.passenger,
+                            type: req.body.type,
                             vehicle: trip.vehicle,
                             position: {
                                 type: "Point",
@@ -93,6 +115,7 @@ const store = (req, res) => {
                             driver: rent.driver,
                             passenger: rent.passenger,
                             vehicle: rent.vehicle,
+                            type: req.body.type,
                             position: {
                                 type: "Point",
                                 coordinates: [
@@ -117,4 +140,4 @@ const store = (req, res) => {
     }
 }
 
-module.exports = { index, store };
+module.exports = { index, store, show };

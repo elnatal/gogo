@@ -14,6 +14,7 @@ const SOSSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Drivers"
   },
+  type: String,
   position: {
     type: {
       type: String,
