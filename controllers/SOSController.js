@@ -82,6 +82,7 @@ const store = (req, res) => {
                     }
 
                     if (trip) {
+                        console.log({trip});
                         SOS.create({
                             driver: trip.driver,
                             passenger: trip.passenger,
@@ -99,8 +100,10 @@ const store = (req, res) => {
                                 console.log(error);
                                 res.status(500).send(error);
                             }
-                            if (sos) res.send(res);
+                            if (sos) res.send(sos);
                         })
+                    } else {
+                        res.status(500).send("trip not found")
                     }
                 })
             } else if (req.body.rentId) {
@@ -128,8 +131,10 @@ const store = (req, res) => {
                                 console.log(error);
                                 res.status(500).send(error);
                             }
-                            if (sos) res.send(res);
+                            if (sos) res.send(sos);
                         })
+                    } else {
+                        res.status(500).send("rent not found")
                     }
                 })
             }
