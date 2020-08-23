@@ -325,7 +325,7 @@ module.exports = function (io) {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                             res.active = false;
                             res.save();
-                            await Vehicle.updateOne({ _id: trip.vehicle._id }, { online: true });
+                            Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => {});
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('trip', res);
@@ -356,7 +356,7 @@ module.exports = function (io) {
                             res.cancelledReason = rent.reason ? rent.reason : "";
                             res.active = false;
                             res.save();
-                            await Vehicle.updateOne({ _id: rent.vehicle._id }, { online: true });
+                            Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => {});
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('rent', res);
