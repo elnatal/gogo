@@ -7,6 +7,7 @@ const { addDispatcher, getDispatcher, removeDispatcher } = require('../container
 const { default: Axios } = require('axios');
 const User = require('../models/User');
 const Setting = require('../models/Setting');
+const VehicleType = require('../models/VehicleType');
 
 module.exports = function (io) {
     return function (socket) {

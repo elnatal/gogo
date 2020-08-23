@@ -6,7 +6,7 @@ const get = async (req, res) => {
         res.send(setting ? setting : {});
     } catch (error) {
         console.log(error);
-        res.send({});
+        res.status(500).send(error);
     }
 };
 
@@ -24,7 +24,7 @@ const add = async (req, res) => {
             res.send(updatedSetting);
         } catch (error) {
             console.log(error);
-            res.send(error);
+            res.status(500).send(error);
         }
     } else {
         try {
@@ -32,7 +32,7 @@ const add = async (req, res) => {
             res.send(savedSetting);
         } catch (error) {
             console.log(error);
-            res.send(error);
+            res.status(500).send(error);
         }
     }
 };

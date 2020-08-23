@@ -42,9 +42,13 @@ const index = (req, res) => {
             if (value) {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(500).send(error);
     };
 }
 
@@ -60,8 +64,44 @@ const show = (req, res) => {
             }
         });
     } catch (error) {
+        console.log(error);
         res.status(500).send(error);
     };
+}
+
+const search = (req, res) => {
+    try {
+        Account.find({
+            role: req.query.role ? parseInt(req.query.role) : 2,
+            $or: [
+                {
+                    firstName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    lastName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    email: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        }, (error, accounts) => {
+            if (error) {
+                console.log(error);
+                res.status(500).send(error);
+            }
+
+            if (accounts) {
+                res.send(accounts);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
 }
 
 const store = async (req, res) => {
@@ -120,9 +160,9 @@ const check = async (req, res) => {
             res.status(401).send({ error: "UNAUTHORIZED" });
         }
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
-module.exports = { index, show, store, auth, check };
+module.exports = { index, show, store, auth, check, search };

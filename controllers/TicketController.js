@@ -44,9 +44,13 @@ const index = async (req, res) => {
 
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(500).send(error);
     };
 }
 
@@ -55,8 +59,9 @@ const show = async (req, res) => {
         const ticket = await Ticket.findById(req.params.id);
         console.log(req.params.id);
         res.send(ticket);
-    } catch (err) {
-        res.send('err ' + err);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     };
 }
 
@@ -67,9 +72,9 @@ const validate = async (req, res) => {
             await Ticket.updateOne({_id: ticket._id}, {locked: true});
             res.send(ticket._id);
         } else if (ticket && ticket.locked == true) {
-            res.send("locked");
+            res.status(500).send("locked");
         } else {
-            res.send("invalid");
+            res.status(500).send("invalid");
         }
     } catch (error) {
         console.log(error);
@@ -104,9 +109,9 @@ const generate = async (req, res) => {
         } else {
             res.status(500).send({error: "Unknown account"})
         }
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -115,8 +120,8 @@ const update = async (req, res) => {
         const updatedTicket = await Ticket.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedTicket);
     } catch (err) {
-        console.log(err);
-        res.status(500).send({ "message": "error => " + err });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -125,7 +130,8 @@ const remove = async (req, res) => {
         const deletedTicket = await Ticket.remove({ _id: req.params.id });
         res.send(deletedTicket);
     } catch (err) {
-        res.status(500).send(err);
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 

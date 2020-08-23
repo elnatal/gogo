@@ -15,6 +15,9 @@ const getSettingsAndVehicleModels = async (req, res) => {
             setting: value[0],
             vehicleTypes: value[1],
         });
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).send(error);
     });
 };
 
@@ -45,6 +48,9 @@ const dashboard = async (req, res) => {
             totalRunningTrips: value[8] + value[9] + value[10],
             revenue: 0,
         });
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).send(error);
     });
 };
 
@@ -59,15 +65,16 @@ const route = (req, res) => {
                 } else {
                     res.sendStatus(500);
                 }
-            }).catch(err => {
-                res.sendStatus(500);
-                console.log(err);
+            }).catch(error => {
+                console.log(error);
+                res.status(500).send(error);
             });
         } else {
             res.status(500).send("invalid data");
         }
     } catch (error) {
         console.log(error);
+        res.status(500).send(error);
     }
 };
 

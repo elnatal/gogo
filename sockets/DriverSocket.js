@@ -11,6 +11,7 @@ const { sendEmail } = require("../services/emailService");
 const Token = require("../models/Token");
 const { request } = require("express");
 const Rent = require("../models/Rent");
+const { updateWallet } = require("../controllers/DriverController");
 
 module.exports = function (io) {
     return function (socket) {
@@ -297,6 +298,8 @@ module.exports = function (io) {
                                     });
                                 }
 
+                                updateWallet({id, amount: cutFromDriver});
+
                                 Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
                                     if (err) console.log({ err });
                                     if (res) console.log("status updated", true, vehicleId);
@@ -334,7 +337,7 @@ module.exports = function (io) {
                                 var tax = setting.tax ? setting.tax : 15;
                                 var companyCut = setting.companyCut ? setting.companyCut : 15;
                                 var fare = ((rent.months * (res.vehicleType.rentPerDay * 30)) + (rent.hours * res.vehicleType.rentPerHour) + (rent.days * res.vehicleType.rentPerDay)) * rent.months > 0 ? res.vehicleType.rentDiscount / 100 : 1;
-
+                                var cutFromDriver = - fare * (companyCut / 100);
                                 res.status = "Completed";
                                 res.tax = tax;
                                 res.companyCut = companyCut;
@@ -344,6 +347,8 @@ module.exports = function (io) {
                                 res.save();
 
                                 console.log({ res });
+
+                                updateWallet({id, amount: cutFromDriver});
 
                                 Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
                                     if (err) console.log({ err });

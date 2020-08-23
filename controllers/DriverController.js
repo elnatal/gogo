@@ -60,9 +60,13 @@ const index = async (req, res) => {
                 })
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(500).send(error);
     };
 };
 
@@ -133,8 +137,8 @@ const search = (req, res) => {
             ]
         }, (error, drivers) => {
             if (error) {
-                console.log({ error });
-                res.status(500).send({ error });
+                console.log(error);
+                res.status(500).send(error);
             }
 
             if (drivers) {
@@ -142,8 +146,8 @@ const search = (req, res) => {
             }
         }).limit(10);
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -172,12 +176,12 @@ const income = (req, res) => {
 
             res.send({ month: monthIncome })
         }).catch((error) => {
-            console.log({ error });
-            res.status(500).send({ error });
+            console.log(error);
+            res.status(500).send(error);
         })
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -200,6 +204,7 @@ const show = (req, res) => {
             }
         });
     } catch (error) {
+        console.log(error);
         res.status(500).send(error);
     };
 };
@@ -210,6 +215,7 @@ const bookings = (req, res) => {
             res.send(rides);
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate({ path: 'vehicleType', select: 'name -_id' });
     } catch (error) {
+        console.log(error);
         res.status(500).send(error);
     }
 };
@@ -218,8 +224,8 @@ const scheduledTrips = (req, res) => {
     try {
         Ride.find({ driver: req.params.id, status: "Scheduled" }, (error, trips) => {
             if (error) {
-                console.log({ error });
-                res.status(500).send({ error });
+                console.log(error);
+                res.status(500).send(error);
             }
 
             if (trips) {
@@ -227,8 +233,8 @@ const scheduledTrips = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -236,16 +242,16 @@ const rents = (req, res) => {
     try {
         Rent.find({ driver: req.params.id }, (error, rents) => {
             if (error) {
-                console.log({ error });
-                res.status(500).send({ error });
+                console.log(error);
+                res.status(500).send(error);
             }
             if (rents) {
                 res.send(rents);
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle')
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -254,16 +260,16 @@ const topUp = (req, res) => {
         if (req.params.id && req.body.amount) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
-                    console.log({ error });
-                    res.status(500).send({ error });
+                    console.log(error);
+                    res.status(500).send(error);
                 }
                 if (driver) {
                     driver.balance = driver.balance + req.body.amount;
                     await driver.save();
                     WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
                         if (error) {
-                            console.log({ error });
-                            res.status(500).send({ error });
+                            console.log(error);
+                            res.status(500).send(error);
                         }
                         if (wallet) {
                             console.log("balance", driver.balance);
@@ -276,8 +282,8 @@ const topUp = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -285,16 +291,16 @@ const walletHistory = (req, res) => {
     try {
         WalletHistory.find({ driver: req.params.id }, (error, walletHistory) => {
             if (error) {
-                console.log({ error });
-                res.status(500).send({ error });
+                console.log(error);
+                res.status(500).send(error);
             }
             if (walletHistory) {
                 res.send(walletHistory);
             }
         }).limit(20);
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -317,8 +323,8 @@ const rate = async (req, res) => {
             res.send("Rated");
         }
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -326,13 +332,15 @@ const updateWallet = (data) => {
     WalletHistory.create({
         driver: data.id,
         amount: data.amount
-    }, (error, res) => {
-        if (error) console.log({error});
-        if (res) {
+    }, (error, response) => {
+        if (error) console.log(error);
+        if (response) {
             Driver.findById(data.id, (error, res) => {
-                if (error) console.log({error});
-                res.wallet += data.amount;
-                res.save();
+                if (error) console.log(error);
+                if (res) {
+                    res.wallet += data.amount;
+                    res.save();
+                }
             })
         }
     });

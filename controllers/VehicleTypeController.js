@@ -32,7 +32,7 @@ const index = async (req, res) => {
             });
         }
         Promise.all([
-            VehicleType.countDocuments(),
+            VehicleType.estimatedDocumentCount(),
             vehicleType.exec()
         ]).then((value) => {
             if (value) {
@@ -41,9 +41,13 @@ const index = async (req, res) => {
                 }
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     };
 };
 
@@ -52,8 +56,9 @@ const show =  async (req, res) => {
         var vehicleType = await VehicleType.findById(req.params.id);
         console.log(req.params.id);
         res.send(vehicleType);
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     };
 };
 
@@ -61,9 +66,9 @@ const store = async (req, res) => {
     try {
         const savedVehicleType = await VehicleType.create(req.body);
         res.send(savedVehicleType);
-    } catch(err) {
-        console.log(err);
-        res.send(err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 
@@ -71,9 +76,9 @@ const update = async (req, res) => {
     try {
         const updatedVehicleType = await VehicleType.updateOne({'_id': req.params.id}, req.body);
         res.send(updatedVehicleType);
-    } catch(err) {
-        console.log(err);
-        res.send({"message": "error => " + err});
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 
@@ -81,8 +86,9 @@ const remove =  async (req, res) => {
     try {
         const deletedVehicleType = await VehicleType.remove({_id: req.params.id});
         res.send(deletedVehicleType);
-    } catch(err) {
-        res.send(err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 

@@ -47,9 +47,13 @@ const index = async (req, res) => {
 
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(500).send(error);
     };
 }
 
@@ -71,8 +75,8 @@ const trips = async (req, res) => {
         console.log({ rides });
         res.send(rides);
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -116,10 +120,13 @@ const dashboard = async (req, res) => {
             } else {
                 res.status(500).send("Something went wrong!")
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send({ error });
+        res.status(500).send(error);
     }
 };
 
@@ -127,8 +134,8 @@ const search = (req, res) => {
     try {
         Corporate.find({ name: { $regex: req.query.q ? req.query.q : "", $options: "i" } }, (error, corporates) => {
             if (error) {
-                console.log({ error });
-                res.status(500).send({ error });
+                console.log(error);
+                res.status(500).send(error);
             }
 
             if (corporates) {
@@ -136,8 +143,8 @@ const search = (req, res) => {
             }
         }).limit(10);
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -148,7 +155,8 @@ const show = async (req, res) => {
         console.log(req.params.id);
         res.send(corporate);
     } catch (error) {
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     };
 }
 
@@ -195,8 +203,8 @@ const store = async (req, res) => {
             res.status(500).send("Invalid data")
         }
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -216,8 +224,8 @@ const pay = (req, res) => {
                 month: monthNames[req.body.month]
             }, (error, payment) => {
                 if (error) {
-                    console.log({ error });
-                    res.status(500).send({ error });
+                    console.log(error);
+                    res.status(500).send(error);
                 }
 
                 if (payment) {
@@ -228,8 +236,8 @@ const pay = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -238,8 +246,8 @@ const update = async (req, res) => {
         const updatedCorporate = await Corporate.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedCorporate);
     } catch (error) {
-        console.log({ error });
-        res.status(500).send({ error });
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -248,7 +256,7 @@ const remove = async (req, res) => {
         const deletedCorporate = await Corporate.remove({ _id: req.params.id });
         res.send(deletedCorporate);
     } catch (error) {
-        res.status(500).send({ error });
+        res.status(500).send(error);
     }
 }
 

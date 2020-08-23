@@ -41,7 +41,7 @@ const index = (req, res) => {
             });
         }
         Promise.all([
-            Ride.countDocuments(),
+            Ride.estimatedDocumentCount(),
             trip.exec()
         ]).then((value) => {
             if (value) {
@@ -50,9 +50,13 @@ const index = (req, res) => {
                 }
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
+        }).catch((error) => {
+            console.log(error);
+            res.status(500).send(error);
         });
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     };
 };
 
@@ -86,7 +90,8 @@ const checkScheduledTrips = async (io) => {
 
         });
     } catch (error) {
-        console.error(error);
+        console.log(error);
+        res.status(500).send(error);
     }
 }
 
@@ -101,6 +106,7 @@ const latest = (req, res) => {
         }).limit(30).populate({path: 'driver', select: 'firstName lastName -_id'}).populate({path: 'passenger', select: 'firstName lastName -_id'})
     } catch (error) {
         console.log(error);
+        res.status(500).send(error);
     }
 };
 
@@ -109,8 +115,9 @@ const show = async (req, res) => {
         var trip = await Ride.findById(req.params.id);
         console.log(req.params.id);
         res.send(trip);
-    } catch(err) {
-        res.send('err ' + err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     };
 };
 
@@ -119,9 +126,9 @@ const store = async (req, res) => {
     try {
         const savedTrip = await Ride.create(req.body);
         res.send(savedTrip);
-    } catch(err) {
-        console.log(err);
-        res.send(err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 
@@ -129,9 +136,9 @@ const update = async (req, res) => {
     try {
         const updatedTrip = await Ride.updateOne({'_id': req.params.id}, req.body);
         res.send(updatedTrip);
-    } catch(err) {
-        console.log(err);
-        res.send({"message": "error => " + err});
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 
@@ -139,8 +146,9 @@ const remove = async (req, res) => {
     try {
         const deletedTrip = await Ride.remove({_id: req.params.id});
         res.send(deletedTrip);
-    } catch(err) {
-        res.send(err);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 };
 
