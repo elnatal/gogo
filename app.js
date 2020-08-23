@@ -38,6 +38,7 @@ app.use('/corporates', require('./routes/corporates'));
 app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
+app.use('/sos', require('./routes/sos'));
 app.use('/vehicles', require('./routes/vehicles'));
 app.use('/wallet-histories', require('./routes/walletHistories'));
 app.use('/vehicleTypes', require('./routes/vehicleTypes'));
