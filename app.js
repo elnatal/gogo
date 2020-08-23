@@ -39,6 +39,7 @@ app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
 app.use('/vehicles', require('./routes/vehicles'));
+app.use('/wallet-histories', require('./routes/walletHistories'));
 app.use('/vehicleTypes', require('./routes/vehicleTypes'));
 app.use('/accounts', require('./routes/accounts'));
 
