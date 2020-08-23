@@ -43,12 +43,19 @@ module.exports = function (io) {
                 fcm = passengerInfo.fcm;
                 started = true;
                 try {
-                    Ride.findOne({ active: true, passenger: id }, (err, res) => {
-                        if (err) console.log(err);
-                        if (res) {
-                            socket.emit('trip', res);
+                    var ride = Ride.findOne({ active: true, passenger: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+
+                    var rent = Rent.findOne({ active: true, passenger: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+
+                    Promise.all([ride, rent]).then((values) => {
+                        if (values[0]) {
+                            socket.emit("trip", values[0]);
+                        } else if (values[1] && values[1].status != "Started") {
+                            socket.emit("rent", values[1]);
                         }
-                    }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                    }).catch((error) => {
+                        console.log({ error });
+                    })
 
                     getNearbyDrivers({ location, distance: 100 }).then((drivers) => {
                         socket.emit('nearDrivers', drivers);
@@ -322,7 +329,7 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('trip', res);
-                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
+                                // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                             }
 
                             var passengers = getUsers({ userId: res.passenger._id });
@@ -353,7 +360,7 @@ module.exports = function (io) {
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) {
                                 io.of('/driver-socket').to(driver.socketId).emit('rent', res);
-                                io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
+                                // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                             }
 
                             var passengers = getUsers({ userId: res.passenger._id });
