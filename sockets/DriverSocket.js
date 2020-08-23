@@ -256,23 +256,29 @@ module.exports = function (io) {
                             if (res.status != "Completed") {
                                 var discount = setting.discount ? setting.discount : 0;
                                 var tax = setting.tax ? setting.tax : 15;
-                                var discount = setting.discount ? setting.discount : 0;
+                                var companyCut = setting.companyCut ? setting.companyCut : 15;
                                 var date = new Date();
                                 var tsts = new Date(res.pickupTimestamp);
                                 var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
+                                var cutFromDriver = 0;
                                 var fare = 0;
                                 if (res.type == "corporate") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                    cutFromDriver = (- fare * (companyCut / 100)) + fare;
                                 } else if (res.type == "normal") {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
+                                    cutFromDriver = (- fare * (companyCut / 100)) + discount;
                                 } else if (res.type == "bid") {
                                     fare = trip.bidAmount;
+                                    cutFromDriver = - fare * (companyCut / 100);
                                 } else {
                                     fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
+                                    cutFromDriver = (- fare * (companyCut / 100)) + discount;
                                 }
                                 res.status = "Completed";
                                 res.totalDistance = trip.totalDistance;
                                 res.discount = discount;
+                                res.companyCut = companyCut;
                                 res.tax = tax;
                                 res.fare = fare;
                                 res.endTimestamp = date;
@@ -326,10 +332,12 @@ module.exports = function (io) {
                         if (res) {
                             if (res.status != "Completed") {
                                 var tax = setting.tax ? setting.tax : 15;
+                                var companyCut = setting.companyCut ? setting.companyCut : 15;
                                 var fare = ((rent.months * (res.vehicleType.rentPerDay * 30)) + (rent.hours * res.vehicleType.rentPerHour) + (rent.days * res.vehicleType.rentPerDay)) * rent.months > 0 ? res.vehicleType.rentDiscount / 100 : 1;
 
                                 res.status = "Completed";
                                 res.tax = tax;
+                                res.companyCut = companyCut;
                                 res.fare = fare;
                                 res.endTimestamp = new Date();
                                 res.active = false;

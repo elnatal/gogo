@@ -322,6 +322,22 @@ const rate = async (req, res) => {
     }
 }
 
+const updateWallet = (data) => {
+    WalletHistory.create({
+        driver: data.id,
+        amount: data.amount
+    }, (error, res) => {
+        if (error) console.log({error});
+        if (res) {
+            Driver.findById(data.id, (error, res) => {
+                if (error) console.log({error});
+                res.wallet += data.amount;
+                res.save();
+            })
+        }
+    });
+}
+
 const store = async (req, res) => {
     try {
         const savedDriver = await Driver.create(req.body);
@@ -353,4 +369,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet };
