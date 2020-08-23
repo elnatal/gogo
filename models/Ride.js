@@ -56,8 +56,18 @@ const RideSchema = Schema({
     cancelledBy: String,
     cancelledReason: String,
     totalDistance: Number,
-    fare: Number,
-    tax: Number,
+    companyCut: {
+        type: Number,
+        default: 15
+    },
+    fare: {
+        type: Number,
+        default: 0
+    },
+    tax: {
+        type: Number,
+        default: 15
+    },
     route: {
         coordinates: {
             type: [[Number]]

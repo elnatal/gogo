@@ -147,6 +147,40 @@ const search = (req, res) => {
     }
 }
 
+const income = (req, res) => {
+    try {
+        var monthIncome = 0;
+        var start = new Date();
+        start.setDate(1);
+        Promise.all([
+            Rent.find({
+                driver: req.params.id, endTimestamp: { $gte: start }
+            }),
+            Ride.find({ driver: req.params.id, endTimestamp: { $gte: start } })
+        ]).then((values) => {
+            values[0].forEach((rent) => {
+                if (rent.status == "Completed") {
+                    monthIncome += rent.fare - (rent.fare * (rent.companyCut / 100))
+                }
+            })
+
+            values[1].forEach((trip) => {
+                if (trip.status == "Completed") {
+                    monthIncome += trip.fare - (trip.fare * (trip.companyCut / 100))
+                }
+            })
+
+            res.send({ month: monthIncome })
+        }).catch((error) => {
+            console.log({ error });
+            res.status(500).send({ error });
+        })
+    } catch (error) {
+        console.log({ error });
+        res.status(500).send({ error });
+    }
+}
+
 const show = (req, res) => {
     try {
         Driver.findById(req.params.id, (err, driver) => {
@@ -174,7 +208,7 @@ const bookings = (req, res) => {
     try {
         Ride.find({ driver: req.params.id }, 'type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (err, rides) => {
             res.send(rides);
-        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate({path: 'vehicleType', select: 'name -_id'});
+        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate({ path: 'vehicleType', select: 'name -_id' });
     } catch (error) {
         res.status(500).send(error);
     }
@@ -182,10 +216,10 @@ const bookings = (req, res) => {
 
 const scheduledTrips = (req, res) => {
     try {
-        Ride.find({driver: req.params.id, status: "Scheduled"}, (error, trips) => {
+        Ride.find({ driver: req.params.id, status: "Scheduled" }, (error, trips) => {
             if (error) {
-                console.log({error});
-                res.status(500).send({error});
+                console.log({ error });
+                res.status(500).send({ error });
             }
 
             if (trips) {
@@ -193,14 +227,14 @@ const scheduledTrips = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log({error});
-        res.status(500).send({error});
+        console.log({ error });
+        res.status(500).send({ error });
     }
 }
 
 const rents = (req, res) => {
     try {
-        Rent.find({driver: req.params.id}, (error, rents) => {
+        Rent.find({ driver: req.params.id }, (error, rents) => {
             if (error) {
                 console.log({ error });
                 res.status(500).send({ error });
@@ -226,14 +260,14 @@ const topUp = (req, res) => {
                 if (driver) {
                     driver.balance = driver.balance + req.body.amount;
                     await driver.save();
-                    WalletHistory.create({driver: req.params.id, amount: req.body.amount}, (error, wallet) => {
+                    WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
                         if (error) {
                             console.log({ error });
                             res.status(500).send({ error });
                         }
                         if (wallet) {
                             console.log("balance", driver.balance);
-                            res.send({"ballance": driver.balance});
+                            res.send({ "ballance": driver.balance });
                         }
                     })
                 }
@@ -249,7 +283,7 @@ const topUp = (req, res) => {
 
 const walletHistory = (req, res) => {
     try {
-        WalletHistory.find({driver: req.params.id}, (error, walletHistory) => {
+        WalletHistory.find({ driver: req.params.id }, (error, walletHistory) => {
             if (error) {
                 console.log({ error });
                 res.status(500).send({ error });
@@ -283,8 +317,8 @@ const rate = async (req, res) => {
             res.send("Rated");
         }
     } catch (error) {
-        console.log({error});
-        res.status(500).send({error});
+        console.log({ error });
+        res.status(500).send({ error });
     }
 }
 
@@ -319,4 +353,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory };
+module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income };

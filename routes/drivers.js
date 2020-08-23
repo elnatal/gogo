@@ -13,6 +13,8 @@ router.get('/:id', DriverController.show);
 
 router.get('/:id/bookings', DriverController.bookings);
 
+router.get('/:id/income', DriverController.income);
+
 router.get('/:id/wallet-history', DriverController.walletHistory);
 
 router.get('/:id/scheduled-trips', DriverController.scheduledTrips);

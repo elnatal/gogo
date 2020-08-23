@@ -36,8 +36,18 @@ const RentSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Vehicles"
     },
-    fare: Number,
-    tax: Number,
+    fare: {
+        type: Number,
+        default: 0
+    },
+    companyCut: {
+        type: Number,
+        default: 15
+    },
+    tax: {
+        type: Number,
+        default: 15
+    },
     status: String,
     active: {
         type: Boolean,
