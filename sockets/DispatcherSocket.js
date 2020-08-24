@@ -14,12 +14,10 @@ module.exports = function (io) {
         console.log("new dispatcher connection", socket.id);
         var id = "";
         var started = false;
-        var setting;
 
         socket.on("init", async (dispatcherInfo) => {
             console.log(dispatcherInfo)
             if (!started && dispatcherInfo && dispatcherInfo.id) {
-                setting = await Setting.findOne();
                 id = dispatcherInfo.id;
                 started = true;
                 addDispatcher({ dispatcherId: id, socketId: socket.id });
@@ -36,6 +34,9 @@ module.exports = function (io) {
                 var canceled = false;
                 var passengerId = "";
                 var schedule = null;
+                var setting = await Setting.findOne();
+
+                console.log({setting});
 
                 if (data.schedule && data.schedule != undefined) {
                     schedule = new Date(data.schedule);
