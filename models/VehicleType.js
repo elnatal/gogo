@@ -8,7 +8,7 @@ const VehicleTypeSchema = Schema({
     },
     active: {
         type: Boolean,
-        required: true
+        default: true
     },
     city: {
         type: Schema.Types.ObjectId,

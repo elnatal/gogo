@@ -68,7 +68,7 @@ const vehicleSchema = Schema({
     },
     active: {
         type: Boolean,
-        default: false
+        default: true
     }
 },
 {

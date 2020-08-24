@@ -14,6 +14,7 @@ module.exports = function (io) {
         console.log("new dispatcher connection", socket.id);
         var id = "";
         var started = false;
+        var setting = Setting.findOne();
 
         socket.on("init", async (dispatcherInfo) => {
             console.log(dispatcherInfo)
@@ -34,7 +35,6 @@ module.exports = function (io) {
                 var canceled = false;
                 var passengerId = "";
                 var schedule = null;
-                var setting = Setting.findOne();
 
                 if (data.schedule && data.schedule != undefined) {
                     schedule = new Date(data.schedule);
@@ -67,9 +67,9 @@ module.exports = function (io) {
                 }
 
 
-                var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+                var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=" + setting.mapKey);
 
-                var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=AIzaSyCG0lZ4sMamZ2WiMAFJvx6StV0pkkPbhNc");
+                var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=" + setting.mapKey);
 
                 Promise.all([pickup, dropOff]).then(value => {
                     console.log("promise")
@@ -166,7 +166,7 @@ module.exports = function (io) {
                             if (!driverFound && !canceled) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                             }
-                        }, setting && setting.requestTimeout ? setting.requestTimeout : 10000);
+                        }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                     } else {
                         console.log("no diver found");
                         socket.emit("noAvailableDriver");

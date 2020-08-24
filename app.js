@@ -34,6 +34,7 @@ app.use('/setting', require('./routes/settings'));
 app.use('/tickets', require('./routes/tickets'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/corporates', require('./routes/corporates'));
+app.use('/corporate-payments', require('./routes/corporatePayments'));
 app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
