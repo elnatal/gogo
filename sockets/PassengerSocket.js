@@ -262,7 +262,7 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
                                 type: request.type,
-                                corporate: ticket && ticket.corporate ? ticket.corporate : null,
+                                corporate: request.corporate,
                                 schedule: request.schedule,
                                 bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,

@@ -28,7 +28,7 @@ module.exports = function (io) {
         });
 
         socket.on('search', async (data) => {
-            if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType, data.name && data.phone) {
+            if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType && data.phone) {
                 console.log("search", data);
                 var requestedDrivers = [];
                 var driverFound = false;
@@ -56,11 +56,11 @@ module.exports = function (io) {
 
                 var route;
 
-                const passenger = await User.findOne({phoneNumber: data.phone});
+                const passenger = await User.findOne({ phoneNumber: data.phone });
                 if (passenger) {
                     passengerId = passenger._id;
                 } else {
-                    const newPassenger = await User.create({phoneNumber: data.phone, firstName: data.name});
+                    const newPassenger = await User.create({ phoneNumber: data.phone, firstName: data.name ? data.name : "_", lastName: "_" });
                     if (newPassenger) {
                         passengerId = newPassenger._id;
                     }
@@ -96,19 +96,19 @@ module.exports = function (io) {
                     Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + pua.long + ',' + pua.lat + ';' + doa.long + ',' + doa.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((routeObject) => {
                         if (routeObject && routeObject.data && routeObject.data.routes && routeObject.data.routes[0] && routeObject.data.routes[0].geometry && routeObject.data.routes[0].geometry.coordinates) {
                             route = { coordinates: routeObject.data.routes[0].geometry.coordinates, distance: routeObject.data.routes[0].distance, duration: routeObject.data.routes[0].duration };
-                            console.log({pua});
-                            console.log({doa});
-                            console.log({route});
+                            console.log({ pua });
+                            console.log({ doa });
+                            console.log({ route });
                             socket.emit("searching");
                             sendRequest();
                         } else {
                             console.log("========================== something went wrong =============================")
                         }
                     }).catch((err) => {
-                        console.log({err});
+                        console.log({ err });
                     });
                 }).catch((error) => {
-                    console.log({error});
+                    console.log({ error });
                 });
 
                 // sendRequest();
@@ -137,6 +137,7 @@ module.exports = function (io) {
                             type: "normal",
                             schedule,
                             vehicleId: vehicle._id,
+                            bidAmount: null,
                             pickUpAddress: {
                                 name: pua.name,
                                 coordinate: {
@@ -144,8 +145,11 @@ module.exports = function (io) {
                                     long: pua.long
                                 },
                             },
-                            route: route,
+                            route,
+                            note: data.note ? data.note : "",
                             vehicleType: vehicleTypeData,
+                            ticket: null,
+                            corporate: false,
                             dropOffAddress: {
                                 name: doa.name,
                                 coordinate: {
@@ -194,10 +198,15 @@ module.exports = function (io) {
                         try {
                             var ride = await Ride.create({
                                 driver: request.driverId,
-                                passenger: passengerId,
+                                passenger: request.passengerId,
                                 vehicle: request.vehicleId,
+                                type: request.type,
                                 schedule: request.schedule,
+                                corporate: request.corporate,
+                                bidAmount: request.bidAmount,
                                 route: request.route,
+                                note: request.note,
+                                ticket: request.ticket,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType._id,
@@ -207,7 +216,7 @@ module.exports = function (io) {
                             });
 
                             const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType');
-                            console.log({createdRide});
+                            console.log({ createdRide });
 
                             var dispatcher = getDispatcher({ dispatcherId: id });
                             if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('trip', createdRide);
