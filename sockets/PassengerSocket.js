@@ -21,7 +21,6 @@ module.exports = function (io) {
         var fcm = "";
         var location = null;
         var started = false;
-        var setting = Setting.findOne();
 
         var interval = setInterval(() => {
             if (id && location) {
@@ -91,6 +90,8 @@ module.exports = function (io) {
         socket.on('search', async (data) => {
             if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
                 console.log("search")
+                var setting = await Setting.findOne();
+                console.log({setting});
                 var type = "normal";
                 if (data.type && data.type != undefined) {
                     type = data.type;
@@ -160,7 +161,7 @@ module.exports = function (io) {
                 async function sendRequest() {
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
@@ -262,7 +263,7 @@ module.exports = function (io) {
                                 driver: request.driverId,
                                 vehicle: request.vehicleId,
                                 type: request.type,
-                                corporate: request.corporate,
+                                corporate: ticket && ticket.corporate ? ticket.corporate : null,
                                 schedule: request.schedule,
                                 bidAmount: request.bidAmount,
                                 pickUpAddress: request.pickUpAddress,
@@ -378,6 +379,8 @@ module.exports = function (io) {
         socket.on('rent', async (data) => {
             if (started && data && data.pickUpAddress && data.vehicleType && data.startTimestamp && data.endTimestamp) {
                 console.log("starting rent");
+                var setting = await Setting.findOne();
+                console.log({setting});
                 var requestedDrivers = [];
                 var driverFound = false;
                 var canceled = false;
@@ -407,7 +410,7 @@ module.exports = function (io) {
                 async function sendRequest() {
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });

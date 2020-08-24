@@ -120,7 +120,7 @@ module.exports = function (io) {
                     console.log("requesting");
                     var vehicle;
                     var vehicles = [];
-                    vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: 10000 }));
+                    vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
                     vehicles.forEach((v) => {
                         console.log({ vehicles });
@@ -204,11 +204,11 @@ module.exports = function (io) {
                                 vehicle: request.vehicleId,
                                 type: request.type,
                                 schedule: request.schedule,
-                                corporate: request.corporate,
+                                corporate: null,
                                 bidAmount: request.bidAmount,
                                 route: request.route,
                                 note: request.note,
-                                ticket: request.ticket,
+                                ticket: null,
                                 pickUpAddress: request.pickUpAddress,
                                 dropOffAddress: request.dropOffAddress,
                                 vehicleType: request.vehicleType._id,
