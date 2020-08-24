@@ -217,7 +217,7 @@ module.exports = function (io) {
                                 createdBy: "dispatcher",
                             });
 
-                            const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType');
+                            const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType').populate('vehicle').populated('passenger');
                             console.log({ createdRide });
 
                             var dispatcher = getDispatcher({ dispatcherId: id });
