@@ -14,11 +14,12 @@ module.exports = function (io) {
         console.log("new dispatcher connection", socket.id);
         var id = "";
         var started = false;
-        var setting = Setting.findOne();
+        var setting;
 
         socket.on("init", async (dispatcherInfo) => {
             console.log(dispatcherInfo)
             if (!started && dispatcherInfo && dispatcherInfo.id) {
+                setting = await Setting.findOne();
                 id = dispatcherInfo.id;
                 started = true;
                 addDispatcher({ dispatcherId: id, socketId: socket.id });
