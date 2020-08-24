@@ -8,11 +8,11 @@ const SOSSchema = Schema({
   },
   passenger: {
     type: Schema.Types.ObjectId,
-    ref: "Drivers"
+    ref: "Users"
   },
   vehicle: {
     type: Schema.Types.ObjectId,
-    ref: "Drivers"
+    ref: "Vehicles"
   },
   type: String,
   position: {

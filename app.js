@@ -3,7 +3,6 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 const socketIO = require('socket.io');
-const { request } = require('express');
 const { runCrone } = require('./services/cronService');
 require('dotenv/config');
 
@@ -38,7 +37,7 @@ app.use('/corporates', require('./routes/corporates'));
 app.use('/trips', require('./routes/trips'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
-app.use('/sos', require('./routes/sos'));
+app.use('/sos', require('./routes/sos')(io));
 app.use('/vehicles', require('./routes/vehicles'));
 app.use('/wallet-histories', require('./routes/walletHistories'));
 app.use('/vehicleTypes', require('./routes/vehicleTypes'));

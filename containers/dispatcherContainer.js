@@ -21,4 +21,6 @@ const removeDispatcher = ({ dispatcherId }) => {
 
 const getDispatcher = ({ dispatcherId }) => dispatchers.find((dispatcher) => dispatcher.dispatcherId == dispatcherId);
 
-module.exports = { addDispatcher, removeDispatcher, getDispatcher };
+const getAllDispatchers = () => dispatchers;
+
+module.exports = { addDispatcher, removeDispatcher, getDispatcher, getAllDispatchers };

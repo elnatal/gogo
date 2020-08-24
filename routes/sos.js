@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const SOSController = require('../controllers/SOSController');
 
-router.get('/', SOSController.index);
+module.exports = (io) => {
+    const SOSController = require('../controllers/SOSController')(io);
 
-router.get('/:id', SOSController.show);
+    router.get('/', SOSController.index);
 
-router.post('/', SOSController.store);
+    router.get('/:id', SOSController.show);
 
-module.exports = router
+    router.post('/', SOSController.store);
+
+    return router;
+}
