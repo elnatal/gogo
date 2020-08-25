@@ -139,6 +139,7 @@ const searchForDispatcher = async (socket, data) => {
             console.log({ vehicles });
             if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                 console.log("here");
+                console.log({v});
                 vehicle = v;
                 requestedDrivers.push(v._id)
                 return;
@@ -180,6 +181,7 @@ const searchForDispatcher = async (socket, data) => {
             socket.emit("request", request);
             var driver = getDriver({ id: request.driverId })
             if (driver) {
+                console.log("driver socket exist ==============");
                 io.of('/driver-socket').to(driver.socketId).emit('request', request);
             }
 
@@ -207,8 +209,8 @@ const searchForDispatcher = async (socket, data) => {
             var driver = getDriver({ id: request.driverId });
             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
-            var dispatcher = getDispatcher({ dispatcherId: id });
-            if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
+            // var dispatcher = getDispatcher({ dispatcherId: id });
+            // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
         } else if (status == "Accepted") {
             driverFound = true;
             console.log("trip accepted========================");
@@ -230,25 +232,22 @@ const searchForDispatcher = async (socket, data) => {
                     status: request.schedule ? "Scheduled" : "Accepted",
                     active: request.schedule ? false : true,
                     createdBy: "dispatcher",
-                }, (error, ride) => {
-                    if (error) console.log({ error });
+                }, (err, ride) => {
+                    if (err) console.log(err);
                     if (ride) {
-                        console.log("ride created");
-                        Ride.findById(ride._id, (error, createdRide) => {
-                            if (error) console.log({ error });
+                        console.log(ride);
+                        // socket.emit('status', { "status": false });
+                        Ride.findById(ride._id, async (err, createdRide) => {
+                            if (err) console.log(err);
                             if (createdRide) {
-                                console.log("here=========");
-                                // console.log({ createdRide });
-                                // var dispatcher = getDispatcher({ dispatcherId: id });
-                                // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('trip', createdRide);
+                                console.log("ride", createdRide);
 
                                 var driver = getDriver({ id: request.driverId })
-                                if (driver) {
-                                    console.log("driver socket exist");
-                                    io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
-                                }
+                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+
+                                Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
                             }
-                        }).populate('driver').populate('vehicleType').populate('vehicle').populated('passenger');
+                        }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                     }
                 });
             } catch (error) {
