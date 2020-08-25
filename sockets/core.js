@@ -139,7 +139,7 @@ const searchForDispatcher = async (socket, data) => {
             console.log({ vehicles });
             if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                 console.log("here");
-                console.log({v});
+                console.log({ v });
                 vehicle = v;
                 requestedDrivers.push(v._id)
                 return;
@@ -183,13 +183,16 @@ const searchForDispatcher = async (socket, data) => {
             if (driver) {
                 console.log("driver socket exist ==============");
                 io.of('/driver-socket').to(driver.socketId).emit('request', request);
-            }
 
-            setTimeout(() => {
-                if (!driverFound && !canceled) {
-                    updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                }
-            }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
+                setTimeout(() => {
+                    if (!driverFound && !canceled) {
+                        updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    }
+                }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
+            } else {
+                console.log("no driver socket");
+                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+            }
         } else {
             console.log("no diver found");
             socket.emit("noAvailableDriver");

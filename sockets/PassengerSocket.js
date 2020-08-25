@@ -209,15 +209,21 @@ module.exports = (socket) => {
                     socket.emit("request", request);
                     var driver = getDriver({ id: request.driverId })
                     console.log({ driver });
-                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
-                    Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => { });
-
-                    setTimeout(() => {
-                        if (!driverFound && !canceled) {
-                            updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                            sendRequest();
-                        }
-                    }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
+                    if (driver) {
+                        console.log("driver socket exist ***********");
+                        io.of('/driver-socket').to(driver.socketId).emit('request', request);
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => { });
+    
+                        setTimeout(() => {
+                            if (!driverFound && !canceled) {
+                                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                                sendRequest();
+                            }
+                        }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
+                    } else {
+                        console.log("no driver socket");
+                        updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    }
                 } else {
                     console.log("no diver found");
                     socket.emit("noAvailableDriver");

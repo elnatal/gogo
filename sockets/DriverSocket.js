@@ -116,8 +116,8 @@ module.exports = (socket) => {
     })
 
     socket.on('updateLocation', (newLocation) => {
-        console.log({ newLocation });
         if (started && newLocation && newLocation.lat && newLocation.long) {
+            console.log({ newLocation });
             Vehicle.updateOne({ _id: vehicleId }, {
                 timestamp: new Date(),
                 position: {
@@ -299,7 +299,7 @@ module.exports = (socket) => {
                                 });
                             }
 
-                            updateWallet({id, amount: cutFromDriver});
+                            updateWallet({ id, amount: cutFromDriver });
 
                             Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
                                 if (err) console.log({ err });
@@ -349,7 +349,7 @@ module.exports = (socket) => {
 
                             console.log({ res });
 
-                            updateWallet({id, amount: cutFromDriver});
+                            updateWallet({ id, amount: cutFromDriver });
 
                             Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
                                 if (err) console.log({ err });
