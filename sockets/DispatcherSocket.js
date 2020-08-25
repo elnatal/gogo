@@ -1,4 +1,5 @@
 const { addDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
+const { searchForDispatcher } = require('./core');
 
 module.exports = (socket) => {
     console.log("new dispatcher connection", socket.id);
