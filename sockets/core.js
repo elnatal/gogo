@@ -7,7 +7,6 @@ const Ride = require('../models/Ride');
 const { getDriver } = require('../containers/driversContainer');
 const { addRequest, updateRequest } = require('../containers/requestContainer');
 const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
-const { default: Axios } = require('axios');
 const Setting = require('../models/Setting');
 
 function getNearbyDrivers({ location, distance }) {
