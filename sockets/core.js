@@ -57,7 +57,7 @@ function search({ pickupLocation, dropOffLocation, userId }) {
     }, 5000)
 }
 
-const searchForDispatcher = async (data) => {
+const searchForDispatcher = async (io, socket, data) => {
     console.log("search", data);
     var requestedDrivers = [];
     var driverFound = false;

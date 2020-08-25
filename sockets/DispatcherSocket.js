@@ -28,7 +28,7 @@ module.exports = function (io) {
 
         socket.on('search', async (data) => {
             if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType && data.phone) {
-                searchForDispatcher(data);
+                searchForDispatcher(io,socket, data);
             }
         });
 
