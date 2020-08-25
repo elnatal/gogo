@@ -8,6 +8,8 @@ const { getDriver } = require('../containers/driversContainer');
 const { addRequest, updateRequest } = require('../containers/requestContainer');
 const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
 const Setting = require('../models/Setting');
+const { request } = require('express');
+const { getIO } = require('./io');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {
@@ -37,27 +39,7 @@ function getNearbyDrivers({ location, distance }) {
     })
 }
 
-function search({ pickupLocation, dropOffLocation, userId }) {
-    var requestedDrivers = [];
-    var drivers = [];
-
-    var interval = setInterval(async () => {
-        drivers = await getNearbyDrivers(pickupLocation, 1000);
-        if (drivers.length) {
-            try {
-                var drivers = await getNearbyDrivers({ location, distance: 1000 });
-                socket.emit('nearDrivers', drivers);
-            } catch (err) {
-                console.log(err);
-            }
-            setInterval()
-        } else {
-            clearInterval(interval);
-        }
-    }, 5000)
-}
-
-const searchForDispatcher = async (io, socket, data) => {
+const searchForDispatcher = async (socket, data) => {
     console.log("search", data);
     var requestedDrivers = [];
     var driverFound = false;
@@ -65,6 +47,7 @@ const searchForDispatcher = async (io, socket, data) => {
     var passengerId = "";
     var schedule = null;
     var setting = await Setting.findOne();
+    var io = getIO();
 
     console.log({ setting });
 
@@ -196,7 +179,9 @@ const searchForDispatcher = async (io, socket, data) => {
             console.log({ request });
             socket.emit("request", request);
             var driver = getDriver({ id: request.driverId })
-            if (driver) io.of('/driver-socket').to(driver.socketId).emit('request', request);
+            if (driver) {
+                io.of('/driver-socket').to(driver.socketId).emit('request', request);
+            }
 
             setTimeout(() => {
                 if (!driverFound && !canceled) {
@@ -226,9 +211,9 @@ const searchForDispatcher = async (io, socket, data) => {
             if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
         } else if (status == "Accepted") {
             driverFound = true;
-
+            console.log("trip accepted========================");
             try {
-                var ride = await Ride.create({
+                Ride.create({
                     driver: request.driverId,
                     passenger: request.passengerId,
                     vehicle: request.vehicleId,
@@ -245,16 +230,27 @@ const searchForDispatcher = async (io, socket, data) => {
                     status: request.schedule ? "Scheduled" : "Accepted",
                     active: request.schedule ? false : true,
                     createdBy: "dispatcher",
+                }, (error, ride) => {
+                    if (error) console.log({ error });
+                    if (ride) {
+                        console.log("ride created");
+                        Ride.findById(ride._id, (error, createdRide) => {
+                            if (error) console.log({ error });
+                            if (createdRide) {
+                                console.log("here=========");
+                                // console.log({ createdRide });
+                                // var dispatcher = getDispatcher({ dispatcherId: id });
+                                // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('trip', createdRide);
+
+                                var driver = getDriver({ id: request.driverId })
+                                if (driver) {
+                                    console.log("driver socket exist");
+                                    io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                }
+                            }
+                        }).populate('driver').populate('vehicleType').populate('vehicle').populated('passenger');
+                    }
                 });
-
-                const createdRide = await Ride.findById(ride._id).populate('driver').populate('vehicleType').populate('vehicle').populated('passenger');
-                console.log({ createdRide });
-
-                var dispatcher = getDispatcher({ dispatcherId: id });
-                if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('trip', createdRide);
-
-                var driver = getDriver({ id: request.driverId })
-                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
             } catch (error) {
                 console.log(error);
             }
@@ -264,4 +260,4 @@ const searchForDispatcher = async (io, socket, data) => {
     }
 }
 
-module.exports = { getNearbyDrivers, search, searchForDispatcher };
+module.exports = { getNearbyDrivers, searchForDispatcher };

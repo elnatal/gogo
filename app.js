@@ -3,17 +3,19 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 const socketIO = require('socket.io');
+const { setIO } = require('./sockets/io');
 const { runCrone } = require('./services/cronService');
 require('dotenv/config');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+setIO(io);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -45,19 +47,24 @@ app.use('/vehicleTypes', require('./routes/vehicleTypes'));
 app.use('/accounts', require('./routes/accounts'));
 
 // Driver Socket
-const ds = require('./sockets/DriverSocket')(io);
+const ds = require('./sockets/DriverSocket');
 const driverSocket = io.of('/driver-socket');
 driverSocket.on('connection', ds);
 
 // Passenger Socket
-const ps = require('./sockets/PassengerSocket')(io);
+const ps = require('./sockets/PassengerSocket');
 const passengerSocket = io.of('/passenger-socket');
 passengerSocket.on('connection', ps);
 
 // Dispatcher Socket
-const dis = require('./sockets/DispatcherSocket')(io);
+const dis = require('./sockets/DispatcherSocket');
 const dispatcherSocket = io.of('/dispatcher-socket');
 dispatcherSocket.on('connection', dis);
+
+// SOS Socket
+const ss = require('./sockets/SosSocket');
+const sosSocket = io.of('/sos-socket');
+sosSocket.on('connection', ss);
 
 // Start cron
 runCrone(io);

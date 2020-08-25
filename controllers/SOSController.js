@@ -114,12 +114,7 @@ module.exports = (io) => {
                                         }
 
                                         if (newSos) {
-                                            var dispatchers = getAllDispatchers();
-
-                                            dispatchers.forEach((dispatcher) => {
-                                                io.of('/dispatcher-socket').to(dispatcher.socketId).emit('sos', newSos);
-                                            })
-
+                                            io.to('sos').emit('sos', newSos);
                                             res.send(newSos)
                                         } else {
                                             res.status(500).send("no new sos");
@@ -166,11 +161,7 @@ module.exports = (io) => {
                                         }
 
                                         if (newSos) {
-                                            var dispatchers = getAllDispatchers();
-
-                                            dispatchers.forEach((dispatcher) => {
-                                                io.of('/dispatcher-socket').to(dispatcher.socketId).emit('sos', newSos);
-                                            })
+                                            io.to('sos').emit('sos', newSos);
                                             res.send(newSos)
                                         }
                                     }).populate('passenger').populate('driver').populate('vehicle');
