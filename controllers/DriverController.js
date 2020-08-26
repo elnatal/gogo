@@ -79,7 +79,7 @@ const firebaseAuth = async (req, res) => {
                 driver._doc["token"] = token._id;
                 var vehicle = await Vehicle.findOne({ driver: driver._id });
                 var setting = await Setting.findOne();
-                if (vehicle && vehicle.active) {
+                if (vehicle) {
                     res.send({ driver, vehicle, setting });
                 } else {
                     res.send({ driver, vehicle: null, setting });
@@ -96,7 +96,7 @@ const firebaseAuth = async (req, res) => {
                     driver._doc["token"] = token._id;
                     var vehicle = await Vehicle.findOne({ driver: driver._id });
                     var setting = await Setting.findOne();
-                    if (vehicle && vehicle.active) {
+                    if (vehicle) {
                         res.send({ driver, vehicle, setting });
                     } else {
                         res.send({ driver, vehicle: null, setting });
