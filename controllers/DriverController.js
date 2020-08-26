@@ -14,8 +14,17 @@ const index = async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {};
 
-        var drives = Driver.find();
+        if (req.query.approved != null) {
+            filter['approved'] = req.query.approved;
+        }
+
+        if (req.query.active != null) {
+            filter['active'] = req.query.active;
+        }
+
+        var drives = Driver.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -39,7 +48,7 @@ const index = async (req, res) => {
             });
         }
         Promise.all([
-            Driver.countDocuments(),
+            Driver.countDocuments(filter),
             drives.exec()
         ]).then(async (value) => {
             if (value) {
