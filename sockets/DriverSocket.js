@@ -14,7 +14,7 @@ const Rent = require("../models/Rent");
 const { updateWallet } = require("../controllers/DriverController");
 const { getIO } = require("./io");
 
-module.exports = (socket) => {
+module.exports = async (socket) => {
     console.log("new connection", socket.id);
     var io = getIO();
     var id = "";
@@ -23,8 +23,7 @@ module.exports = (socket) => {
     var location = null;
     var started = false;
     var token = "";
-    var setting = Setting.findOne();
-    var inTrip = false;
+    var setting = await Setting.findOne();
 
     socket.on('init', async (driverInfo) => {
         console.log(driverInfo);
@@ -386,6 +385,7 @@ module.exports = (socket) => {
                         res.status = "Canceled";
                         res.endTimestamp = new Date();
                         res.cancelledBy = "Driver";
+                        res.cancelCost = setting.cancelCost,
                         res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
@@ -393,6 +393,8 @@ module.exports = (socket) => {
                             if (err) console.log({ err });
                             if (res) console.log("status updated", true, vehicleId);
                         });
+                        updateWallet({ id, amount: -(setting.cancelCost) });
+
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) {
                             io.of('/driver-socket').to(driver.socketId).emit('trip', res);

@@ -17,7 +17,10 @@ const SettingSchema = Schema({
     searchRadius: Number,
     tax: Number,
     defaultCommission: Number,
-    cancelCost: Number,
+    cancelCost: {
+        type: Number,
+        default: 0
+    },
     discount: Number,
     contactNumber: String,
     contactEmail: String,

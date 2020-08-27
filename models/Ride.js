@@ -16,6 +16,10 @@ const RideSchema = Schema({
         ref: "Drivers"
     },
     pickupTimestamp: Date,
+    cancelCost: {
+        type: Number,
+        default: 0
+    },
     endTimestamp: Date,
     pickUpAddress: {
         type: {
