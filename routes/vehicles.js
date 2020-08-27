@@ -6,6 +6,8 @@ router.get('/', VehicleController.index);
 
 router.get('/activeVehicles', VehicleController.activeVehicles)
 
+router.get('/search', VehicleController.search);
+
 router.get('/:id', VehicleController.show);
 
 router.post('/', VehicleController.store);

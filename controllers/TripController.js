@@ -12,12 +12,15 @@ const index = (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {};
 
-        var trip =  Ride.find({
-            status: {
-                $regex: req.query.status ? req.query.status : "", $options: "i"
-            }
-        });
+        if (req.query.status != null) {
+            filter['status'] = {
+                $regex: req.query.status, $options: "i"
+            };
+        }
+
+        var trip =  Ride.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -41,7 +44,7 @@ const index = (req, res) => {
             });
         }
         Promise.all([
-            Ride.estimatedDocumentCount(),
+            Ride.countDocuments(filter),
             trip.exec()
         ]).then((value) => {
             if (value) {

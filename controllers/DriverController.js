@@ -16,11 +16,11 @@ const index = async (req, res) => {
         var prevPage;
         var filter = {};
 
-        if (req.query.approved != null) {
+        if (req.query.approved != null && req.query.approved != 'all') {
             filter['approved'] = req.query.approved;
         }
 
-        if (req.query.active != null) {
+        if (req.query.active != null && req.query.active != 'all') {
             filter['active'] = req.query.active;
         }
 
@@ -124,7 +124,7 @@ const firebaseAuth = async (req, res) => {
 
 const search = (req, res) => {
     try {
-        Driver.find({
+        var filter = {
             $or: [
                 {
                     firstName: {
@@ -144,7 +144,17 @@ const search = (req, res) => {
                     }
                 }
             ]
-        }, (error, drivers) => {
+        };
+
+        if (req.query.approved != null && req.query.approved != 'all') {
+            filter['approved'] = req.query.approved;
+        }
+
+        if (req.query.active != null && req.query.active != 'all') {
+            filter['active'] = req.query.active;
+        }
+
+        Driver.find(filter, (error, drivers) => {
             if (error) {
                 console.log(error);
                 res.status(500).send(error);

@@ -7,8 +7,17 @@ const index =  async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {};
 
-        var vehicle =  Vehicle.find();
+        if (req.query.online != null && req.query.online != 'all') {
+            filter['online'] = req.query.online;
+        }
+
+        if (req.query.active != null && req.query.active != 'all') {
+            filter['active'] = req.query.active;
+        }
+
+        var vehicle =  Vehicle.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -32,7 +41,7 @@ const index =  async (req, res) => {
             });
         }
         Promise.all([
-            Vehicle.estimatedDocumentCount(),
+            Vehicle.countDocuments(filter),
             vehicle.exec()
         ]).then((value) => {
             if (value) {
@@ -60,6 +69,54 @@ const activeVehicles = async (req, res) => {
         res.status(500).send(error);
     }
 };
+
+const search = (req, res) => {
+    try {
+        var filter = {
+            $or: [
+                {
+                    plateNumber: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    color: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelYear: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        };
+
+        if (req.query.online != null && req.query.online != 'all') {
+            filter['online'] = req.query.online;
+        }
+
+        if (req.query.active != null && req.query.active != 'all') {
+            filter['active'] = req.query.active;
+        }
+
+        Vehicle.find(filter, (error, vehicles) => {
+            if (error) {
+                console.log(error);
+                res.status(500).send(error);
+            }
+
+            if (vehicles) {
+                res.send(vehicles);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+}
 
 const show = async (req, res) => {
     try {
@@ -102,4 +159,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, activeVehicles, show, store, update, remove };
+module.exports = { index, activeVehicles, show, store, update, remove, search };
