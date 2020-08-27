@@ -8,8 +8,13 @@ const index = async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {};
 
-        var notifications = Notification.find();
+        if (req.query.to != null && req.query.to != 'all') {
+            filter['to'] = req.query.to;
+        }
+
+        var notifications = Notification.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -27,7 +32,7 @@ const index = async (req, res) => {
         notifications.limit(limit);
         notifications.skip(skip);
         Promise.all([
-            Notification.estimatedDocumentCount(),
+            Notification.countDocuments(filter),
             notifications.exec()
         ]).then(async (value) => {
             if (value) {
@@ -41,6 +46,34 @@ const index = async (req, res) => {
     } catch (error) {
         res.send(error);
     };
+}
+
+const search = (req, res) => {
+    try {
+        var filter = {
+            title: {
+                $regex: req.query.q ? req.query.q : "", $options: "i"
+            }
+        };
+
+        if (req.query.to != null && req.query.to != 'all') {
+            filter['to'] = req.query.to;
+        }
+
+        Notification.find(filter, (error, notifications) => {
+            if (error) {
+                console.log(error);
+                res.status(500).send(error);
+            }
+
+            if (notifications) {
+                res.send(notifications);
+            }
+        }).limit(10);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
 }
 
 const sendByToken = (req, res) => {
@@ -87,4 +120,4 @@ const sendByTopic = (req, res) => {
     }
 }
 
-module.exports = { sendByToken, sendByTopic, index};
+module.exports = { sendByToken, sendByTopic, index, search};

@@ -13,6 +13,10 @@ const index =  async (req, res) => {
             filter['online'] = req.query.online;
         }
 
+        if (req.query.vehicleType != null && req.query.vehicleType != 'all') {
+            filter['vehicleType'] = req.query.vehicleType;
+        }
+
         if (req.query.active != null && req.query.active != 'all') {
             filter['active'] = req.query.active;
         }

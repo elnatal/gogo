@@ -14,7 +14,7 @@ const index = (req, res) => {
         var prevPage;
         var filter = {};
 
-        if (req.query.status != null) {
+        if (req.query.status != null && req.query.status != 'all') {
             filter['status'] = {
                 $regex: req.query.status, $options: "i"
             };

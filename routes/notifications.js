@@ -8,4 +8,6 @@ router.post('/user/:token', NotificationController.sendByToken);
 
 router.get('/', NotificationController.index);
 
+router.get('/search', NotificationController.search);
+
 module.exports = router;

@@ -134,9 +134,9 @@ const show = async (req, res) => {
 
 const bookings = (req, res) => {
     try {
-        Ride.find({ passenger: req.params.id }, (err, rides) => {
+        Ride.find({ passenger: req.params.id }, 'driver, type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (err, rides) => {
             res.send(rides);
-        }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
+        }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
