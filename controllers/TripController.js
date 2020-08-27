@@ -29,7 +29,7 @@ const index = (req, res) => {
         }
 
         if (req.query.start != null && req.query.start != 'all') {
-            filter['startTimestamp'] = { $gte: new Date(req.query.start) };
+            filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
         }
 
         if (req.query.end != null && req.query.end != 'all') {
