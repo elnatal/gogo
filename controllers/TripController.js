@@ -29,11 +29,11 @@ const index = (req, res) => {
         }
 
         if (req.query.start != null && req.query.start != 'all') {
-            filter['startTimestamp'] = { $gte: start };
+            filter['startTimestamp'] = { $gte: new Date(req.query.start) };
         }
 
         if (req.query.end != null && req.query.end != 'all') {
-            filter['endTimestamp'] = { $lte: end };
+            filter['endTimestamp'] = { $lte: new Date(req.query.end) };
         }
 
         var trip =  Ride.find(filter);
