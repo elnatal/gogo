@@ -316,7 +316,7 @@ const walletHistory = (req, res) => {
             if (walletHistory) {
                 res.send(walletHistory);
             }
-        }).limit(20);
+        }).limit(20).populate('driver');
     } catch (error) {
         console.log(error);
         res.status(500).send(error);

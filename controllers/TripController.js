@@ -20,6 +20,22 @@ const index = (req, res) => {
             };
         }
 
+        if (req.query.driver != null && req.query.driver != 'all') {
+            filter['driver'] = req.query.driver;
+        }
+
+        if (req.query.passenger != null && req.query.passenger != 'all') {
+            filter['passenger'] = req.query.passenger;
+        }
+
+        if (req.query.start != null && req.query.start != 'all') {
+            filter['startTimestamp'] = { $gte: start };
+        }
+
+        if (req.query.end != null && req.query.end != 'all') {
+            filter['endTimestamp'] = { $lte: end };
+        }
+
         var trip =  Ride.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
