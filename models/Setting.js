@@ -15,13 +15,22 @@ const SettingSchema = Schema({
         default: 25
     },
     searchRadius: Number,
-    tax: Number,
-    defaultCommission: Number,
+    tax: {
+        type: Number,
+        default: 15
+    },
+    defaultCommission: {
+        type: Number,
+        default: 15
+    },
     cancelCost: {
         type: Number,
         default: 0
     },
-    discount: Number,
+    discount: {
+        type: Number,
+        default: 0
+    },
     contactNumber: String,
     contactEmail: String,
     facebookLink: String,

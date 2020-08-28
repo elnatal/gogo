@@ -256,25 +256,42 @@ module.exports = async (socket) => {
                     if (res) {
                         if (res.status != "Completed") {
                             var discount = setting.discount ? setting.discount : 0;
-                            var tax = setting.tax ? setting.tax : 15;
-                            var companyCut = setting.companyCut ? setting.companyCut : 15;
+                            var tax;
+                            var companyCut;
                             var date = new Date();
+                            var payToDriver = 0;
+                            var net;
                             var tsts = new Date(res.pickupTimestamp);
                             var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                             var cutFromDriver = 0;
                             var fare = 0;
                             if (res.type == "corporate") {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
-                                cutFromDriver = (- fare * (companyCut / 100)) + fare;
+                                companyCut = (fare * (setting.defaultCommission / 100));
+                                payToDriver = (fare - companyCut);
+                                tax = companyCut * (setting.tax / 100);
+                                net = companyCut - tax;
+                                cutFromDriver = -companyCut;
                             } else if (res.type == "normal") {
-                                fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
-                                cutFromDriver = (- fare * (companyCut / 100)) + discount;
+                                fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                companyCut = (fare * (setting.defaultCommission / 100)) - discount;
+                                payToDriver = discount;
+                                tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
+                                net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                                cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                             } else if (res.type == "bid") {
                                 fare = trip.bidAmount;
-                                cutFromDriver = - fare * (companyCut / 100);
+                                companyCut = (fare * (setting.defaultCommission / 100));
+                                tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
+                                net = (fare * (setting.defaultCommission / 100)) - tax;
+                                cutFromDriver = (-companyCut);
                             } else {
-                                fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin) - discount;
-                                cutFromDriver = (- fare * (companyCut / 100)) + discount;
+                                fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                companyCut = (fare * (setting.defaultCommission / 100)) - discount;
+                                payToDriver = discount;
+                                tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
+                                net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                                cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                             }
                             res.status = "Completed";
                             res.totalDistance = trip.totalDistance;
@@ -282,6 +299,8 @@ module.exports = async (socket) => {
                             res.companyCut = companyCut;
                             res.tax = tax;
                             res.fare = fare;
+                            res.payToDriver = payToDriver;
+                            res.net = net;
                             res.endTimestamp = date;
                             res.active = false;
                             res.save();
@@ -382,11 +401,15 @@ module.exports = async (socket) => {
                 Ride.findById(trip.id, (err, res) => {
                     if (err) console.log(err);
                     if (res) {
+                        var tax = setting.cancelCost * (setting.defaultCommission / 100);
                         res.status = "Canceled";
                         res.endTimestamp = new Date();
                         res.cancelledBy = "Driver";
+                        res.tax = tax;
+                        res.companyCut = setting.cancelCost;
+                        res.net = (setting.cancelCost * (setting.tax / 100)) - tax;
                         res.cancelCost = setting.cancelCost,
-                        res.cancelledReason = trip.reason ? trip.reason : "";
+                            res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
                         Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {

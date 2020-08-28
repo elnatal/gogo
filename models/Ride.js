@@ -94,6 +94,7 @@ const RideSchema = Schema({
     passengerRate: Number,
     passengerComment: String,
     payedToDriver: Number,
+    net: Number,
     collectFromDriver: Number,
     corporate: Boolean,
     ticket: {
