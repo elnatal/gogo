@@ -124,6 +124,7 @@ const firebaseAuth = async (req, res) => {
 
 const search = (req, res) => {
     try {
+        var limit = 10;
         var filter = {
             $or: [
                 {
@@ -154,16 +155,32 @@ const search = (req, res) => {
             filter['active'] = req.query.active;
         }
 
-        Driver.find(filter, (error, drivers) => {
+        if (req.query.limit != null) {
+            limit = parseInt(req.query.limit);
+        }
+
+        Driver.find(filter, async (error, drivers) => {
             if (error) {
                 console.log(error);
                 res.status(500).send(error);
             }
 
             if (drivers) {
+                if (req.query.vehicle) {
+                    var result = drivers.map((driver) => mongoose.Types.ObjectId(driver._id));
+                    var vehicles = await Vehicle.find({ driver: { $in: result } });
+
+                    drivers.map((driver) => {
+                        var vehicle = vehicles.find((v) => v.driver.toString() == driver._id.toString());
+                        if (vehicle) {
+                            driver._doc["vehicle"] = vehicle;
+                        }
+                        return driver;
+                    })
+                }
                 res.send(drivers);
             }
-        }).limit(10);
+        }).limit(limit);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
