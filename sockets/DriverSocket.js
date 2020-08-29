@@ -285,6 +285,8 @@ module.exports = async (socket) => {
                                 tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
                                 net = (fare * (setting.defaultCommission / 100)) - tax;
                                 cutFromDriver = (-companyCut);
+                                console.log("log=============");
+                                console.log({fare, companyCut, tax, net, cutFromDriver});
                             } else {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
