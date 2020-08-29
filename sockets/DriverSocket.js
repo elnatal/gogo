@@ -256,11 +256,11 @@ module.exports = async (socket) => {
                     if (res) {
                         if (res.status != "Completed") {
                             var discount = setting.discount ? setting.discount : 0;
-                            var tax;
-                            var companyCut;
+                            var tax = 0;
+                            var companyCut = 0;
                             var date = new Date();
                             var payToDriver = 0;
-                            var net;
+                            var net = 0;
                             var tsts = new Date(res.pickupTimestamp);
                             var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                             var cutFromDriver = 0;
