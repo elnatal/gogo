@@ -167,6 +167,7 @@ const search = (req, res) => {
 
             if (drivers) {
                 if (req.query.vehicle) {
+                    console.log("vehicle");
                     var result = drivers.map((driver) => mongoose.Types.ObjectId(driver._id));
                     var vehicles = await Vehicle.find({ driver: { $in: result } });
 
@@ -174,6 +175,7 @@ const search = (req, res) => {
                         var vehicle = vehicles.find((v) => v.driver.toString() == driver._id.toString());
                         if (vehicle) {
                             driver._doc["vehicle"] = vehicle;
+                            console.log({driver});
                         }
                         return driver;
                     })

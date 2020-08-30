@@ -69,7 +69,7 @@ const auth = async (req, res) => {
 
 const search = (req, res) => {
     try {
-        User.find({
+        var filter = {
             $or: [
                 {
                     firstName: {
@@ -89,7 +89,15 @@ const search = (req, res) => {
                     }
                 }
             ]
-        }, (error, users) => {
+        }
+
+        var limit = 10;
+
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        User.find(filter, (error, users) => {
             if (error) {
                 console.log(error);
                 res.status(500).send(error);
@@ -98,7 +106,7 @@ const search = (req, res) => {
             if (users) {
                 res.send(users);
             }
-        }).limit(10);
+        }).limit(limit);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);

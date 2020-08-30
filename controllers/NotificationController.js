@@ -7,8 +7,20 @@ const index = async (req, res) => {
         var skip = 0;
         var limit = 20;
         var nextPage;
-        var prevPage;
-        var filter = {};
+        var prevPage; 
+        var filter = {
+            $or: [
+                {
+                    title: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    body: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        };
 
         if (req.query.to != null && req.query.to != 'all') {
             filter['to'] = req.query.to;

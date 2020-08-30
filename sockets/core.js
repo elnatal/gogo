@@ -133,18 +133,23 @@ const searchForDispatcher = async (socket, data) => {
         console.log("requesting");
         var vehicle;
         var vehicles = [];
-        vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
-
-        vehicles.forEach((v) => {
-            console.log({ vehicles });
-            if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
-                console.log("here");
-                console.log({ v });
-                vehicle = v;
-                requestedDrivers.push(v._id)
-                return;
-            }
-        });
+        if (data.singleDriver) {
+            console.log("single driver");
+            vehicle = {_id: data.vehicle, driver: data.driver};
+        } else {
+            vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
+    
+            vehicles.forEach((v) => {
+                console.log({ vehicles });
+                if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
+                    console.log("here");
+                    console.log({ v });
+                    vehicle = v;
+                    requestedDrivers.push(v._id)
+                    return;
+                }
+            });
+        }
 
         if (vehicle) {
             var request = new Request({
@@ -202,11 +207,15 @@ const searchForDispatcher = async (socket, data) => {
     async function updateCallback(request) {
         var status = request.getStatus();
         if (status == "Declined") {
-            sendRequest();
+            if (!data.singleDriver) {
+                sendRequest();
+            }
         } else if (status == "Expired") {
             var driver = getDriver({ id: request.driverId })
             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
-            sendRequest();
+            if (!data.singleDriver) {
+                sendRequest();
+            }
         } else if (status == "Canceled") {
             canceled = true;
             var driver = getDriver({ id: request.driverId });

@@ -11,8 +11,23 @@ module.exports = (io) => {
             var limit = 20;
             var nextPage;
             var prevPage;
+            var filter = {};
 
-            var sos = SOS.find();
+            if (req.query.passenger != null && req.query.passenger != 'all') {
+                filter['passenger'] = req.query.passenger;
+            }
+
+
+            if (req.query.driver != null && req.query.driver != 'all') {
+                filter['driver'] = req.query.driver;
+            }
+
+
+            if (req.query.type != null && req.query.type != 'all') {
+                filter['type'] = req.query.type;
+            }
+
+            var sos = SOS.find(filter);
             if (req.query.page && parseInt(req.query.page) != 0) {
                 page = parseInt(req.query.page);
             }
@@ -36,7 +51,7 @@ module.exports = (io) => {
                 });
             }
             Promise.all([
-                SOS.estimatedDocumentCount(),
+                SOS.countDocuments(filter),
                 sos.exec()
             ]).then((value) => {
                 if (value) {

@@ -7,7 +7,27 @@ const index =  async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
-        var filter = {};
+        var filter = {
+            $or: [
+                {
+                    plateNumber: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    color: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelYear: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        };
 
         if (req.query.online != null && req.query.online != 'all') {
             filter['online'] = req.query.online;
@@ -98,6 +118,10 @@ const search = (req, res) => {
             ]
         };
 
+        if (req.query.vehicleType != null && req.query.vehicleType != 'all') {
+            filter['vehicleType'] = req.query.vehicleType;
+        }
+
         if (req.query.online != null && req.query.online != 'all') {
             filter['online'] = req.query.online;
         }
@@ -115,7 +139,7 @@ const search = (req, res) => {
             if (vehicles) {
                 res.send(vehicles);
             }
-        }).limit(10);
+        }).limit(10).populate('vehicleType').populate('driver');
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
