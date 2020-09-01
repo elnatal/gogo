@@ -287,8 +287,20 @@ module.exports = async (socket) => {
                         driver: id,
                         vehicle: vehicleId,
                         type: "roadPickup",
-                        pickUpAddress: trip.pickUpAddress,
-                        dropOffAddress: trip.dropOffAddress,
+                        pickUpAddress: {
+                            name: trip.pickUpAddress.name,
+                            coordinate: {
+                                lat: trip.pickUpAddress.lat,
+                                long: trip.pickUpAddress.long
+                            },
+                        },
+                        dropOffAddress: {
+                            name: trip.dropOffAddress.name,
+                            coordinate: {
+                                lat: trip.dropOffAddress.lat,
+                                long: trip.dropOffAddress.long
+                            },
+                        },
                         vehicleType: vehicleTypeData._id,
                         route: trip.route,
                         status: "Started",
