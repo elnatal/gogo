@@ -17,9 +17,11 @@ const removeRequest = ({ passengerId, driverId }) => {
 }
 
 const updateRequest = ({ passengerId, driverId, status }) => {
+    console.log("update request");
     var request = getRequest({ passengerId, driverId });
 
     if (request) {
+        console.log({request});
         request.updateStatus(status);
         removeRequest({ passengerId, driverId });
     }

@@ -244,12 +244,15 @@ module.exports = (socket) => {
                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
                     Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
                 } else if (status == "Canceled") {
+                    console.log("request canceled");
                     canceled = true;
                     var driver = getDriver({ id: request.driverId });
                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
                     var passengers = getUsers({ userId: request.passengerId });
+                    console.log({passengers});
                     passengers.forEach((passenger) => {
+                        console.log({passenger});
                         if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                     })
                     Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
@@ -318,6 +321,7 @@ module.exports = (socket) => {
     });
 
     socket.on('cancelRequest', (request) => {
+        console.log("cancel request");
         updateRequest({ passengerId: request.passengerId, driverId: null, status: "Canceled" });
     });
 
