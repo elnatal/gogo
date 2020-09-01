@@ -5,7 +5,7 @@ const AuthMiddleware = require('../middleware/authMiddleware')
 
 router.get('/', DriverController.index);
 
-router.get('/firebase/:firebaseId', DriverController.firebaseAuth);
+router.get('/auth/:phone', DriverController.auth);
 
 router.get('/search', DriverController.search);
 

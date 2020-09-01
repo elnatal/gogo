@@ -79,11 +79,11 @@ const index = async (req, res) => {
     };
 };
 
-const firebaseAuth = async (req, res) => {
+const auth = async (req, res) => {
     try {
         if (req.query.token) {
             var token = await Token.findById(req.query.token).populate('driver');
-            if (token && token.active && token.driver && token.driver.firebaseId == req.params.firebaseId) {
+            if (token && token.active && token.driver && token.driver.phoneNumber == req.params.phone) {
                 var driver = token.driver;
                 driver._doc["token"] = token._id;
                 var vehicle = await Vehicle.findOne({ driver: driver._id }).populate('vehicleType');
@@ -97,7 +97,7 @@ const firebaseAuth = async (req, res) => {
                 res.status(401).send("Unauthorized");
             }
         } else {
-            var driver = await Driver.findOne({ firebaseId: req.params.firebaseId });
+            var driver = await Driver.findOne({ phoneNumber: req.params.phone });
             if (driver) {
                 await Token.update({ driver: driver._id }, { active: false });
                 var token = await Token.create({ active: true, driver: driver._id, role: 5, });
@@ -415,4 +415,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, firebaseAuth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet };
+module.exports = { index, auth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet };
