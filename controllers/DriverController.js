@@ -86,7 +86,7 @@ const firebaseAuth = async (req, res) => {
             if (token && token.active && token.driver && token.driver.firebaseId == req.params.firebaseId) {
                 var driver = token.driver;
                 driver._doc["token"] = token._id;
-                var vehicle = await Vehicle.findOne({ driver: driver._id });
+                var vehicle = await Vehicle.findOne({ driver: driver._id }).populate('vehicleType');
                 var setting = await Setting.findOne();
                 if (vehicle) {
                     res.send({ driver, vehicle, setting });
