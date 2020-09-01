@@ -7,6 +7,7 @@ const { getUser, getUsers } = require("../containers/usersContainer");
 const { updateRent } = require("../containers/rentContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
+const {default: Axios} = require('axios');
 const { sendEmail } = require("../services/emailService");
 const Token = require("../models/Token");
 const { request } = require("express");
