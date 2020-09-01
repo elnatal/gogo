@@ -23,6 +23,10 @@ const SettingSchema = Schema({
         type: Number,
         default: 15
     },
+    defaultRoadPickupCommission: {
+        type: Number,
+        default: 5
+    },
     cancelCost: {
         type: Number,
         default: 0

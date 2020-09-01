@@ -191,7 +191,7 @@ module.exports = async (socket) => {
         }
     });
 
-    socket.on('startTrip', (trip) => {
+    socket.on('startTrip', async (trip) => {
         console.log("start trip", trip)
         if (started && trip && trip.id) {
             try {
@@ -216,6 +216,103 @@ module.exports = async (socket) => {
             } catch (error) {
                 console.log(error);
             }
+        } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.dropOffAddress && trip.vehicleType) {
+            var setting = await Setting.findOne();
+            console.log({ setting });
+            var passengerId = "";
+            const vehicleTypeData = await VehicleType.findById(trip.vehicleType);
+            var pickup = trip.pickUpAddress.name;
+            var dropOff = trip.dropOffAddress.name;
+
+            const passenger = await User.findOne({ phoneNumber: trip.phone });
+            if (passenger) {
+                passengerId = passenger._id;
+            } else {
+                const newPassenger = await User.create({ phoneNumber: trip.phone, firstName: trip.name ? trip.name : "_", lastName: "_" });
+                if (newPassenger) {
+                    passengerId = newPassenger._id;
+                }
+            }
+
+            if (!pickup) {
+                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + trip.pickUpAddress.lat + "," + trip.pickUpAddress.long + "&key=" + setting.mapKey);
+                console.log("pickup", pickup);
+            }
+
+            if (!dropOff) {
+                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + trip.dropOffAddress.lat + "," + trip.dropOffAddress.long + "&key=" + setting.mapKey);
+                console.log("drpOff", dropOff);
+            }
+
+            var route = Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + trip.pickUpAddress.long + ',' + trip.pickUpAddress.lat + ';' + trip.dropOffAddress.long + ',' + trip.dropOffAddress.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug');
+
+            Promise.all([pickup, dropOff, route]).then(value => {
+                console.log(value[0].data);
+                if (typeof (value[0]) != typeof (" ")) {
+                    if (value[0].status == 200 && value[0].data.status == "OK") {
+                        console.log("status ok pul");
+                        trip.pickUpAddress.name = value[0].data.results[0].formatted_address;
+                    } else {
+                        trip.pickUpAddress.name = "_";
+                        console.log("wrong response pul", value[0])
+                    }
+                } else {
+                    console.log("wrong data pul", value[0])
+                }
+
+                if (typeof (value[1]) != typeof (" ")) {
+                    if (value[1].status == 200 && value[1].data.status == "OK") {
+                        console.log("status ok pul");
+                        trip.dropOffAddress.name = value[1].data.results[0].formatted_address;
+                    } else {
+                        trip.dropOffAddress.name = "_";
+                        console.log("wrong response dol", value[1])
+                    }
+                } else {
+                    console.log("wrong data dol", value[1])
+                }
+
+                if (value[2] && value[2].data && value[2].data.routes && value[2].data.routes[0] && value[2].data.routes[0].geometry && value[2].data.routes[0].geometry.coordinates) {
+                    trip.route = { coordinates: value[2].data.routes[0].geometry.coordinates, distance: value[2].data.routes[0].distance, duration: value[2].data.routes[0].duration };
+                }
+                console.log(trip)
+
+                try {
+                    Ride.create({
+                        passenger: passengerId,
+                        driver: id,
+                        vehicle: vehicleId,
+                        type: "roadPickup",
+                        pickUpAddress: trip.pickUpAddress,
+                        dropOffAddress: trip.dropOffAddress,
+                        vehicleType: vehicleTypeData._id,
+                        route: trip.route,
+                        status: "Started",
+                        active: true,
+                        pickupTimestamp: new Date(),
+                        createdBy: "app",
+                    }, (err, ride) => {
+                        if (err) console.log(err);
+                        if (ride) {
+                            console.log(ride);
+                            // socket.emit('status', { "status": false });
+                            Ride.findById(ride._id, async (err, createdRide) => {
+                                if (err) console.log(err);
+                                if (createdRide) {
+                                    console.log("ride", createdRide);
+
+                                    var driver = getDriver({ id: request.driverId })
+                                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+
+                                    Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
+                                }
+                            }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                        }
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
+            });
         }
     });
 
@@ -272,6 +369,13 @@ module.exports = async (socket) => {
                                 tax = companyCut * (setting.tax / 100);
                                 net = companyCut - tax;
                                 cutFromDriver = -companyCut;
+                            } else if (res.type == "roadPickup") {
+                                fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
+                                companyCut = (fare * (setting.defaultRoadPickupCommission / 100)) - discount;
+                                payToDriver = discount;
+                                tax = (fare * (setting.defaultRoadPickupCommission / 100) - discount) * (setting.tax / 100);
+                                net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - tax;
+                                cutFromDriver = (-(fare * (setting.defaultRoadPickupCommission / 100))) + discount;
                             } else if (res.type == "normal") {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
@@ -286,7 +390,7 @@ module.exports = async (socket) => {
                                 net = (fare * (setting.defaultCommission / 100)) - tax;
                                 cutFromDriver = (-companyCut);
                                 console.log("log=============");
-                                console.log({fare, companyCut, tax, net, cutFromDriver});
+                                console.log({ fare, companyCut, tax, net, cutFromDriver });
                             } else {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
