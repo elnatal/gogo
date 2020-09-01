@@ -13,6 +13,7 @@ const { request } = require("express");
 const Rent = require("../models/Rent");
 const { updateWallet } = require("../controllers/DriverController");
 const { getIO } = require("./io");
+const VehicleType = require("../models/VehicleType");
 
 module.exports = async (socket) => {
     console.log("new connection", socket.id);
