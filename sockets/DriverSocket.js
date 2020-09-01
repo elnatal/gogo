@@ -219,7 +219,8 @@ module.exports = async (socket) => {
             } catch (error) {
                 console.log(error);
             }
-        } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.dropOffAddress && trip.vehicleType && trip.phone) {
+        } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.pickUpAddress.lat && trip.pickUpAddress.long && trip.dropOffAddress && trip.dropOffAddress.lat && trip.dropOffAddress.long && trip.vehicleType && trip.phone) {
+            console.log({trip});
             var setting = await Setting.findOne();
             console.log({ setting });
             var passengerId = "";
@@ -304,10 +305,10 @@ module.exports = async (socket) => {
                                 if (createdRide) {
                                     console.log("ride", createdRide);
 
-                                    var driver = getDriver({ id: request.driverId })
+                                    var driver = getDriver({ id })
                                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
 
-                                    Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
+                                    Vehicle.updateOne({ _id: vehicleId }, { online: false }, (err, res) => { });
                                 }
                             }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                         }
