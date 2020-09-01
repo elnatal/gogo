@@ -14,6 +14,7 @@ const Rent = require("../models/Rent");
 const { updateWallet } = require("../controllers/DriverController");
 const { getIO } = require("./io");
 const VehicleType = require("../models/VehicleType");
+const User = require("../models/User");
 
 module.exports = async (socket) => {
     console.log("new connection", socket.id);
@@ -217,7 +218,7 @@ module.exports = async (socket) => {
             } catch (error) {
                 console.log(error);
             }
-        } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.dropOffAddress && trip.vehicleType) {
+        } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.dropOffAddress && trip.vehicleType && trip.phone) {
             var setting = await Setting.findOne();
             console.log({ setting });
             var passengerId = "";
