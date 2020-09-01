@@ -236,7 +236,7 @@ const show = (req, res) => {
                     } else {
                         res.send({ driver, vehicle: null });
                     }
-                }).populate('drives');
+                }).populate('vehicleType');
             } else {
                 res.status(404).send("Unknown Driver");
             }
