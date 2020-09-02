@@ -38,6 +38,7 @@ app.use('/notifications', require('./routes/notifications'));
 app.use('/corporates', require('./routes/corporates'));
 app.use('/corporate-payments', require('./routes/corporatePayments'));
 app.use('/trips', require('./routes/trips'));
+app.use('/rents', require('./routes/rents'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
 app.use('/sos', require('./routes/sos')(io));

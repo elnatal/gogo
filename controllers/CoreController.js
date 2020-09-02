@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
 const { default: Axios } = require('axios');
+const Rent = require('../models/Rent');
 
 const getSettingsAndVehicleModels = async (req, res) => {
     Promise.all([
@@ -91,12 +92,17 @@ const godview = async (req, res) => {
 const finance = (req, res) => {
     try {
         var filter = {};
+
         var normalTripsFare = 0;
         var corporateTripsFare = 0;
         var normalTripsNet = 0;
         var corporateTripsNet = 0;
         var normalTripsTax = 0;
         var corporateTripsTax = 0;
+
+        var rentFare = 0;
+        var rentNet = 0;
+        var taxTax = 0;
 
         if (req.query.start != null && req.query.end != null) {
             console.log("start", req.query.start);
@@ -106,14 +112,14 @@ const finance = (req, res) => {
         } else if (req.query.start != null && req.query.start != 'all') {
             filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
         }
-        Ride.find(filter, (error, rides) => {
-            if (error) {
-                res.status(500).send(error);
-                console.log(error);
-            }
-            if (rides) {
-                console.log(rides.length);
-                rides.forEach((ride) => {
+
+        Promise.all([
+            Ride.find(filter),
+            Rent.find(filter)
+        ]).then((value) => {
+            if (value[0]) {
+                console.log(value[0].length);
+                value[0].forEach((ride) => {
                     if (ride.type == "corporate") {
                         corporateTripsFare += ride.fare;
                         corporateTripsNet += ride.net;
@@ -124,9 +130,32 @@ const finance = (req, res) => {
                         normalTripsTax += ride.tax;
                     }
                 });
-                res.send({ normalTripsFare, normalTripsNet, normalTripsTax, corporateTripsFare, corporateTripsNet, corporateTripsTax });
             }
-        });
+
+            if (value[1]) {
+                console.log(value[1].length);
+                value[1].forEach((rent) => {
+                    rentFare += rent.fare;
+                    rentNet += rent.net;
+                    rentTax += rent.tax;
+                });
+            }
+
+            res.send({ 
+                normalTripsFare, 
+                normalTripsNet, 
+                normalTripsTax, 
+                corporateTripsFare, 
+                corporateTripsNet, 
+                corporateTripsTax,
+                rentFare,
+                rentNet,
+                rentTax
+            });
+        }).catch((error) => {
+            res.status(500).send(error);
+            console.log(error);
+        })
     } catch (error) {
         res.status(500).send(error);
         console.log(error);
