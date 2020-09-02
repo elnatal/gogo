@@ -192,6 +192,7 @@ const search = (req, res) => {
 const income = (req, res) => {
     try {
         var monthIncome = 0;
+        var dailyIncome = 0;
         var start = new Date();
         start.setDate(1);
         Promise.all([
@@ -200,19 +201,26 @@ const income = (req, res) => {
             }),
             Ride.find({ driver: req.params.id, endTimestamp: { $gte: start } })
         ]).then((values) => {
+            const today = new Date();
             values[0].forEach((rent) => {
                 if (rent.status == "Completed") {
-                    monthIncome += rent.fare - (rent.fare * (rent.companyCut / 100))
+                    monthIncome += rent.fare - rent.companyCut;
+                    if (new Date(rent.endTimestamp).getDate() == today.getDate()) {
+                        dailyIncome += rent.fare - rent.companyCut;
+                    }
                 }
             })
 
             values[1].forEach((trip) => {
                 if (trip.status == "Completed") {
-                    monthIncome += trip.fare - (trip.fare * (trip.companyCut / 100))
+                    monthIncome += trip.fare - trip.companyCut;
+                    if (new Date(trip.endTimestamp).getDate() == today.getDate()) {
+                        dailyIncome += trip.fare - trip.companyCut;
+                    }
                 }
             })
 
-            res.send({ month: monthIncome })
+            res.send({ month: monthIncome, dailyIncome })
         }).catch((error) => {
             console.log(error);
             res.status(500).send(error);
