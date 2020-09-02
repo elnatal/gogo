@@ -35,6 +35,7 @@ class Request {
     }
 
     updateStatus(status) {
+        console.log("update status");
         this.#status = status;
         this.updateCallback(this);
     }

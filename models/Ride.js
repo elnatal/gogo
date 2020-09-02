@@ -79,7 +79,10 @@ const RideSchema = Schema({
         distance: Number,
         duration: Number
     },
-    discount: Number,
+    discount: {
+        type: Number,
+        default: 0
+    },
     totalAmount: Number,
     paymentMethod: String,
     paymentStatus: String,
@@ -93,9 +96,18 @@ const RideSchema = Schema({
     driverComment: String,
     passengerRate: Number,
     passengerComment: String,
-    payedToDriver: Number,
-    net: Number,
-    collectFromDriver: Number,
+    payedToDriver: {
+        type: Number,
+        default: 0
+    },
+    net: {
+        type: Number,
+        default: 0
+    },
+    collectFromDriver: {
+        type: Number,
+        default: 0
+    },
     corporate: Boolean,
     ticket: {
         type: Schema.Types.ObjectId,
