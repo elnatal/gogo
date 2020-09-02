@@ -133,4 +133,8 @@ const finance = (req, res) => {
     }
 }
 
-module.exports = { getSettingsAndVehicleModels, dashboard, route, godview, finance };
+const date = (req, res) => {
+    res.send(new Date());
+}
+
+module.exports = { getSettingsAndVehicleModels, dashboard, route, godview, finance, date };

@@ -24,7 +24,8 @@ const DriverSchema = Schema({
     },
     phoneNumber: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     profileImage: {
         type: String,

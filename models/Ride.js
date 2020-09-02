@@ -62,7 +62,7 @@ const RideSchema = Schema({
     totalDistance: Number,
     companyCut: {
         type: Number,
-        default: 15
+        default: 0
     },
     fare: {
         type: Number,
@@ -70,7 +70,7 @@ const RideSchema = Schema({
     },
     tax: {
         type: Number,
-        default: 15
+        default: 0
     },
     route: {
         coordinates: {
@@ -83,7 +83,6 @@ const RideSchema = Schema({
         type: Number,
         default: 0
     },
-    totalAmount: Number,
     paymentMethod: String,
     paymentStatus: String,
     status: String,

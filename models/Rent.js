@@ -10,6 +10,10 @@ const RentSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Drivers'
     },
+    cancelCost: {
+        type: Number,
+        default: 0
+    },
     startTimestamp: Date,
     endTimestamp: Date,
     vehicleType: {
@@ -42,11 +46,23 @@ const RentSchema = Schema({
     },
     companyCut: {
         type: Number,
-        default: 15
+        default: 0
     },
     tax: {
         type: Number,
-        default: 15
+        default: 0
+    },
+    payedToDriver: {
+        type: Number,
+        default: 0
+    },
+    net: {
+        type: Number,
+        default: 0
+    },
+    collectFromDriver: {
+        type: Number,
+        default: 0
     },
     status: String,
     active: {

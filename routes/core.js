@@ -9,6 +9,8 @@ router.get('/dashboard', CoreController.dashboard);
 
 router.get('/godview', CoreController.godview);
 
+router.get('/date', CoreController.date);
+
 router.get('/finance', CoreController.finance);
 
 router.post('/route', CoreController.route);
