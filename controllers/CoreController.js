@@ -102,7 +102,7 @@ const finance = (req, res) => {
 
         var rentFare = 0;
         var rentNet = 0;
-        var taxTax = 0;
+        var rentTax = 0;
 
         if (req.query.start != null && req.query.end != null) {
             console.log("start", req.query.start);
