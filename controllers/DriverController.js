@@ -175,7 +175,7 @@ const search = (req, res) => {
                         var vehicle = vehicles.find((v) => v.driver.toString() == driver._id.toString());
                         if (vehicle) {
                             driver._doc["vehicle"] = vehicle;
-                            console.log({driver});
+                            console.log({ driver });
                         }
                         return driver;
                     })
@@ -295,23 +295,30 @@ const rents = (req, res) => {
 
 const topUp = (req, res) => {
     try {
-        if (req.params.id && req.body.amount) {
+        if (req.params.id && req.body.amount && req.body.amount > 0) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
                     console.log(error);
                     res.status(500).send(error);
                 }
                 if (driver) {
-                    driver.balance = driver.balance + req.body.amount;
-                    await driver.save();
-                    WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
+                    var ballance = driver.ballance + req.body.amount;
+                    Driver.updateOne({ _id: req.params.id }, {ballance}, (error, updateResponse) => {
                         if (error) {
                             console.log(error);
                             res.status(500).send(error);
                         }
-                        if (wallet) {
-                            console.log("balance", driver.balance);
-                            res.send({ "ballance": driver.balance });
+                        if (updateResponse) {
+                            WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
+                                if (error) {
+                                    console.log(error);
+                                    res.status(500).send(error);
+                                }
+                                if (wallet) {
+                                    console.log("balance", driver.balance);
+                                    res.send({ ballance });
+                                }
+                            })
                         }
                     })
                 }
@@ -376,7 +383,7 @@ const updateWallet = (data) => {
             Driver.findById(data.id, (error, res) => {
                 if (error) console.log(error);
                 if (res) {
-                    res.wallet += data.amount;
+                    res.ballance += data.amount;
                     res.save();
                 }
             })
