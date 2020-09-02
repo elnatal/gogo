@@ -98,14 +98,14 @@ const finance = (req, res) => {
         var normalTripsTax = 0;
         var corporateTripsTax = 0;
 
-        if (req.query.start != null && req.query.start != 'all') {
+        if (req.query.start != null && req.query.end != null) {
+            console.log("start", req.query.start);
+            filter['$and'] = [{ "pickupTimestamp": { $gte: new Date(req.query.start) } }, { "pickupTimestamp": { $lte: new Date(req.query.end) } }];
+        } else if (req.query.end != null && req.query.end != 'all') {
+            filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
+        } else if (req.query.start != null && req.query.start != 'all') {
             filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
         }
-
-        if (req.query.end != null && req.query.end != 'all') {
-            filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
-        }
-
         Ride.find(filter, (error, rides) => {
             if (error) {
                 res.status(500).send(error);
@@ -124,7 +124,7 @@ const finance = (req, res) => {
                         normalTripsTax += ride.tax;
                     }
                 });
-                res.send({normalTripsFare, normalTripsNet, normalTripsTax, corporateTripsFare, corporateTripsNet, corporateTripsTax});
+                res.send({ normalTripsFare, normalTripsNet, normalTripsTax, corporateTripsFare, corporateTripsNet, corporateTripsTax });
             }
         });
     } catch (error) {
