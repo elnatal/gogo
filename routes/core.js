@@ -9,6 +9,8 @@ router.get('/dashboard', CoreController.dashboard);
 
 router.get('/godview', CoreController.godview);
 
+router.get('/finance', CoreController.finance);
+
 router.post('/route', CoreController.route);
 
 router.get('/notification', (req, res) => {

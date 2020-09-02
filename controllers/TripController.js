@@ -33,7 +33,7 @@ const index = (req, res) => {
         }
 
         if (req.query.end != null && req.query.end != 'all') {
-            filter['endTimestamp'] = { $lte: new Date(req.query.end) };
+            filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
         }
 
         var trip =  Ride.find(filter);

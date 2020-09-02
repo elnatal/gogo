@@ -88,4 +88,49 @@ const godview = async (req, res) => {
     }
 }
 
-module.exports = { getSettingsAndVehicleModels, dashboard, route, godview };
+const finance = (req, res) => {
+    try {
+        var filter = {};
+        var normalTripsFare = 0;
+        var corporateTripsFare = 0;
+        var normalTripsNet = 0;
+        var corporateTripsNet = 0;
+        var normalTripsTax = 0;
+        var corporateTripsTax = 0;
+
+        if (req.query.start != null && req.query.start != 'all') {
+            filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
+        }
+
+        if (req.query.end != null && req.query.end != 'all') {
+            filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
+        }
+
+        Ride.find(filter, (error, rides) => {
+            if (error) {
+                res.status(500).send(error);
+                console.log(error);
+            }
+            if (rides) {
+                console.log(rides.length);
+                rides.forEach((ride) => {
+                    if (ride.type == "corporate") {
+                        corporateTripsFare += ride.fare;
+                        corporateTripsNet += ride.net;
+                        corporateTripsTax += ride.tax;
+                    } else {
+                        normalTripsFare += ride.fare;
+                        normalTripsNet += ride.net;
+                        normalTripsTax += ride.tax;
+                    }
+                });
+                res.send({normalTripsFare, normalTripsNet, normalTripsTax, corporateTripsFare, corporateTripsNet, corporateTripsTax});
+            }
+        });
+    } catch (error) {
+        res.status(500).send(error);
+        console.log(error);
+    }
+}
+
+module.exports = { getSettingsAndVehicleModels, dashboard, route, godview, finance };
