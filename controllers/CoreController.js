@@ -113,6 +113,10 @@ const finance = (req, res) => {
             filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
         }
 
+        if (req.query.driver != null && req.query.driver != 'all') {
+            filter['driver'] = req.query.driver;
+        }
+
         Promise.all([
             Ride.find(filter),
             Rent.find(filter)
