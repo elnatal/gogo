@@ -19,7 +19,7 @@ const sendNotification = (to, message) => {
     var config = {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer AAAAuinWob8:APA91bGGnIyMA3PlfpIS5rNm-4Lno_VkSFpQqjBC2M_7AHzm0dMruhYcJW2R6xUPM1xWAyDkGZpGeBg7SSX-tYIrtIkdHo8U-dwfNqUJyBImH_vGA15tPIvJpWSMMkx_04o5vhqUPkO1'
+            'Authorization': 'Bearer AAAA2RqOe68:APA91bGqYlyMNx1shAiUUojjxGyiDVw43ydmH5RAxmKFG9qAEbUJw4ZYC0T-R87Q_h97OjRL1HAP7-escboSlho0blEKfhA0AarCzN3wiyjRTpcmTqUuNkwrbhWQ4jmPzguO2ZvOguA9'
         }
     };
 

@@ -16,6 +16,7 @@ const { updateWallet } = require("../controllers/DriverController");
 const { getIO } = require("./io");
 const VehicleType = require("../models/VehicleType");
 const User = require("../models/User");
+const { sendNotification } = require("../services/notificationService");
 
 module.exports = async (socket) => {
     console.log("new connection", socket.id);
@@ -184,6 +185,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                sendNotification(passenger.fcm, {title: "Arrived", body: "Driver has arrived"});
                             })
                         }
                     }
@@ -212,6 +214,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                sendNotification(passenger.fcm, {title: "Started", body: "Trip has started"});
                             })
                         }
                     }
@@ -350,6 +353,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                                sendNotification(passenger.fcm, {title: "Started", body: "Rent has started"});
                             })
                         }
                     }
@@ -456,6 +460,7 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                    sendNotification(passenger.fcm, {title: "Trip ended", body: "You have arrived at your destination"});
                                 })
                             }
                         }
@@ -506,6 +511,7 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                                    sendNotification(passenger.fcm, {title: "Rent ended", body: "You have arrived at your destination"});
                                 })
                             }
                         }
@@ -550,6 +556,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                                sendNotification(passenger.fcm, {title: "Canceled", body: "You trip has been canceled"});
                             })
                         }
                     }
@@ -586,6 +593,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
+                                sendNotification(passenger.fcm, {title: "Canceled", body: "Your rent has been canceled"});
                             })
                         }
                     }

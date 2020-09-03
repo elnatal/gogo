@@ -14,6 +14,7 @@ const RentObject = require('../models/RentObject');
 const { addRent, updateRent } = require('../containers/rentContainer');
 const Rent = require('../models/Rent');
 const { getIO } = require('./io');
+const { sendNotification } = require('../services/notificationService');
 
 module.exports = (socket) => {
     console.log("new passenger connection", socket.id);
@@ -92,7 +93,7 @@ module.exports = (socket) => {
         if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
             console.log("search")
             var setting = await Setting.findOne();
-            console.log({setting});
+            console.log({ setting });
             var type = "normal";
             if (data.type && data.type != undefined) {
                 type = data.type;
@@ -212,8 +213,9 @@ module.exports = (socket) => {
                     if (driver) {
                         console.log("driver socket exist ***********");
                         io.of('/driver-socket').to(driver.socketId).emit('request', request);
+                        sendNotification(driver.fcm, { title: "Request", body: "You have a new trip request" });
                         Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => { });
-    
+
                         setTimeout(() => {
                             if (!driverFound && !canceled) {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
@@ -250,9 +252,9 @@ module.exports = (socket) => {
                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
                     var passengers = getUsers({ userId: request.passengerId });
-                    console.log({passengers});
+                    console.log({ passengers });
                     passengers.forEach((passenger) => {
-                        console.log({passenger});
+                        console.log({ passenger });
                         if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                     })
                     Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
@@ -260,10 +262,12 @@ module.exports = (socket) => {
                     driverFound = true;
                     var ticket;
                     if (request.corporate && request.ticket) {
-                        Ticket.findById(request.ticket, (err, ticket) => {
+                        Ticket.updateOne({ _id: request.ticket }, { active: false }, (error, ticket) => {
+                            if (error) {
+                                console.log({ error });
+                            }
                             if (ticket) {
-                                ticket.active = false;
-                                ticket.save();
+                                console.log({ ticket });
                             }
                         });
                     }
@@ -296,7 +300,10 @@ module.exports = (socket) => {
 
                                         var passengers = getUsers({ userId: id });
                                         passengers.forEach((passenger) => {
-                                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+                                            if (passenger) {
+                                                io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
+                                                sendNotification(passenger.fcm, { title: "Request accepted", body: "Driver is on the way" });
+                                            }
                                         })
 
                                         var driver = getDriver({ id: request.driverId })
@@ -337,10 +344,11 @@ module.exports = (socket) => {
                         res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
-                        Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => {});
+                        Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => { });
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) {
                             io.of('/driver-socket').to(driver.socketId).emit('trip', res);
+                            sendNotification(driver.fcm, { title: "Canceled", body: "Trip has been canceled" });
                             // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                         }
 
@@ -368,10 +376,11 @@ module.exports = (socket) => {
                         res.cancelledReason = rent.reason ? rent.reason : "";
                         res.active = false;
                         res.save();
-                        Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => {});
+                        Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => { });
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) {
                             io.of('/driver-socket').to(driver.socketId).emit('rent', res);
+                            sendNotification(driver.fcm, { title: "Canceled", body: "Rent has been canceled" });
                             // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                         }
 
@@ -391,7 +400,7 @@ module.exports = (socket) => {
         if (started && data && data.pickUpAddress && data.vehicleType && data.startTimestamp && data.endTimestamp) {
             console.log("starting rent");
             var setting = await Setting.findOne();
-            console.log({setting});
+            console.log({ setting });
             var requestedDrivers = [];
             var driverFound = false;
             var canceled = false;
@@ -460,7 +469,10 @@ module.exports = (socket) => {
 
                     var driver = getDriver({ id: rentObject.driverId })
                     console.log({ driver });
-                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('rentRequest', rentObject);
+                    if (driver) {
+                        io.of('/driver-socket').to(driver.socketId).emit('rentRequest', rentObject);
+                        sendNotification(driver.fcm, { title: "Rent request", body: "You have new rent request" });
+                    }
                     Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: false }, (err, res) => { });
 
                     setTimeout(() => {
@@ -524,6 +536,7 @@ module.exports = (socket) => {
                                         var passengers = getUsers({ userId: id });
                                         passengers.forEach((passenger) => {
                                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', createdRent);
+                                            sendNotification(passenger.fcm, { title: "Rent accepted", body: "Driver is on the way" });
                                         })
 
                                         var driver = getDriver({ id: rentObject.driverId })

@@ -10,6 +10,7 @@ const { addDispatcher, getDispatcher, removeDispatcher } = require('../container
 const Setting = require('../models/Setting');
 const { request } = require('express');
 const { getIO } = require('./io');
+const { sendNotification } = require('../services/notificationService');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {
@@ -188,6 +189,7 @@ const searchForDispatcher = async (socket, data) => {
             if (driver) {
                 console.log("driver socket exist ==============");
                 io.of('/driver-socket').to(driver.socketId).emit('request', request);
+                sendNotification(driver.fcm, { title: "Request", body: "You have new trip request" });
 
                 setTimeout(() => {
                     if (!driverFound && !canceled) {
