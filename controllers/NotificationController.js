@@ -22,7 +22,7 @@ const index = async (req, res) => {
             ]
         };
 
-        if (req.query.to != null && req.query.to != 'all') {
+        if (req.query.to != null) {
             filter['to'] = req.query.to;
         }
 
@@ -68,7 +68,7 @@ const search = (req, res) => {
             }
         };
 
-        if (req.query.to != null && req.query.to != 'all') {
+        if (req.query.to != null) {
             filter['to'] = req.query.to;
         }
 
