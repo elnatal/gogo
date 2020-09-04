@@ -2,6 +2,7 @@ const SOS = require("../models/SOS");
 const Ride = require("../models/Ride");
 const Rent = require("../models/Rent");
 const { getAllDispatchers } = require("../containers/dispatcherContainer");
+const logger = require("../services/logger");
 
 module.exports = (io) => {
     const index = async (req, res) => {
@@ -62,11 +63,11 @@ module.exports = (io) => {
                     res.send({ data: value[1], count: value[0], nextPage, prevPage });
                 }
             }).catch((error) => {
-                console.log(error);
+                logger.error("SOS => " + error.toString());
                 res.status(500).send(error);
             });
         } catch (error) {
-            console.log(error);
+            logger.error("SOS => " + error.toString());
             res.status(500).send(error);
         };
     }
@@ -75,7 +76,7 @@ module.exports = (io) => {
         try {
             SOS.findById(req.parse.id, (error, sos) => {
                 if (error) {
-                    console.log(error);
+                    logger.error("SOS => " + error.toString());
                     res.status(500).send(error);
                 }
                 if (sos) {
@@ -83,7 +84,7 @@ module.exports = (io) => {
                 }
             }).populate('passenger').populate('driver').populate('vehicle');
         } catch (error) {
-            console.log(error);
+            logger.error("SOS => " + error.toString());
             res.status(500).send(error);
         }
     }
@@ -98,12 +99,11 @@ module.exports = (io) => {
                 if (req.body.tripId) {
                     Ride.findById(req.body.tripId, (error, trip) => {
                         if (error) {
-                            console.log(error);
+                            logger.error("SOS => " + error.toString());
                             res.status(500).send(error);
                         }
 
                         if (trip) {
-                            console.log({ trip });
                             SOS.create({
                                 driver: trip.driver,
                                 passenger: trip.passenger,
@@ -118,13 +118,13 @@ module.exports = (io) => {
                                 }
                             }, (error, sos) => {
                                 if (error) {
-                                    console.log(error);
+                                    logger.error("SOS => " + error.toString());
                                     res.status(500).send(error);
                                 }
                                 if (sos) {
                                     SOS.findById(sos._id, (error, newSos) => {
                                         if (error) {
-                                            console.log(error);
+                                            logger.error("SOS => " + error.toString());
                                             res.status(500).send(error);
                                         }
 
@@ -146,7 +146,7 @@ module.exports = (io) => {
                 } else if (req.body.rentId) {
                     Rent.findById(req.body.rentId, (error, rent) => {
                         if (error) {
-                            console.log(error);
+                            logger.error("SOS => " + error.toString());
                             res.status(500).send(error);
                         }
 
@@ -165,13 +165,13 @@ module.exports = (io) => {
                                 }
                             }, (error, sos) => {
                                 if (error) {
-                                    console.log(error);
+                                    logger.error("SOS => " + error.toString());
                                     res.status(500).send(error);
                                 }
                                 if (sos) {
                                     SOS.findById(sos._id, (error, newSos) => {
                                         if (error) {
-                                            console.log(error);
+                                            logger.error("SOS => " + error.toString());
                                             res.status(500).send(error);
                                         }
 
@@ -189,7 +189,7 @@ module.exports = (io) => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            logger.error("SOS => " + error.toString());
             res.status(500).send(error);
         }
     }

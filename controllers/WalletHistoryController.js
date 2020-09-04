@@ -1,4 +1,5 @@
 const WalletHistory = require("../models/WalletHistory");
+const logger = require("../services/logger");
 
 const index = async (req, res) => {
     try {
@@ -43,11 +44,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Wallet history => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Wallet history => " + error.toString());
         res.status(500).send(error);
     };
 }

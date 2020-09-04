@@ -1,4 +1,4 @@
-const CorporatePayment = require("../models/CorporatePayment");
+const Log = require("../models/Log");
 const logger = require("../services/logger");
 
 const index = async (req, res) => {
@@ -9,7 +9,7 @@ const index = async (req, res) => {
         var nextPage;
         var prevPage;
 
-        var corporatePayments = CorporatePayment.find();
+        var logs = Log.find();
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -23,18 +23,12 @@ const index = async (req, res) => {
 
         skip = (page - 1) * limit;
 
-        corporatePayments.sort({ createdAt: 'desc' });
-        corporatePayments.limit(limit);
-        corporatePayments.skip(skip);
-        if (req.query.populate) {
-            var populate = JSON.parse(req.query.populate)
-            populate.forEach((e) => {
-                corporatePayments.populate(e);
-            });
-        }
+        logs.sort({ timestamp: 'desc' });
+        logs.limit(limit);
+        logs.skip(skip);
         Promise.all([
-            CorporatePayment.estimatedDocumentCount(),
-            corporatePayments.exec()
+            Log.estimatedDocumentCount(),
+            logs.exec()
         ]).then(async (value) => {
             if (value) {
                 if (((page * limit) <= value[0])) {
@@ -43,13 +37,10 @@ const index = async (req, res) => {
 
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
-        }).catch((error) => {
-            logger.error("Corporate payment => " + error.toString());
-            res.status(500).send(error);
         });
     } catch (error) {
-        logger.error("Corporate payment => " + error.toString());
-        res.status(500).send(error);
+        logger.error(error.toString());
+        res.send(error);
     };
 }
 

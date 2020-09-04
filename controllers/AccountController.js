@@ -2,6 +2,7 @@ const Account = require('../models/Account');
 const bcrypt = require('bcryptjs');
 const Token = require('../models/Token');
 const { populate } = require('../models/Account');
+const logger = require('../services/logger');
 require('dotenv/config');
 
 const index = (req, res) => {
@@ -43,28 +44,27 @@ const index = (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Account => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Account => " + error.toString());
         res.status(500).send(error);
     };
 }
 
 const show = (req, res) => {
     try {
-        Account.findById(req.params.id, (err, account) => {
-            if (err) console.log(err);
+        Account.findById(req.params.id, (error, account) => {
+            if (error) logger.error("Account => " + error.toString());
             if (account) {
-                console.log({ "account": account });
                 res.send(account)
             } else {
                 res.status(404).send("Unknown account");
             }
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Account => " + error.toString());
         res.status(500).send(error);
     };
 }
@@ -90,7 +90,7 @@ const search = (req, res) => {
             ]
         }, (error, accounts) => {
             if (error) {
-                console.log(error);
+                logger.error("Account => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -99,7 +99,7 @@ const search = (req, res) => {
             }
         }).limit(10);
     } catch (error) {
-        console.log(error);
+        logger.error("Account => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -108,25 +108,23 @@ const store = async (req, res) => {
     try {
         if (req.body) {
             const data = req.body;
-            console.log({ data })
             if (data['password']) {
                 data["password"] = await bcrypt.hash(data["password"], 5);
             }
-            console.log(data.password);
             const savedAccount = await Account.create(data);
             res.send(savedAccount);
         }
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
+    } catch (error) {
+        logger.error("Account => " + error.toString());
+        res.status(500).send(error);
     }
 }
 
 const auth = (req, res) => {
     const data = req.body;
     if (data && data.email && data.password && data.role) {
-        Account.findOne({ email: data.email, roles: data.role }, async (err, account) => {
-            if (err) res.status(500).send(err);
+        Account.findOne({ email: data.email, roles: data.role }, async (error, account) => {
+            if (error) res.status(500).send(error);
             if (account) {
                 if (bcrypt.compare(data.password, account.password)) {
                     const accountObject = account.toObject();
@@ -160,7 +158,7 @@ const check = async (req, res) => {
             res.status(401).send({ error: "UNAUTHORIZED" });
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Account => " + error.toString());
         res.status(500).send(error);
     }
 }

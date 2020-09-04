@@ -5,6 +5,7 @@ const { getDriver } = require('../containers/driversContainer');
 const { getUser } = require('../containers/usersContainer');
 const { sendNotification } = require('../services/notificationService');
 const Rent = require('../models/Rent');
+const logger = require('../services/logger');
 
 const index = (req, res) => {
     try {
@@ -71,11 +72,11 @@ const index = (req, res) => {
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Rent => " + error.toString());
             res.status(500).send(error);
         });
     } catch(error) {
-        console.log(error);
+        logger.error("Rent => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -83,10 +84,9 @@ const index = (req, res) => {
 const show = async (req, res) => {
     try {
         var rent = await Rent.findById(req.params.id);
-        console.log(req.params.id);
         res.send(rent);
     } catch(error) {
-        console.log(error);
+        logger.error("Rent => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -96,7 +96,7 @@ const store = async (req, res) => {
         const savedRent = await Rent.create(req.body);
         res.send(savedRent);
     } catch(error) {
-        console.log(error);
+        logger.error("Rent => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -106,7 +106,7 @@ const update = async (req, res) => {
         const updatedRent = await Rent.updateOne({'_id': req.params.id}, req.body);
         res.send(updatedRent);
     } catch(error) {
-        console.log(error);
+        logger.error("Rent => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -116,7 +116,7 @@ const remove = async (req, res) => {
         const deletedRent = await Rent.remove({_id: req.params.id});
         res.send(deletedRent);
     } catch(error) {
-        console.log(error);
+        logger.error("Rent => " + error.toString());
         res.status(500).send(error);
     }
 };

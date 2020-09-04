@@ -1,4 +1,5 @@
 const VehicleType = require('../models/VehicleType');
+const logger = require('../services/logger');
 
 const index = async (req, res) => {
     try {
@@ -42,11 +43,11 @@ const index = async (req, res) => {
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Vehicle type => " + error.toString());
             res.status(500).send(error);
         });
     } catch(error) {
-        console.log(error);
+        logger.error("Vehicle type => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -54,10 +55,9 @@ const index = async (req, res) => {
 const show =  async (req, res) => {
     try {
         var vehicleType = await VehicleType.findById(req.params.id);
-        console.log(req.params.id);
         res.send(vehicleType);
     } catch(error) {
-        console.log(error);
+        logger.error("Vehicle type => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -67,7 +67,7 @@ const store = async (req, res) => {
         const savedVehicleType = await VehicleType.create(req.body);
         res.send(savedVehicleType);
     } catch(error) {
-        console.log(error);
+        logger.error("Vehicle type => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -77,7 +77,7 @@ const update = async (req, res) => {
         const updatedVehicleType = await VehicleType.updateOne({'_id': req.params.id}, req.body);
         res.send(updatedVehicleType);
     } catch(error) {
-        console.log(error);
+        logger.error("Vehicle type => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -87,7 +87,7 @@ const remove =  async (req, res) => {
         const deletedVehicleType = await VehicleType.remove({_id: req.params.id});
         res.send(deletedVehicleType);
     } catch(error) {
-        console.log(error);
+        logger.error("Vehicle type => " + error.toString());
         res.status(500).send(error);
     }
 };

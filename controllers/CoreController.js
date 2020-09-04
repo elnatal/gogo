@@ -6,6 +6,7 @@ const Vehicle = require('../models/Vehicle');
 const Ride = require('../models/Ride');
 const { default: Axios } = require('axios');
 const Rent = require('../models/Rent');
+const logger = require('../services/logger');
 
 const getSettingsAndVehicleModels = async (req, res) => {
     Promise.all([
@@ -17,7 +18,7 @@ const getSettingsAndVehicleModels = async (req, res) => {
             vehicleTypes: value[1],
         });
     }).catch((error) => {
-        console.log(error);
+        logger.error("Core => " + error.toString());
         res.status(500).send(error);
     });
 };
@@ -50,15 +51,13 @@ const dashboard = async (req, res) => {
             revenue: 0,
         });
     }).catch((error) => {
-        console.log(error);
+        logger.error("Core => " + error.toString());
         res.status(500).send(error);
     });
 };
 
 const route = (req, res) => {
     try {
-        console.log("req", req.body)
-        console.log("type", typeof (req.body))
         if (req && req.body && req.body.dropOffAddress && req.body.pickUpAddress) {
             Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + req.body.pickUpAddress.long + ',' + req.body.pickUpAddress.lat + ';' + req.body.dropOffAddress.long + ',' + req.body.dropOffAddress.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((route) => {
                 if (route && route.data && route.data.routes && route.data.routes[0] && route.data.routes[0].geometry && route.data.routes[0].geometry.coordinates) {
@@ -67,14 +66,14 @@ const route = (req, res) => {
                     res.sendStatus(500);
                 }
             }).catch(error => {
-                console.log(error);
+                logger.error("Core => " + error.toString());
                 res.status(500).send(error);
             });
         } else {
             res.status(500).send("invalid data");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Core => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -85,7 +84,7 @@ const godview = async (req, res) => {
         res.send(vehicles);
     } catch (error) {
         res.status(500).send(error);
-        console.log(error);
+        logger.error("Core => " + error.toString());
     }
 }
 
@@ -105,7 +104,6 @@ const finance = (req, res) => {
         var rentTax = 0;
 
         if (req.query.start != null && req.query.end != null) {
-            console.log("start", req.query.start);
             filter['$and'] = [{ "pickupTimestamp": { $gte: new Date(req.query.start) } }, { "pickupTimestamp": { $lte: new Date(req.query.end) } }];
         } else if (req.query.end != null && req.query.end != 'all') {
             filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
@@ -122,7 +120,6 @@ const finance = (req, res) => {
             Rent.find(filter)
         ]).then((value) => {
             if (value[0]) {
-                console.log(value[0].length);
                 value[0].forEach((ride) => {
                     if (ride.type == "corporate") {
                         corporateTripsFare += ride.fare;
@@ -137,7 +134,6 @@ const finance = (req, res) => {
             }
 
             if (value[1]) {
-                console.log(value[1].length);
                 value[1].forEach((rent) => {
                     rentFare += rent.fare;
                     rentNet += rent.net;
@@ -158,11 +154,11 @@ const finance = (req, res) => {
             });
         }).catch((error) => {
             res.status(500).send(error);
-            console.log(error);
+            logger.error("Core => " + error.toString());
         })
     } catch (error) {
         res.status(500).send(error);
-        console.log(error);
+        logger.error("Core => " + error.toString());
     }
 }
 

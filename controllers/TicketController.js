@@ -1,6 +1,7 @@
 const Ticket = require('../models/Ticket');
 const Corporate = require('../models/Corporate');
 const Account = require('../models/Account');
+const logger = require('../services/logger');
 
 const index = async (req, res) => {
     try {
@@ -45,11 +46,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Ticket => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     };
 }
@@ -57,10 +58,9 @@ const index = async (req, res) => {
 const show = async (req, res) => {
     try {
         const ticket = await Ticket.findById(req.params.id);
-        console.log(req.params.id);
         res.send(ticket);
     } catch (error) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     };
 }
@@ -77,7 +77,7 @@ const validate = async (req, res) => {
             res.status(500).send("invalid");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -90,11 +90,9 @@ const generate = async (req, res) => {
             var corporate = account.corporate
             var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
             var found = false;
-            console.log({ code })
     
             while (!found) {
                 var ticket = await Ticket.findOne({ code });
-                console.log({ ticket })
                 if (ticket) {
                     code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
                 } else {
@@ -103,14 +101,13 @@ const generate = async (req, res) => {
             }
     
             data["code"] = code;
-            console.log({ data });
             const savedTicket = await Ticket.create(data);
             res.send(savedTicket);
         } else {
             res.status(500).send({error: "Unknown account"})
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -120,7 +117,7 @@ const update = async (req, res) => {
         const updatedTicket = await Ticket.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedTicket);
     } catch (err) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -130,7 +127,7 @@ const remove = async (req, res) => {
         const deletedTicket = await Ticket.remove({ _id: req.params.id });
         res.send(deletedTicket);
     } catch (err) {
-        console.log(error);
+        logger.error("Ticket => " + error.toString());
         res.status(500).send(error);
     }
 }

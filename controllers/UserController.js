@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Ride = require('../models/Ride');
 const Rent = require('../models/Rent');
+const logger = require('../services/logger');
 
 const index = async (req, res) => {
     try {
@@ -44,11 +45,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Passenger => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -62,7 +63,7 @@ const auth = async (req, res) => {
             res.status(404).send("User doesn't exist");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -99,7 +100,7 @@ const search = (req, res) => {
 
         User.find(filter, (error, users) => {
             if (error) {
-                console.log(error);
+                logger.error("Passenger => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -108,7 +109,7 @@ const search = (req, res) => {
             }
         }).limit(limit);
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -117,7 +118,7 @@ const rents = (req, res) => {
     try {
         Rent.find({passenger: req.params.id}, (error, rents) => {
             if (error) {
-                console.log(error);
+                logger.error("Passenger => " + error.toString());
                 res.status(500).send(error);
             }
             if (rents) {
@@ -125,7 +126,7 @@ const rents = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle')
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -135,7 +136,7 @@ const show = async (req, res) => {
         var user = await User.findById(req.params.id);
         res.send(user);
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -146,7 +147,7 @@ const bookings = (req, res) => {
             res.send(rides);
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -155,7 +156,7 @@ const scheduledTrips = (req, res) => {
     try {
         Ride.find({passenger: req.params.id, status: "Scheduled"}, (error, trips) => {
             if (error) {
-                console.log(error);
+                logger.error("Passenger => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -164,7 +165,7 @@ const scheduledTrips = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -188,7 +189,7 @@ const rate = async (req, res) => {
             res.send("Rated");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -198,7 +199,7 @@ const store = async (req, res) => {
         const savedUser = await User.create(req.body);
         res.send(savedUser);
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -209,7 +210,7 @@ const update = async (req, res) => {
         const user = await User.findById(req.params.id);
         res.send(user);
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -219,7 +220,7 @@ const remove = async (req, res) => {
         const deletedUser = await User.remove({ _id: req.params.id });
         res.send(deletedUser);
     } catch (error) {
-        console.log(error);
+        logger.error("Passenger => " + error.toString());
         res.status(500).send(error);
     }
 };

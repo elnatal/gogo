@@ -1,11 +1,12 @@
 const Setting = require('../models/Setting');
+const logger = require('../services/logger');
 
 const get = async (req, res) => {
     try {
         var setting = await Setting.findOne({});
         res.send(setting ? setting : {});
     } catch (error) {
-        console.log(error);
+        logger.error("Setting => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -15,7 +16,7 @@ const add = async (req, res) => {
     try {
         setting = await Setting.findOne({});
     } catch (error) {
-        console.log(error);
+        logger.error("Setting => " + error.toString());
     }
 
     if (setting) {
@@ -23,7 +24,7 @@ const add = async (req, res) => {
             const updatedSetting = await Setting.updateOne({ '_id': setting._id }, req.body);
             res.send(updatedSetting);
         } catch (error) {
-            console.log(error);
+            logger.error("Setting => " + error.toString());
             res.status(500).send(error);
         }
     } else {
@@ -31,7 +32,7 @@ const add = async (req, res) => {
             const savedSetting = await Setting.create(req.body);
             res.send(savedSetting);
         } catch (error) {
-            console.log(error);
+            logger.error("Setting => " + error.toString());
             res.status(500).send(error);
         }
     }

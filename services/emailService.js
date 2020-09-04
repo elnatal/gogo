@@ -1,4 +1,5 @@
 var nodemailer = require('nodemailer');
+const logger = require('./logger');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -16,9 +17,9 @@ const sendEmail = (to, subject, text) => {
         text
     }, function (error, info) {
         if (error) {
-            console.log(error);
+            logger.error("Email => " + error.toString());
         } else {
-            console.log('Email sent: ' + info.response);
+            logger.info("Email sent: " + info.response);
         }
     });
 }

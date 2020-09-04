@@ -4,6 +4,7 @@ const { send } = require('../services/emailService');
 const { getDriver } = require('../containers/driversContainer');
 const { getUser } = require('../containers/usersContainer');
 const { sendNotification } = require('../services/notificationService');
+const logger = require('../services/logger');
 
 const index = (req, res) => {
     try {
@@ -70,11 +71,11 @@ const index = (req, res) => {
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Trip => " + error.toString());
             res.status(500).send(error);
         });
     } catch(error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -82,7 +83,6 @@ const index = (req, res) => {
 const checkScheduledTrips = async (io) => {
     try {
         const trips = await Ride.find({status: "Scheduled"}).populate('passenger').populate('vehicle');
-        console.log({trips});
         trips.forEach((trip) => {
             // const driverId = (trip.driver) ? trip.driver._id : "";
             // const passengerId = (trip.passenger) ? trip.passenger._id : "";
@@ -94,7 +94,7 @@ const checkScheduledTrips = async (io) => {
             if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
                 sendNotification(trip.vehicle.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
-                console.log("No driver fcm found");
+                logger.error("Trip => No driver found");
             }
 
             // var passenger = getUser({ userId: passengerId });
@@ -104,12 +104,12 @@ const checkScheduledTrips = async (io) => {
             if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
                 sendNotification(trip.passenger.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
             } else {
-                console.log("No passenger fcm found");
+                logger.error("Trip => No passenger found");
             }
 
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -117,14 +117,14 @@ const checkScheduledTrips = async (io) => {
 
 const latest = (req, res) => {
     try {
-        Ride.find({} , 'driver passenger pickUpAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (err, rides) => {
-            if (err) console.log(err);
+        Ride.find({} , 'driver passenger pickUpAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (error, rides) => {
+            if (error) logger.error("Trip => " + error.toString());
             if (rides) {
                 res.send(rides);
             }
         }).limit(30).populate({path: 'driver', select: 'firstName lastName -_id'}).populate({path: 'passenger', select: 'firstName lastName -_id'})
     } catch (error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -132,10 +132,9 @@ const latest = (req, res) => {
 const show = async (req, res) => {
     try {
         var trip = await Ride.findById(req.params.id);
-        console.log(req.params.id);
         res.send(trip);
     } catch(error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -146,7 +145,7 @@ const store = async (req, res) => {
         const savedTrip = await Ride.create(req.body);
         res.send(savedTrip);
     } catch(error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -156,7 +155,7 @@ const update = async (req, res) => {
         const updatedTrip = await Ride.updateOne({'_id': req.params.id}, req.body);
         res.send(updatedTrip);
     } catch(error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -166,7 +165,7 @@ const remove = async (req, res) => {
         const deletedTrip = await Ride.remove({_id: req.params.id});
         res.send(deletedTrip);
     } catch(error) {
-        console.log(error);
+        logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
 };

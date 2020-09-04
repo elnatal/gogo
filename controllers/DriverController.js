@@ -6,6 +6,7 @@ const Token = require('../models/Token');
 const Setting = require('../models/Setting');
 const Rent = require('../models/Rent');
 const WalletHistory = require('../models/WalletHistory');
+const logger = require('../services/logger');
 
 const index = async (req, res) => {
     try {
@@ -70,11 +71,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Driver => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -161,13 +162,12 @@ const search = (req, res) => {
 
         Driver.find(filter, async (error, drivers) => {
             if (error) {
-                console.log(error);
+                logger.error("Driver => " + error.toString());
                 res.status(500).send(error);
             }
 
             if (drivers) {
                 if (req.query.vehicle) {
-                    console.log("vehicle");
                     var result = drivers.map((driver) => mongoose.Types.ObjectId(driver._id));
                     var vehicles = await Vehicle.find({ driver: { $in: result } });
 
@@ -175,7 +175,6 @@ const search = (req, res) => {
                         var vehicle = vehicles.find((v) => v.driver.toString() == driver._id.toString());
                         if (vehicle) {
                             driver._doc["vehicle"] = vehicle;
-                            console.log({ driver });
                         }
                         return driver;
                     })
@@ -184,7 +183,7 @@ const search = (req, res) => {
             }
         }).limit(limit);
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -222,23 +221,22 @@ const income = (req, res) => {
 
             res.send({ month: monthIncome, dailyIncome })
         }).catch((error) => {
-            console.log(error);
+            logger.error("Driver => " + error.toString());
             res.status(500).send(error);
         })
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
 
 const show = (req, res) => {
     try {
-        Driver.findById(req.params.id, (err, driver) => {
-            if (err) console.log(err);
+        Driver.findById(req.params.id, (error, driver) => {
+            if (error) logger.error("Driver => " + error.toString());
             if (driver) {
-                console.log({ "drivers": driver });
-                Vehicle.findOne({ driver: driver._id }, (err, vehicle) => {
-                    if (err) console.log(err);
+                Vehicle.findOne({ driver: driver._id }, (error, vehicle) => {
+                    if (error) logger.error("Driver => " + error.toString());
                     if (vehicle) {
                         res.send({ driver, vehicle });
                     } else {
@@ -250,18 +248,18 @@ const show = (req, res) => {
             }
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     };
 };
 
 const bookings = (req, res) => {
     try {
-        Ride.find({ driver: req.params.id }, 'driver, type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (err, rides) => {
+        Ride.find({ driver: req.params.id }, 'driver, type passenger pickupTimestamp endTimestamp pickUpAddress dropOffAddress vehicleType totalDistance fare discount status active corporate bidAmount', (error, rides) => {
             res.send(rides);
         }).sort({ createdAt: 'desc' }).limit(15).populate('driver').populate('passenger').populate({ path: 'vehicleType', select: 'name -_id' });
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -270,7 +268,7 @@ const scheduledTrips = (req, res) => {
     try {
         Ride.find({ driver: req.params.id, status: "Scheduled" }, (error, trips) => {
             if (error) {
-                console.log(error);
+                logger.error("Driver => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -279,7 +277,7 @@ const scheduledTrips = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle');
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -288,7 +286,7 @@ const rents = (req, res) => {
     try {
         Rent.find({ driver: req.params.id }, (error, rents) => {
             if (error) {
-                console.log(error);
+                logger.error("Driver => " + error.toString());
                 res.status(500).send(error);
             }
             if (rents) {
@@ -296,7 +294,7 @@ const rents = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(15).populate('passenger').populate('vehicleType').populate('vehicle')
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -306,24 +304,23 @@ const topUp = (req, res) => {
         if (req.params.id && req.body.amount && req.body.amount > 0) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
-                    console.log(error);
+                    logger.error("Driver => " + error.toString());
                     res.status(500).send(error);
                 }
                 if (driver) {
                     var ballance = driver.ballance + req.body.amount;
                     Driver.updateOne({ _id: req.params.id }, {ballance}, (error, updateResponse) => {
                         if (error) {
-                            console.log(error);
+                            logger.error("Driver => " + error.toString());
                             res.status(500).send(error);
                         }
                         if (updateResponse) {
                             WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
                                 if (error) {
-                                    console.log(error);
+                                    logger.error("Driver => " + error.toString());
                                     res.status(500).send(error);
                                 }
                                 if (wallet) {
-                                    console.log("balance", driver.balance);
                                     res.send({ ballance });
                                 }
                             })
@@ -335,7 +332,7 @@ const topUp = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -344,7 +341,7 @@ const walletHistory = (req, res) => {
     try {
         WalletHistory.find({ driver: req.params.id }, (error, walletHistory) => {
             if (error) {
-                console.log(error);
+                logger.error("Driver => " + error.toString());
                 res.status(500).send(error);
             }
             if (walletHistory) {
@@ -352,7 +349,7 @@ const walletHistory = (req, res) => {
             }
         }).sort({ createdAt: 'desc' }).limit(20).populate('driver');
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -376,7 +373,7 @@ const rate = async (req, res) => {
             res.send("Rated");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Driver => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -386,10 +383,10 @@ const updateWallet = (data) => {
         driver: data.id,
         amount: data.amount
     }, (error, response) => {
-        if (error) console.log(error);
+        if (error) logger.error("Driver => " + error.toString());
         if (response) {
             Driver.findById(data.id, (error, res) => {
-                if (error) console.log(error);
+                if (error) logger.error("Driver => " + error.toString());
                 if (res) {
                     res.ballance += data.amount;
                     res.save();
@@ -405,9 +402,9 @@ const store = async (req, res) => {
         var token = await Token.create({ active: true, driver: savedDriver._id, role: 5, });
         savedDriver._doc["token"] = token._id;
         res.send(savedDriver);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
+    } catch (error) {
+        logger.error("Driver => " + error.toString());
+        res.status(500).send(error);
     }
 };
 
@@ -415,9 +412,9 @@ const update = async (req, res) => {
     try {
         const updatedDriver = await Driver.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedDriver);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ "message": "error => " + err });
+    } catch (error) {
+        logger.error("Driver => " + error.toString());
+        res.status(500).send({ "message": "error => " + error });
     }
 };
 
@@ -425,8 +422,9 @@ const remove = async (req, res) => {
     try {
         const deletedDriver = await Driver.remove({ _id: req.params.id });
         res.send(deletedDriver);
-    } catch (err) {
-        res.status(500).send(err);
+    } catch (error) {
+        logger.error("Driver => " + error.toString());
+        res.status(500).send(error);
     }
 };
 

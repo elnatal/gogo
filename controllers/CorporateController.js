@@ -4,6 +4,7 @@ const Ticket = require('../models/Ticket');
 const Ride = require('../models/Ride');
 const Account = require('../models/Account');
 const CorporatePayment = require('../models/CorporatePayment');
+const logger = require('../services/logger');
 
 const index = async (req, res) => {
     try {
@@ -48,11 +49,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Corporate => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     };
 }
@@ -72,10 +73,9 @@ const trips = async (req, res) => {
             filter.endTimestamp["$lte"] = req.query.end;
         }
         var rides = await Ride.find(filter);
-        console.log({ rides });
         res.send(rides);
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -121,11 +121,11 @@ const dashboard = async (req, res) => {
                 res.status(500).send("Something went wrong!")
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Corporate => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -134,7 +134,7 @@ const search = (req, res) => {
     try {
         Corporate.find({ name: { $regex: req.query.q ? req.query.q : "", $options: "i" } }, (error, corporates) => {
             if (error) {
-                console.log(error);
+                logger.error("Corporate => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -143,7 +143,7 @@ const search = (req, res) => {
             }
         }).limit(10);
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -152,10 +152,9 @@ const search = (req, res) => {
 const show = async (req, res) => {
     try {
         var corporate = await Corporate.findById(req.params.id);
-        console.log(req.params.id);
         res.send(corporate);
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     };
 }
@@ -163,17 +162,16 @@ const show = async (req, res) => {
 const store = async (req, res) => {
     try {
         const data = req.body;
-        console.log({ data })
         if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email) {
             data["password"] = await bcrypt.hash(data["password"], 5);
 
             Corporate.create({
                 name: data.name,
                 shortName: data.shortName
-            }, (err, corporate) => {
-                if (err) {
-                    console.log({ err });
-                    res.status(500).send(err);
+            }, (error, corporate) => {
+                if (error) {
+                    logger.error("Corporate => " + error.toString());
+                    res.status(500).send(error);
                 }
                 if (corporate) {
                     Account.create({
@@ -184,12 +182,12 @@ const store = async (req, res) => {
                         roles: [4],
                         profileImage: data.profileImage,
                         corporate: corporate._id
-                    }, (err, account) => {
-                        if (err) {
-                            console.log({ err });
-                            Corporate.deleteOne({ _id: corporate._id }, (err, res) => {
-                                if (err) console.log({ err });
-                                if (res) console.log("deleted");
+                    }, (error, account) => {
+                        if (error) {
+                            logger.error("Corporate => " + error.toString());
+                            Corporate.deleteOne({ _id: corporate._id }, (error, res) => {
+                                if (error) logger.error("Corporate => " + error.toString());
+                                if (res) logger.info("Corporate => Deleted");
                             })
                             res.status(500).send(err);
                         }
@@ -203,7 +201,7 @@ const store = async (req, res) => {
             res.status(500).send("Invalid data")
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -224,7 +222,7 @@ const pay = (req, res) => {
                 month: monthNames[req.body.month]
             }, (error, payment) => {
                 if (error) {
-                    console.log(error);
+                    logger.error("Corporate => " + error.toString());
                     res.status(500).send(error);
                 }
 
@@ -236,7 +234,7 @@ const pay = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -246,7 +244,7 @@ const update = async (req, res) => {
         const updatedCorporate = await Corporate.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedCorporate);
     } catch (error) {
-        console.log(error);
+        logger.error("Corporate => " + error.toString());
         res.status(500).send(error);
     }
 }

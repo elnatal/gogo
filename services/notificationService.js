@@ -1,4 +1,5 @@
 const { default: axios } = require('axios');
+const logger = require('./logger');
 
 const sendNotification = (to, message) => {
     // TODO:: Implement Push notification
@@ -23,12 +24,12 @@ const sendNotification = (to, message) => {
         }
     };
 
-    axios.post("https://fcm.googleapis.com/fcm/send", data, config).catch((err) => {
-        console.log({ err })
+    axios.post("https://fcm.googleapis.com/fcm/send", data, config).catch((error) => {
+        logger.error("Notification service => " + error.toString());
     }).then((res) => {
-        console.log(res.status);
+        logger.info("Notification => " + res.status);
     });
-    console.log("notification", to, message)
+    logger.info("Notification => to: " + to + ", message: " + message);
 }
 
 module.exports = { sendNotification };

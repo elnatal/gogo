@@ -1,4 +1,5 @@
 const Vehicle = require('../models/Vehicle');
+const logger = require('../services/logger');
 
 const index =  async (req, res) => {
     try {
@@ -75,11 +76,11 @@ const index =  async (req, res) => {
                 res.send({data: value[1], count: value[0], nextPage, prevPage});
             }
         }).catch((error) => {
-            console.log(error);
+            logger.error("Vehicle => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -89,7 +90,7 @@ const activeVehicles = async (req, res) => {
         const vehicles = await Vehicle.find({ "online": true }).populate('driver');
         res.send(vehicles);
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -132,7 +133,7 @@ const search = (req, res) => {
 
         Vehicle.find(filter, (error, vehicles) => {
             if (error) {
-                console.log(error);
+                logger.error("Vehicle => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -141,7 +142,7 @@ const search = (req, res) => {
             }
         }).limit(10).populate('vehicleType').populate('driver');
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -149,10 +150,9 @@ const search = (req, res) => {
 const show = async (req, res) => {
     try {
         var vehicle = await Vehicle.findById(req.params.id);
-        console.log(req.params.id);
         res.send(vehicle);
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     };
 };
@@ -162,7 +162,7 @@ const store =  async (req, res) => {
         const savedVehicle = await Vehicle.create(req.body);
         res.send(savedVehicle);
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -172,7 +172,7 @@ const update = async (req, res) => {
         const updatedVehicle = await Vehicle.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedVehicle);
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     }
 };
@@ -182,7 +182,7 @@ const remove = async (req, res) => {
         const deletedVehicle = await Vehicle.remove({ _id: req.params.id });
         res.send(deletedVehicle);
     } catch (error) {
-        console.log(error);
+        logger.error("Vehicle => " + error.toString());
         res.status(500).send(error);
     }
 };

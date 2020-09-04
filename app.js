@@ -1,11 +1,12 @@
 const express = require('express');
+require('dotenv/config');
 const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 const socketIO = require('socket.io');
 const { setIO } = require('./sockets/io');
 const { runCrone } = require('./services/cronService');
-require('dotenv/config');
+const logger = require('./services/logger');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,10 +24,9 @@ app.use(function (req, res, next) {
 });
 
 // Connecting to mongoDB
-mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (err, res) => {
-  // console.log("connected");
-  if (err) console.log(err);
-  if (res) console.log("Connected");
+mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (error, res) => {
+  if (error) logger.error(error.toString());
+  if (res) logger.info("DB connected");;
 }).
   catch(error => handleError(error));
 
@@ -41,6 +41,7 @@ app.use('/trips', require('./routes/trips'));
 app.use('/rents', require('./routes/rents'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/users', require('./routes/users'));
+app.use('/logs', require('./routes/logs'));
 app.use('/sos', require('./routes/sos')(io));
 app.use('/vehicles', require('./routes/vehicles'));
 app.use('/wallet-histories', require('./routes/walletHistories'));
@@ -72,4 +73,4 @@ runCrone(io);
 
 // Listening
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("LISTENING ON PORT " + PORT));
+server.listen(PORT, () => logger.info("LISTENING ON PORT " + PORT));

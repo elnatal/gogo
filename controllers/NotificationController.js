@@ -1,5 +1,6 @@
 const Notification = require("../models/Notification");
 const { sendNotification } = require("../services/notificationService");
+const logger = require("../services/logger");
 
 const index = async (req, res) => {
     try {
@@ -74,7 +75,7 @@ const search = (req, res) => {
 
         Notification.find(filter, (error, notifications) => {
             if (error) {
-                console.log(error);
+                logger.error("Notification => " + error.toString());
                 res.status(500).send(error);
             }
 
@@ -83,7 +84,7 @@ const search = (req, res) => {
             }
         }).limit(10);
     } catch (error) {
-        console.log(error);
+        logger.error("Notification => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -91,10 +92,10 @@ const search = (req, res) => {
 const sendByToken = (req, res) => {
     try {
         if (req.params.token && req.body && req.body.title && req.body.body) {
-            Notification.create({title: req.body.title, body: req.body.body, to: req.params.token, type: "token"}, (err, notification) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send(err);
+            Notification.create({title: req.body.title, body: req.body.body, to: req.params.token, type: "token"}, (error, notification) => {
+                if (error) {
+                    logger.error("Notification => " + error.toString());
+                    res.status(500).send(error);
                 }
                 if (notification) {
                     sendNotification(req.params.token, req.body);
@@ -105,7 +106,7 @@ const sendByToken = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Notification => " + error.toString());
         res.status(500).send(error);
     }
 }
@@ -113,10 +114,10 @@ const sendByToken = (req, res) => {
 const sendByTopic = (req, res) => {
     try {
         if (req.params.topic && req.body && req.body.title && req.body.body) {
-            Notification.create({title: req.body.title, body: req.body.body, to: req.params.topic, type: "topic"}, (err, notification) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send(err);
+            Notification.create({title: req.body.title, body: req.body.body, to: req.params.topic, type: "topic"}, (error, notification) => {
+                if (error) {
+                    logger.error("Notification => " + error.toString());
+                    res.status(500).send(error);
                 }
                 if (notification) {
                     sendNotification('/topics/' + req.params.topic, req.body);
@@ -127,7 +128,7 @@ const sendByTopic = (req, res) => {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        console.log(error);
+        logger.error("Notification => " + error.toString());
         res.status(500).send(error);
     }
 }
