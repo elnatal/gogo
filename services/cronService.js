@@ -1,6 +1,5 @@
 var cron = require('node-cron');
 const { checkScheduledTrips } = require('../controllers/TripController');
-const logger = require('./logger');
 
 const runCrone = (io) => {
     runJobs(io);
@@ -10,7 +9,7 @@ const runCrone = (io) => {
 }
 
 function runJobs(io) {
-    logger.info("Running cron job");
+    console.log("Running cron job");
     checkScheduledTrips(io);
 }
 

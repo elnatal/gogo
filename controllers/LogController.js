@@ -8,13 +8,18 @@ const index = async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {}
 
-        var logs = Log.find();
+        var logs = Log.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
         if (req.query.limit) {
             limit = parseInt(req.query.limit);
+        }
+
+        if (req.query.level) {
+            filter["level"] = req.query.level;
         }
 
         if (page > 1) {
