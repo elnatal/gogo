@@ -10,16 +10,16 @@ const index = async (req, res) => {
         var prevPage;
         var filter = {}
 
+        if (req.query.level) {
+            filter["level"] = req.query.level;
+        }
+
         var logs = Log.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
         if (req.query.limit) {
             limit = parseInt(req.query.limit);
-        }
-
-        if (req.query.level) {
-            filter["level"] = req.query.level;
         }
 
         if (page > 1) {
