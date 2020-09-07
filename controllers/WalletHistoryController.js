@@ -8,8 +8,29 @@ const index = async (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {};
 
-        var walletHistories = WalletHistory.find();
+        if (req.query.driver != null && req.query.driver != 'all') {
+            filter['driver'] = req.query.driver;
+        }
+
+        if (req.query.account != null && req.query.account != 'all') {
+            filter['account'] = req.query.account;
+        }
+
+        if (req.query.by != null && req.query.by != 'all') {
+            filter['by'] = req.query.by;
+        }
+
+        if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
+            filter['$and'] = [{"createdAt" : { $gte: new Date(req.query.start) }}, {"createdAt": { $lte: new Date(req.query.end) }}];
+        } else if (req.query.end != null && req.query.end != 'all') {
+            filter['createdAt'] = { $lte: new Date(req.query.end) };
+        } else if (req.query.start != null && req.query.start != 'all') {
+            filter['createdAt'] = { $gte: new Date(req.query.start) };
+        }
+
+        var walletHistories = WalletHistory.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
