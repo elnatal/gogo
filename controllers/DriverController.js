@@ -301,7 +301,7 @@ const rents = (req, res) => {
 
 const topUp = (req, res) => {
     try {
-        if (req.params.id && req.body.amount && req.body.amount && req.body.account && req.body.account > 0) {
+        if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.account && req.body.reason) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
                     logger.error("Driver => " + error.toString());
