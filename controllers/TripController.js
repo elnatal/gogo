@@ -30,11 +30,11 @@ const index = (req, res) => {
         }
 
         if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
-            filter['$and'] = [{"pickupTimestamp" : { $gte: new Date(req.query.start) }}, {"pickupTimestamp": { $lte: new Date(req.query.end) }}];
+            filter['$and'] = [{"endTimestamp" : { $gte: new Date(req.query.start) }}, {"endTimestamp": { $lte: new Date(req.query.end) }}];
         } else if (req.query.end != null && req.query.end != 'all') {
-            filter['pickupTimestamp'] = { $lte: new Date(req.query.end) };
+            filter['endTimestamp'] = { $lte: new Date(req.query.end) };
         } else if (req.query.start != null && req.query.start != 'all') {
-            filter['pickupTimestamp'] = { $gte: new Date(req.query.start) };
+            filter['endTimestamp'] = { $gte: new Date(req.query.start) };
         }
 
         var trip =  Ride.find(filter);
