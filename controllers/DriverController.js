@@ -301,7 +301,7 @@ const rents = (req, res) => {
 
 const topUp = (req, res) => {
     try {
-        if (req.params.id && req.body.amount && req.body.amount > 0) {
+        if (req.params.id && req.body.amount && req.body.amount && req.body.account && req.body.account > 0) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
                     logger.error("Driver => " + error.toString());
@@ -315,12 +315,13 @@ const topUp = (req, res) => {
                             res.status(500).send(error);
                         }
                         if (updateResponse) {
-                            WalletHistory.create({ driver: req.params.id, amount: req.body.amount }, (error, wallet) => {
+                            WalletHistory.create({ driver: req.params.id, amount: req.body.amount, reason: req.body.reason, by: 'admin', account: req.body.account }, (error, wallet) => {
                                 if (error) {
                                     logger.error("Driver => " + error.toString());
                                     res.status(500).send(error);
                                 }
                                 if (wallet) {
+                                    logger.info(`Driver => top up, amount = ${req.body.amount} , balance = ${ballance}`);
                                     res.send({ ballance });
                                 }
                             })
@@ -347,7 +348,7 @@ const walletHistory = (req, res) => {
             if (walletHistory) {
                 res.send(walletHistory);
             }
-        }).sort({ createdAt: 'desc' }).limit(20).populate('driver');
+        }).sort({ createdAt: 'desc' }).limit(20).populate('driver').populate('account');
     } catch (error) {
         logger.error("Driver => " + error.toString());
         res.status(500).send(error);
@@ -381,6 +382,8 @@ const rate = async (req, res) => {
 const updateWallet = (data) => {
     WalletHistory.create({
         driver: data.id,
+        reason: "company cut",
+        by: "System",
         amount: data.amount
     }, (error, response) => {
         if (error) logger.error("Driver => " + error.toString());
@@ -390,6 +393,7 @@ const updateWallet = (data) => {
                 if (res) {
                     res.ballance += data.amount;
                     res.save();
+                    logger.info(`Driver => company cut, amount = ${data.amount} , balance = ${res.ballance}`)
                 }
             })
         }

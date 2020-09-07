@@ -10,6 +10,15 @@ const WalletHistorySchema = Schema({
     amount: {
         type: Number,
         required: true
+    },
+    reason: String,
+    account: {
+        type: Schema.Types.ObjectId,
+        ref: 'accounts'
+    },
+    by: {
+        type: String,
+        required: true
     }
 },
 {
