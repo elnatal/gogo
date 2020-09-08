@@ -6,6 +6,7 @@ router.get('/', accountController.index);
 router.get('/:id', accountController.show);
 router.post('/auth', accountController.auth);
 router.get('/check/:token', accountController.check);
+router.patch('/:id', accountController.update);
 router.post('/', accountController.store);
 
 module.exports = router

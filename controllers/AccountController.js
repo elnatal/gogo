@@ -163,4 +163,15 @@ const check = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, auth, check, search };
+const update = async (req, res) => {
+    try {
+        await Account.updateOne({ '_id': req.params.id }, req.body);
+        const account = await Account.findById(req.params.id);
+        res.send(account);
+    } catch (error) {
+        logger.error("Account => " + error.toString());
+        res.status(500).send(error);
+    }
+};
+
+module.exports = { index, show, store, auth, check, search, update };
