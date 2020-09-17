@@ -305,36 +305,86 @@ const topUp = (req, res) => {
         if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.account && req.body.reason) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
-                    logger.error("Driver => " + error.toString());
+                    logger.error("Top up => " + error.toString());
                     res.status(500).send(error);
                 }
                 if (driver) {
-                    var ballance = driver.ballance + req.body.amount;
-                    Driver.updateOne({ _id: req.params.id }, { ballance }, (error, updateResponse) => {
+                    Loan.find({ to: req.params.id, paid: false }, (error, loans) => {
                         if (error) {
-                            logger.error("Driver => " + error.toString());
+                            logger.error("Top up => " + error.toString());
                             res.status(500).send(error);
                         }
-                        if (updateResponse) {
-                            WalletHistory.create({ driver: req.params.id, amount: req.body.amount, reason: req.body.reason, by: 'admin', account: req.body.account }, (error, wallet) => {
-                                if (error) {
-                                    logger.error("Driver => " + error.toString());
-                                    res.status(500).send(error);
+                        if (loans) {
+                            var topUpAmount = req.body.amount;
+                            loans.forEach(async (loan) => {
+                                if (topUpAmount >= loan.amount) {
+                                    topUpAmount -= loan.amount - loan.paidAmount;
+                                    loan.paidAmount = loan.amount;
+                                    loan.paid = true;
+                                    var secondDriver = await Driver.findById(loan.from);
+                                    if (secondDriver) {
+                                        secondDriver.ballance = secondDriver.ballance + loan.paidAmount;
+                                        await secondDriver.save();
+                                        await WalletHistory.create({
+                                            driver: loan.from,
+                                            reason: "Wallet loan pay back",
+                                            by: "System",
+                                            amount: loan.paidAmount,
+                                            from: loan.to
+                                        });
+                                    }
+                                } else if (topUpAmount > 0) {
+                                    topUpAmount = 0;
+                                    loan.paidAmount = topUpAmount;
+                                    loan.paid = false;
+                                    var secondDriver = await Driver.findById(loan.from);
+                                    if (secondDriver) {
+                                        secondDriver.ballance = secondDriver.ballance + loan.paidAmount;
+                                        await secondDriver.save();
+                                        await WalletHistory.create({
+                                            driver: loan.from,
+                                            reason: "Wallet loan pay back",
+                                            by: "System",
+                                            amount: loan.paidAmount,
+                                            from: loan.to
+                                        });
+                                    }
                                 }
-                                if (wallet) {
-                                    logger.info(`Driver => top up, amount = ${req.body.amount} , balance = ${ballance}`);
-                                    res.send({ ballance });
-                                }
-                            })
+                                await loan.save();
+                            });
+
+                            if (topUpAmount > 0) {
+                                var ballance = driver.ballance + topUpAmount;
+                                Driver.updateOne({ _id: req.params.id }, { ballance }, (error, updateResponse) => {
+                                    if (error) {
+                                        logger.error("Top up => " + error.toString());
+                                        res.status(500).send(error);
+                                    }
+                                    if (updateResponse) {
+                                        WalletHistory.create({ driver: req.params.id, amount: topUpAmount, reason: req.body.reason, by: 'admin', account: req.body.account }, (error, wallet) => {
+                                            if (error) {
+                                                logger.error("Top up => " + error.toString());
+                                                res.status(500).send(error);
+                                            }
+                                            if (wallet) {
+                                                logger.info(`Driver => top up, amount = ${topUpAmount} , balance = ${ballance}`);
+                                                res.send({ ballance });
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                res.send({ ballance: driver.ballance });
+                            }
                         }
-                    })
+                    });
                 }
             });
         } else {
             res.status(500).send("Invalid data");
         }
     } catch (error) {
-        logger.error("Driver => " + error.toString());
+        logger.error("Top up => " + error.toString());
         res.status(500).send(error);
     }
 }
