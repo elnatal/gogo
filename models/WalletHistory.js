@@ -19,6 +19,10 @@ const WalletHistorySchema = Schema({
     by: {
         type: String,
         required: true
+    },
+    from: {
+        type: Schema.Types.ObjectId,
+        ref: "Drivers"
     }
 },
 {

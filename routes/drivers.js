@@ -23,6 +23,8 @@ router.post('/:id/rate', DriverController.rate);
 
 router.post('/:id/top-up', DriverController.topUp);
 
+router.post('/:id/wallet-transfer', DriverController.walletTransfer);
+
 router.get('/:id/rents', DriverController.rents);
 
 router.post('/', DriverController.store);

@@ -309,7 +309,7 @@ const topUp = (req, res) => {
                 }
                 if (driver) {
                     var ballance = driver.ballance + req.body.amount;
-                    Driver.updateOne({ _id: req.params.id }, {ballance}, (error, updateResponse) => {
+                    Driver.updateOne({ _id: req.params.id }, { ballance }, (error, updateResponse) => {
                         if (error) {
                             logger.error("Driver => " + error.toString());
                             res.status(500).send(error);
@@ -354,6 +354,58 @@ const walletHistory = (req, res) => {
         res.status(500).send(error);
     }
 }
+
+const walletTransfer = (req, res) => {
+    try {
+        if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.to) {
+            Driver.findById(req.params.id, (error, driver) => {
+                if (error) {
+                    logger.error("Driver => " + error.toString());
+                    res.status(500).send(error);
+                }
+                if (driver) {
+                    if (driver.ballance > req.body.amount) {
+                        WalletHistory.create({
+                            driver: req.body.to,
+                            reason: "Wallet transfer",
+                            by: "Driver",
+                            amount: data.amount,
+                            from: req.params.id
+                        }, (error, response) => {
+                            if (error) {
+                                res.status(500).send(error);
+                                logger.error("Driver => " + error.toString());
+                            }
+                            if (response) {
+                                driver.ballance = driver.ballance - amount;
+                                driver.save();
+                                logger.info(`Driver ${req.params.id} => Wallet transfer, amount = ${amount} , balance = ${driver.ballance}`);
+                                Driver.findById(req.body.to, (error, secondDriver) => {
+                                    if (error) {
+                                        res.status(500).send(error);
+                                        logger.error("Driver => " + error.toString());
+                                    }
+                                    if (secondDriver) {
+                                        secondDriver.ballance += data.amount;
+                                        secondDriver.save();
+                                        logger.info(`Driver ${req.body.to} => Wallet transfer, amount = ${amount} , balance = ${secondDriver.ballance}`);
+                                        res.send("success")
+                                    }
+                                })
+                            }
+                        });
+                    } else {
+                        res.status(500).send("your ballance is low");
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        logger.error("Driver => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
 
 const rate = async (req, res) => {
     try {
@@ -432,4 +484,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, auth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet };
+module.exports = { index, auth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet, walletTransfer };
