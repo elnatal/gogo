@@ -7,6 +7,7 @@ const Setting = require('../models/Setting');
 const Rent = require('../models/Rent');
 const WalletHistory = require('../models/WalletHistory');
 const logger = require('../services/logger');
+const Loan = require('../models/Loan');
 
 const index = async (req, res) => {
     try {
@@ -360,7 +361,7 @@ const walletTransfer = (req, res) => {
         if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.to) {
             Driver.findById(req.params.id, (error, driver) => {
                 if (error) {
-                    logger.error("Driver => " + error.toString());
+                    logger.error("Wallet transfer => " + error.toString());
                     res.status(500).send(error);
                 }
                 if (driver) {
@@ -374,7 +375,7 @@ const walletTransfer = (req, res) => {
                         }, (error, response) => {
                             if (error) {
                                 res.status(500).send(error);
-                                logger.error("Driver => " + error.toString());
+                                logger.error("Wallet transfer => " + error.toString());
                             }
                             if (response) {
                                 driver.ballance = driver.ballance - amount;
@@ -383,7 +384,7 @@ const walletTransfer = (req, res) => {
                                 Driver.findById(req.body.to, (error, secondDriver) => {
                                     if (error) {
                                         res.status(500).send(error);
-                                        logger.error("Driver => " + error.toString());
+                                        logger.error("Wallet transfer => " + error.toString());
                                     }
                                     if (secondDriver) {
                                         secondDriver.ballance += data.amount;
@@ -399,13 +400,68 @@ const walletTransfer = (req, res) => {
                     }
                 }
             })
+        } else {
+            res.status(500).send("invalid data");
         }
     } catch (error) {
-        logger.error("Driver => " + error.toString());
+        logger.error("Wallet transfer => " + error.toString());
         res.status(500).send(error);
     }
 }
 
+const lend = (req, res) => {
+    try {
+        if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.to) {
+            Driver.findById(req.params.id, (error, driver) => {
+                if (error) {
+                    logger.error("Wallet lend => " + error.toString());
+                    res.status(500).send(error);
+                }
+                if (driver) {
+                    if (driver.ballance > req.body.amount) {
+                        Loan.create({
+                            from: req.params.id,
+                            to: req.body.to,
+                            amount: req.body.amount,
+                            paid: false
+                        }, (error, loan) => {
+                            if (error) {
+                                logger.error("Wallet lend => " + error.toString());
+                                res.status(500).send(error);
+                            }
+                            if (loan) {
+                                driver.ballance = driver.ballance - amount;
+                                driver.save();
+                                logger.info(`Driver ${req.params.id} => Wallet loan, amount = ${amount} , balance = ${driver.ballance}`);
+                                Driver.findById(req.body.to, (error, secondDriver) => {
+                                    if (error) {
+                                        res.status(500).send(error);
+                                        logger.error("Wallet lend => " + error.toString());
+                                    }
+                                    if (secondDriver) {
+                                        secondDriver.ballance += data.amount;
+                                        secondDriver.save();
+                                        logger.info(`Driver ${req.body.to} => Wallet loan, amount = ${amount} , balance = ${secondDriver.ballance}`);
+                                        res.send("success")
+                                    }
+                                })
+                            }
+                        });
+                    }
+                    else {
+                        res.status(500).send("your ballance is low");
+                    }
+                }
+            })
+        } else {
+            logger.error("Wallet lend => " + error.toString());
+            res.status(500).send("invalid data");
+        }
+    } catch (error) {
+        logger.error("Wallet lend => " + error.toString());
+        res.status(500).send(error);
+    }
+}
 
 const rate = async (req, res) => {
     try {
@@ -484,4 +540,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, auth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet, walletTransfer };
+module.exports = { index, auth, show, bookings, store, update, remove, rate, search, scheduledTrips, rents, topUp, walletHistory, income, updateWallet, walletTransfer, lend };

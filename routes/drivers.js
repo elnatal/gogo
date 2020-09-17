@@ -25,6 +25,8 @@ router.post('/:id/top-up', DriverController.topUp);
 
 router.post('/:id/wallet-transfer', DriverController.walletTransfer);
 
+router.post('/:id/wallet-lend', DriverController.lend);
+
 router.get('/:id/rents', DriverController.rents);
 
 router.post('/', DriverController.store);
