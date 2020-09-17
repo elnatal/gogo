@@ -27,8 +27,7 @@ app.use(function (req, res, next) {
 mongoose.connect(process.env.DB_CONNECTION, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true }, (error, res) => {
   if (error) logger.error(error.toString());
   if (res) logger.info("DB connected");;
-}).
-  catch(error => handleError(error));
+}).catch(error => handleError(error));
 
 // Routes
 app.use('/', require('./routes/core'));
