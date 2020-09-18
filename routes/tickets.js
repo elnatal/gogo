@@ -9,7 +9,7 @@ router.get('/:id', AuthMiddleware([4, 5]), TicketController.show);
 
 router.get('/validate/:code', TicketController.validate);
 
-router.get('/generate/:id', TicketController.generate);
+router.post('/generate/:id', TicketController.generate);
 
 router.patch('/:id', TicketController.update);
 
