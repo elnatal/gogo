@@ -148,6 +148,83 @@ const search = (req, res) => {
     }
 }
 
+const tickets = (req, res) => {
+    try {
+        var page = 1;
+        var skip = 0;
+        var limit = 20;
+        var nextPage;
+        var prevPage;
+        var filter = {
+            corporate: req.params.id
+        };
+
+        if (req.query.active != null && req.query.active != 'all') {
+            filter['active'] = req.query.active;
+        }
+
+        if (req.query.locked != null && req.query.locked != 'all') {
+            filter['locked'] = req.query.locked;
+        }
+
+        if (req.query.q != null) {
+            filter['$or'] = [
+                {
+                    code: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    employeeName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ];
+        }
+
+        var tickets = Ticket.find(filter);
+        if (req.query.page && parseInt(req.query.page) != 0) {
+            page = parseInt(req.query.page);
+        }
+        if (req.query.limit) {
+            limit = parseInt(req.query.limit);
+        }
+
+        if (page > 1) {
+            prevPage = page - 1;
+        }
+
+        skip = (page - 1) * limit;
+
+        tickets.sort({ createdAt: 'desc' });
+        tickets.limit(limit);
+        tickets.skip(skip);
+        if (req.query.populate) {
+            var populate = JSON.parse(req.query.populate)
+            populate.forEach((e) => {
+                tickets.populate(e);
+            });
+        }
+        Promise.all([
+            Ticket.countDocuments(filter),
+            tickets.exec()
+        ]).then(async (value) => {
+            if (value) {
+                if (((page * limit) <= value[0])) {
+                    nextPage = page + 1;
+                }
+
+                res.send({ data: value[1], count: value[0], nextPage, prevPage });
+            }
+        }).catch((error) => {
+            logger.error("Ticket => " + error.toString());
+            res.status(500).send(error);
+        });
+    } catch (error) {
+        logger.error("Corporate tickets => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
 
 const show = async (req, res) => {
     try {
@@ -258,4 +335,4 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { index, show, store, update, remove, trips, dashboard, search, pay };
+module.exports = { index, show, store, update, remove, trips, dashboard, search, pay, tickets };
