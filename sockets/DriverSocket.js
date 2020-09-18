@@ -7,7 +7,7 @@ const { getUser, getUsers } = require("../containers/usersContainer");
 const { updateRent } = require("../containers/rentContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
-const {default: Axios} = require('axios');
+const { default: Axios } = require('axios');
 const { sendEmail } = require("../services/emailService");
 const Token = require("../models/Token");
 const { request } = require("express");
@@ -185,7 +185,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
-                                sendNotification(passenger.fcm, {title: "Arrived", body: "Driver has arrived"});
+                                sendNotification(passenger.fcm, { title: "Arrived", body: "Driver has arrived" });
                             })
                         }
                     }
@@ -214,7 +214,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
-                                sendNotification(passenger.fcm, {title: "Started", body: "Trip has started"});
+                                sendNotification(passenger.fcm, { title: "Started", body: "Trip has started" });
                             })
                         }
                     }
@@ -223,7 +223,7 @@ module.exports = async (socket) => {
                 console.log(error);
             }
         } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.pickUpAddress.lat && trip.pickUpAddress.long && trip.dropOffAddress && trip.dropOffAddress.lat && trip.dropOffAddress.long && trip.vehicleType && trip.phone) {
-            console.log({trip});
+            console.log({ trip });
             var setting = await Setting.findOne();
             console.log({ setting });
             var passengerId = "";
@@ -353,7 +353,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
-                                sendNotification(passenger.fcm, {title: "Started", body: "Rent has started"});
+                                sendNotification(passenger.fcm, { title: "Started", body: "Rent has started" });
                             })
                         }
                     }
@@ -382,6 +382,13 @@ module.exports = async (socket) => {
                             var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
                             var cutFromDriver = 0;
                             var fare = 0;
+                            if ((res.type == "normal" || res.type == "roadPickup") && setting.promoTripCount > 0) {
+                                var tripCount = await Ride.countDocuments({ passenger: res.passenger._id, status: "Completed" });
+                                if (tripCount % setting.promoTripCount == 0) {
+                                    var t = tripCount / setting.promoTripCount;
+                                    discount += setting.promoAmount(1 + ((setting.promoRate / 100) * t));
+                                }
+                            }
                             if (res.type == "corporate") {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100));
@@ -460,7 +467,7 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
-                                    sendNotification(passenger.fcm, {title: "Trip ended", body: "You have arrived at your destination"});
+                                    sendNotification(passenger.fcm, { title: "Trip ended", body: "You have arrived at your destination" });
                                 })
                             }
                         }
@@ -511,7 +518,7 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
-                                    sendNotification(passenger.fcm, {title: "Rent ended", body: "You have arrived at your destination"});
+                                    sendNotification(passenger.fcm, { title: "Rent ended", body: "You have arrived at your destination" });
                                 })
                             }
                         }
@@ -556,7 +563,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
-                                sendNotification(passenger.fcm, {title: "Canceled", body: "You trip has been canceled"});
+                                sendNotification(passenger.fcm, { title: "Canceled", body: "You trip has been canceled" });
                             })
                         }
                     }
@@ -593,7 +600,7 @@ module.exports = async (socket) => {
                             var passengers = getUsers({ userId: res.passenger._id });
                             passengers.forEach((passenger) => {
                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
-                                sendNotification(passenger.fcm, {title: "Canceled", body: "Your rent has been canceled"});
+                                sendNotification(passenger.fcm, { title: "Canceled", body: "Your rent has been canceled" });
                             })
                         }
                     }

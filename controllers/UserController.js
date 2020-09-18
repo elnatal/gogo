@@ -58,6 +58,9 @@ const auth = async (req, res) => {
     try {
         var user = await User.findOne({ phoneNumber: req.params.phone });
         if (user) {
+            user = user.toJSON();
+            var tripCount = await Ride.countDocuments({ passenger: user._id, status: "Completed" });
+            user['tripCount'] = tripCount;
             res.send(user);
         } else {
             res.status(404).send("User doesn't exist");
@@ -133,7 +136,9 @@ const rents = (req, res) => {
 
 const show = async (req, res) => {
     try {
-        var user = await User.findById(req.params.id);
+        var user = await (await User.findById(req.params.id)).toJSON();
+        var tripCount = await Ride.countDocuments({ passenger: req.params.id, status: "Completed" });
+        user['tripCount'] = tripCount;
         res.send(user);
     } catch (error) {
         logger.error("Passenger => " + error.toString());
