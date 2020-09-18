@@ -35,6 +35,18 @@ const SettingSchema = Schema({
         type: Number,
         default: 0
     },
+    promoAmount: {
+        type: Number,
+        default: 0
+    },
+    promoRate: {
+        type: Number,
+        default: 0
+    },
+    promoTripCount: {
+        type: Number,
+        default: 0
+    },
     contactNumber: String,
     contactEmail: String,
     facebookLink: String,
