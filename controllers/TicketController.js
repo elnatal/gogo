@@ -86,7 +86,7 @@ const generate = async (req, res) => {
     try {
         var id = req.params.id;
         var account = await Account.findById(id).populate('corporate');
-        if (corporate && account.corporate) {
+        if (account && account.corporate) {
             var corporate = account.corporate
             var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
             var found = false;
