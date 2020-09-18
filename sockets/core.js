@@ -72,13 +72,17 @@ const searchForDispatcher = async (socket, data) => {
 
     var route;
 
-    const passenger = await User.findOne({ phoneNumber: data.phone });
-    if (passenger) {
-        passengerId = passenger._id;
+    if (data.passengerId) {
+        passengerId = data.passengerId;
     } else {
-        const newPassenger = await User.create({ phoneNumber: data.phone, firstName: data.name ? data.name : "_", lastName: "_" });
-        if (newPassenger) {
-            passengerId = newPassenger._id;
+        const passenger = await User.findOne({ phoneNumber: data.phone });
+        if (passenger) {
+            passengerId = passenger._id;
+        } else {
+            const newPassenger = await User.create({ phoneNumber: data.phone, firstName: data.name ? data.name : "_", lastName: "_" });
+            if (newPassenger) {
+                passengerId = newPassenger._id;
+            }
         }
     }
 
@@ -136,10 +140,10 @@ const searchForDispatcher = async (socket, data) => {
         var vehicles = [];
         if (data.singleDriver) {
             console.log("single driver");
-            vehicle = {_id: data.vehicle, driver: data.driver};
+            vehicle = { _id: data.vehicle, driver: data.driver };
         } else {
             vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
-    
+
             vehicles.forEach((v) => {
                 console.log({ vehicles });
                 if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
