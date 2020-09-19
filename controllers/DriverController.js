@@ -408,7 +408,6 @@ const walletHistory = (req, res) => {
 
 const walletTransfer = (req, res) => {
     try {
-        console.log(req);
         if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.to) {
             Driver.findById(req.params.id, (error, driver) => {
                 if (error) {
@@ -429,18 +428,18 @@ const walletTransfer = (req, res) => {
                                 logger.error("Wallet transfer => " + error.toString());
                             }
                             if (response) {
-                                driver.ballance = driver.ballance - amount;
+                                driver.ballance = driver.ballance - req.body.amount;
                                 driver.save();
-                                logger.info(`Driver ${req.params.id} => Wallet transfer, amount = ${amount} , balance = ${driver.ballance}`);
+                                logger.info(`Driver ${req.params.id} => Wallet transfer, amount = ${req.body.amount} , balance = ${driver.ballance}`);
                                 Driver.findById(req.body.to, (error, secondDriver) => {
                                     if (error) {
                                         res.status(500).send(error);
                                         logger.error("Wallet transfer => " + error.toString());
                                     }
                                     if (secondDriver) {
-                                        secondDriver.ballance += data.amount;
+                                        secondDriver.ballance += req.body.amount;
                                         secondDriver.save();
-                                        logger.info(`Driver ${req.body.to} => Wallet transfer, amount = ${amount} , balance = ${secondDriver.ballance}`);
+                                        logger.info(`Driver ${req.body.to} => Wallet transfer, amount = ${req.body.amount} , balance = ${secondDriver.ballance}`);
                                         res.send("success")
                                     }
                                 })
@@ -481,18 +480,18 @@ const lend = (req, res) => {
                                 res.status(500).send(error);
                             }
                             if (loan) {
-                                driver.ballance = driver.ballance - amount;
+                                driver.ballance = driver.ballance - req.body.amount;
                                 driver.save();
-                                logger.info(`Driver ${req.params.id} => Wallet loan, amount = ${amount} , balance = ${driver.ballance}`);
+                                logger.info(`Driver ${req.params.id} => Wallet loan, amount = ${req.body.amount} , balance = ${driver.ballance}`);
                                 Driver.findById(req.body.to, (error, secondDriver) => {
                                     if (error) {
                                         res.status(500).send(error);
                                         logger.error("Wallet lend => " + error.toString());
                                     }
                                     if (secondDriver) {
-                                        secondDriver.ballance += data.amount;
+                                        secondDriver.ballance += req.body.amount;
                                         secondDriver.save();
-                                        logger.info(`Driver ${req.body.to} => Wallet loan, amount = ${amount} , balance = ${secondDriver.ballance}`);
+                                        logger.info(`Driver ${req.body.to} => Wallet loan, amount = ${req.body.amount} , balance = ${secondDriver.ballance}`);
                                         res.send("success")
                                     }
                                 })
