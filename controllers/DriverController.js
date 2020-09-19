@@ -421,7 +421,7 @@ const walletTransfer = (req, res) => {
                             driver: req.body.to,
                             reason: "Wallet transfer",
                             by: "Driver",
-                            amount: data.amount,
+                            amount: req.body.amount,
                             from: req.params.id
                         }, (error, response) => {
                             if (error) {
