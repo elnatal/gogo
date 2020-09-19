@@ -408,6 +408,7 @@ const walletHistory = (req, res) => {
 
 const walletTransfer = (req, res) => {
     try {
+        console.log(req);
         if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.to) {
             Driver.findById(req.params.id, (error, driver) => {
                 if (error) {
