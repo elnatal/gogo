@@ -386,7 +386,7 @@ module.exports = async (socket) => {
                                 var tripCount = await Ride.countDocuments({ passenger: res.passenger._id, status: "Completed" });
                                 if (tripCount % setting.promoTripCount == 0) {
                                     var t = tripCount / setting.promoTripCount;
-                                    discount += setting.promoAmount(1 + ((setting.promoRate / 100) * t));
+                                    discount += setting.promoAmount * (1 + ((setting.promoRate / 100) * t));
                                 }
                             }
                             if (res.type == "corporate") {
