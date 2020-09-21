@@ -32,7 +32,7 @@ module.exports = async (socket) => {
     socket.on('init', async (driverInfo) => {
         console.log(driverInfo);
         console.log("///////////////////////////////////");
-        console.log("//////////// Le Nati //////////////");
+        console.log("//////////// Le Tinsu //////////////");
         console.log("///////////////////////////////////");
         // console.log(JSON.parse(driverInfo));
         console.log("type", typeof (driverInfo));
@@ -49,11 +49,11 @@ module.exports = async (socket) => {
                 var request = getDriverRequest({ driverId: id });
                 var trip = Ride.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 var rent = Rent.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
-                Promise.all([rent, trip]).then((values) => {
-                    console.log("status", values[0] || values[1] || request ? false : true);
+                Promise.all([rent, trip, request]).then((values) => {
+                    console.log("status", values[0] || values[1] || values[2] ? false : true);
                     Vehicle.updateOne({ _id: vehicleId }, {
                         fcm,
-                        online: values[0] || values[1] || request ? false : true,
+                        online: values[0] || values[1] || values[2] ? false : true,
                         timestamp: new Date(),
                         position: {
                             type: "Point",
@@ -65,7 +65,7 @@ module.exports = async (socket) => {
                     }, (err, res) => {
                         if (err) console.log({ err });
                         if (res) {
-                            console.log("vehicle updated, status ", res || request ? false : true);
+                            console.log("vehicle updated, status ", res || values[2] ? false : true);
                         }
                     });
 
@@ -76,9 +76,9 @@ module.exports = async (socket) => {
                         socket.emit('trip', values[1]);
                         console.log("trip", values[1]);
                         // socket.emit('status', { "status": false });
-                    } else if (request) {
-                        socket.emit('request', request);
-                        console.log({ request });
+                    } else if (values[2]) {
+                        socket.emit('request', values[2]);
+                        console.log('request', values[2]);
                     } else {
                         socket.emit('status', { "status": true });
                         console.log("status", true);
