@@ -5,8 +5,8 @@ const { default: Axios } = require('axios');
 const Request = require('../models/Request');
 const Ride = require('../models/Ride');
 const { getDriver } = require('../containers/driversContainer');
-const { addRequest, updateRequest } = require('../containers/requestContainer');
-const { addDispatcher, getDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
+const { addRequest, updateRequest, getAllRequests } = require('../containers/requestContainer');
+const { addDispatcher, getDispatcher, removeDispatcher, getAllDispatchers } = require('../containers/dispatcherContainer');
 const Setting = require('../models/Setting');
 const { request } = require('express');
 const { getIO } = require('./io');
@@ -187,6 +187,13 @@ const searchForDispatcher = async (socket, data) => {
                 updateCallback
             })
             addRequest({ newRequest: request });
+
+            const requests = getAllRequests();
+            const dispatchers = getAllDispatchers();
+
+            dispatchers.forEach((dispatcher) => {
+                io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", requests);
+            });
             console.log({ request });
             socket.emit("request", request);
             var driver = getDriver({ id: request.driverId })
@@ -211,6 +218,12 @@ const searchForDispatcher = async (socket, data) => {
     }
 
     async function updateCallback(request) {
+        const requests = getAllRequests();
+        const dispatchers = getAllDispatchers();
+
+        dispatchers.forEach((dispatcher) => {
+            io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", requests);
+        });
         var status = request.getStatus();
         if (status == "Declined") {
             if (!data.singleDriver) {

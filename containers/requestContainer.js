@@ -31,4 +31,6 @@ const getRequest = ({ passengerId, driverId }) => requests.find((request) =>  dr
 
 const getDriverRequest = ({driverId}) => requests.find((request) => request.driverId == driverId);
 
-module.exports = { addRequest, removeRequest, getRequest, updateRequest, getDriverRequest };
+const getAllRequests = () => requests;
+
+module.exports = { addRequest, removeRequest, getRequest, updateRequest, getDriverRequest, getAllRequests };
