@@ -3,6 +3,7 @@ const { searchForDispatcher } = require('./core');
 const Setting = require('../models/Setting');
 const { default: Axios } = require('axios');
 const VehicleType = require('../models/VehicleType');
+const { getAllRequests } = require('../containers/requestContainer');
 
 module.exports = (socket) => {
     console.log("new dispatcher connection", socket.id);

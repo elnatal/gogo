@@ -75,6 +75,7 @@ const searchForDispatcher = async (socket, data) => {
 
     if (data.passengerId) {
         passengerId = data.passengerId;
+        passenger = await User.findById(data.passengerId);
     } else {
         passenger = await User.findOne({ phoneNumber: data.phone });
         if (passenger) {
@@ -121,7 +122,6 @@ const searchForDispatcher = async (socket, data) => {
                 console.log({ pua });
                 console.log({ doa });
                 console.log({ route });
-                socket.emit("searching");
                 sendRequest();
             } else {
                 console.log("========================== something went wrong =============================")
@@ -191,6 +191,7 @@ const searchForDispatcher = async (socket, data) => {
                 updateCallback
             })
             addRequest({ newRequest: request });
+            socket.emit("searching");
 
             const requests = getAllRequests('dispatcher');
             const dispatchers = getAllDispatchers();
