@@ -231,6 +231,9 @@ const searchForDispatcher = async (socket, data) => {
         });
         var status = request.getStatus();
         if (status == "Declined") {
+            var driver = getDriver({ id: request.driverId });
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
+            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
             if (!data.singleDriver) {
                 sendRequest();
             }
