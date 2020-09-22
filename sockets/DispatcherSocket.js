@@ -15,6 +15,9 @@ module.exports = (socket) => {
             id = dispatcherInfo.id;
             started = true;
             addDispatcher({ dispatcherId: id, socketId: socket.id });
+
+            const requests = getAllRequests('dispatcher');
+            socket.emit("requests", requests);
         } else {
             return { error: "Invalid data" };
         }

@@ -2,6 +2,7 @@ const { schema } = require("./Vehicle");
 
 class Request {
     passengerId;
+    passenger;
     driverId;
     pickUpAddress;
     dropOffAddress;
@@ -14,15 +15,18 @@ class Request {
     type;
     schedule;
     bidAmount;
-    #status;
+    status;
+    createdBy;
     updateCallback;
-    constructor({passengerId, driverId, pickUpAddress, schedule, dropOffAddress, note, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
+    constructor({passengerId, driverId, pickUpAddress, schedule, dropOffAddress, passenger, createdBy, note, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback}) {
         this.passengerId = passengerId;
         this.driverId = driverId;
         this.pickUpAddress = pickUpAddress;
         this.vehicleId = vehicleId;
+        this.passenger = passenger;
         this.note = note;
         this.type = type;
+        this.createdBy = createdBy;
         this.bidAmount = bidAmount;
         this.route = route;
         this.corporate = corporate;
@@ -30,17 +34,17 @@ class Request {
         this.ticket = ticket;
         this.vehicleType = vehicleType;
         this.dropOffAddress = dropOffAddress;
-        this.#status = status;
+        this.status = status;
         this.updateCallback = updateCallback;
     }
 
     updateStatus(status) {
-        this.#status = status;
+        this.status = status;
         this.updateCallback(this);
     }
 
     getStatus() {
-        return this.#status;
+        return this.status;
     }
 }
 

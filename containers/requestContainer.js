@@ -31,6 +31,6 @@ const getRequest = ({ passengerId, driverId }) => requests.find((request) =>  dr
 
 const getDriverRequest = ({driverId}) => requests.find((request) => request.driverId == driverId);
 
-const getAllRequests = () => requests;
+const getAllRequests = (createdBy) => createdBy ? requests.filter((request) => request.createdBy == createdBy) : requests;
 
 module.exports = { addRequest, removeRequest, getRequest, updateRequest, getDriverRequest, getAllRequests };

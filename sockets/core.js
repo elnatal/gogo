@@ -46,6 +46,7 @@ const searchForDispatcher = async (socket, data) => {
     var driverFound = false;
     var canceled = false;
     var passengerId = "";
+    var passenger = null;
     var schedule = null;
     var setting = await Setting.findOne();
     var io = getIO();
@@ -75,12 +76,13 @@ const searchForDispatcher = async (socket, data) => {
     if (data.passengerId) {
         passengerId = data.passengerId;
     } else {
-        const passenger = await User.findOne({ phoneNumber: data.phone });
+        passenger = await User.findOne({ phoneNumber: data.phone });
         if (passenger) {
             passengerId = passenger._id;
         } else {
             const newPassenger = await User.create({ phoneNumber: data.phone, firstName: data.name ? data.name : "_", lastName: "_" });
             if (newPassenger) {
+                passenger = newPassenger
                 passengerId = newPassenger._id;
             }
         }
@@ -159,6 +161,7 @@ const searchForDispatcher = async (socket, data) => {
         if (vehicle) {
             var request = new Request({
                 passengerId: passengerId,
+                passenger,
                 driverId: vehicle.driver,
                 type: "normal",
                 schedule,
@@ -176,6 +179,7 @@ const searchForDispatcher = async (socket, data) => {
                 vehicleType: vehicleTypeData,
                 ticket: null,
                 corporate: false,
+                createdBy: 'dispatcher',
                 dropOffAddress: {
                     name: doa.name,
                     coordinate: {
@@ -188,7 +192,7 @@ const searchForDispatcher = async (socket, data) => {
             })
             addRequest({ newRequest: request });
 
-            const requests = getAllRequests();
+            const requests = getAllRequests('dispatcher');
             const dispatchers = getAllDispatchers();
 
             dispatchers.forEach((dispatcher) => {
@@ -218,7 +222,7 @@ const searchForDispatcher = async (socket, data) => {
     }
 
     async function updateCallback(request) {
-        const requests = getAllRequests();
+        const requests = getAllRequests('dispatcher');
         const dispatchers = getAllDispatchers();
 
         dispatchers.forEach((dispatcher) => {
