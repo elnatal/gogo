@@ -89,49 +89,59 @@ const searchForDispatcher = async (socket, data) => {
         }
     }
 
+    if (data.route && data.pickUpAddress.name && data.dropOffAddress.name && data.pickUpAddress.coordinate && data.dropOffAddress.coordinate) {
+        route = data.route;
+        doa.name = data.dropOffAddress.name;
+        doa.lat = data.dropOffAddress.coordinate.lat;
+        doa.long = data.dropOffAddress.coordinate.long;
+        pua.name = data.pickUpAddress.name;
+        pua.lat = data.pickUpAddress.coordinate.lat;
+        pua.long = data.pickUpAddress.coordinate.long;
+        sendRequest();
+    } else {
+        var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=" + setting.mapKey);
 
-    var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=" + setting.mapKey);
+        var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=" + setting.mapKey);
 
-    var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=" + setting.mapKey);
-
-    Promise.all([pickup, dropOff]).then(value => {
-        console.log("promise")
-        if (value[0].status == 200 && value[0].data.status == "OK") {
-            console.log("status ok pul");
-            pua.name = value[0].data.results[0].formatted_address;
-            pua.lat = value[0].data.results[0].geometry.location.lat;
-            pua.long = value[0].data.results[0].geometry.location.lng;
-        } else {
-            pua.name = "_";
-            console.log("wrong response pul", value[0])
-        }
-
-        if (value[1].status == 200 && value[1].data.status == "OK") {
-            console.log("status ok pul");
-            doa.name = value[1].data.results[0].formatted_address;
-            doa.lat = value[1].data.results[0].geometry.location.lat;
-            doa.long = value[1].data.results[0].geometry.location.lng;
-        } else {
-            doa.name = "_";
-            console.log("wrong response dol", value[1])
-        }
-
-        Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + pua.long + ',' + pua.lat + ';' + doa.long + ',' + doa.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((routeObject) => {
-            if (routeObject && routeObject.data && routeObject.data.routes && routeObject.data.routes[0] && routeObject.data.routes[0].geometry && routeObject.data.routes[0].geometry.coordinates) {
-                route = { coordinates: routeObject.data.routes[0].geometry.coordinates, distance: routeObject.data.routes[0].distance, duration: routeObject.data.routes[0].duration };
-                console.log({ pua });
-                console.log({ doa });
-                console.log({ route });
-                sendRequest();
+        Promise.all([pickup, dropOff]).then(value => {
+            console.log("promise")
+            if (value[0].status == 200 && value[0].data.status == "OK") {
+                console.log("status ok pul");
+                pua.name = value[0].data.results[0].formatted_address;
+                pua.lat = value[0].data.results[0].geometry.location.lat;
+                pua.long = value[0].data.results[0].geometry.location.lng;
             } else {
-                console.log("========================== something went wrong =============================")
+                pua.name = "_";
+                console.log("wrong response pul", value[0])
             }
-        }).catch((err) => {
-            console.log({ err });
+
+            if (value[1].status == 200 && value[1].data.status == "OK") {
+                console.log("status ok pul");
+                doa.name = value[1].data.results[0].formatted_address;
+                doa.lat = value[1].data.results[0].geometry.location.lat;
+                doa.long = value[1].data.results[0].geometry.location.lng;
+            } else {
+                doa.name = "_";
+                console.log("wrong response dol", value[1])
+            }
+
+            Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + pua.long + ',' + pua.lat + ';' + doa.long + ',' + doa.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug').then((routeObject) => {
+                if (routeObject && routeObject.data && routeObject.data.routes && routeObject.data.routes[0] && routeObject.data.routes[0].geometry && routeObject.data.routes[0].geometry.coordinates) {
+                    route = { coordinates: routeObject.data.routes[0].geometry.coordinates, distance: routeObject.data.routes[0].distance, duration: routeObject.data.routes[0].duration };
+                    console.log({ pua });
+                    console.log({ doa });
+                    console.log({ route });
+                    sendRequest();
+                } else {
+                    console.log("========================== something went wrong =============================")
+                }
+            }).catch((err) => {
+                console.log({ err });
+            });
+        }).catch((error) => {
+            console.log({ error });
         });
-    }).catch((error) => {
-        console.log({ error });
-    });
+    }
 
     // sendRequest();
 
@@ -188,6 +198,7 @@ const searchForDispatcher = async (socket, data) => {
                     },
                 },
                 status: "inRequest",
+                timestamp: new Date().getTime(),
                 updateCallback
             })
             addRequest({ newRequest: request });
