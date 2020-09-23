@@ -181,6 +181,7 @@ module.exports = (socket) => {
                         driverId: vehicle.driver,
                         vehicleId: vehicle._id,
                         type,
+                        vehicle,
                         schedule,
                         bidAmount: data.bidAmount && type == "bid" ? data.bidAmount : null,
                         pickUpAddress: {
