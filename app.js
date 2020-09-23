@@ -44,6 +44,7 @@ app.use('/logs', require('./routes/logs'));
 app.use('/sos', require('./routes/sos')(io));
 app.use('/vehicles', require('./routes/vehicles'));
 app.use('/wallet-histories', require('./routes/walletHistories'));
+app.use('/loan-histories', require('./routes/loanHistories'));
 app.use('/vehicleTypes', require('./routes/vehicleTypes'));
 app.use('/accounts', require('./routes/accounts'));
 

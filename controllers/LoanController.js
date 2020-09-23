@@ -1,4 +1,4 @@
-const WalletHistory = require("../models/WalletHistory");
+const Loan = require("../models/Loan");
 const logger = require("../services/logger");
 
 const index = async (req, res) => {
@@ -10,16 +10,16 @@ const index = async (req, res) => {
         var prevPage;
         var filter = {};
 
-        if (req.query.driver != null && req.query.driver != 'all') {
-            filter['driver'] = req.query.driver;
+        if (req.query.from != null && req.query.from != 'all') {
+            filter['from'] = req.query.from;
         }
 
-        if (req.query.account != null && req.query.account != 'all') {
-            filter['account'] = req.query.account;
+        if (req.query.to != null && req.query.to != 'all') {
+            filter['to'] = req.query.to;
         }
 
-        if (req.query.by != null && req.query.by != 'all') {
-            filter['by'] = req.query.by;
+        if (req.query.paid != null && req.query.paid != 'all') {
+            filter['paid'] = req.query.paid;
         }
 
         if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
@@ -30,7 +30,7 @@ const index = async (req, res) => {
             filter['createdAt'] = { $gte: new Date(req.query.start) };
         }
 
-        var walletHistories = WalletHistory.find(filter);
+        var loanHistories = Loan.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -44,18 +44,18 @@ const index = async (req, res) => {
 
         skip = (page - 1) * limit;
 
-        walletHistories.sort({ createdAt: 'desc' });
-        walletHistories.limit(limit);
-        walletHistories.skip(skip);
+        loanHistories.sort({ createdAt: 'desc' });
+        loanHistories.limit(limit);
+        loanHistories.skip(skip);
         if (req.query.populate) {
             var populate = JSON.parse(req.query.populate)
             populate.forEach((e) => {
-                walletHistories.populate(e);
+                loanHistories.populate(e);
             });
         }
         Promise.all([
-            WalletHistory.countDocuments(filter),
-            walletHistories.exec()
+            Loan.countDocuments(filter),
+            loanHistories.exec()
         ]).then((value) => {
             if (value) {
                 if (((page * limit) <= value[0])) {
@@ -65,11 +65,11 @@ const index = async (req, res) => {
                 res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
-            logger.error("Wallet history => " + error.toString());
+            logger.error("Loan history => " + error.toString());
             res.status(500).send(error);
         });
     } catch (error) {
-        logger.error("Wallet history => " + error.toString());
+        logger.error("Loan history => " + error.toString());
         res.status(500).send(error);
     };
 }
