@@ -27,7 +27,7 @@ function getNearbyDrivers({ location, distance }) {
                         }
                     }
                 }
-            }, 'position vehicleType driver', (err, res) => {
+            }, 'position vehicleType driver lastTripTimestamp', (err, res) => {
                 if (err) return reject(err);
                 if (res) {
                     var vehicles = res.map((vehicle) => {
