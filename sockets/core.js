@@ -262,6 +262,7 @@ const searchForDispatcher = async (socket, data) => {
                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
             }
         } else {
+            canceled = true;
             console.log("no diver found");
             socket.emit("noAvailableDriver");
         }

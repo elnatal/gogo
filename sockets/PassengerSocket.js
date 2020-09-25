@@ -228,6 +228,7 @@ module.exports = (socket) => {
                         updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                     }
                 } else {
+                    canceled = true;
                     console.log("no diver found");
                     socket.emit("noAvailableDriver");
                 }
@@ -483,6 +484,7 @@ module.exports = (socket) => {
                         }
                     }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
+                    canceled = true;
                     console.log("no diver found");
                     socket.emit("noAvailableDriver");
                 }
