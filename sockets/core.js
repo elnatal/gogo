@@ -45,7 +45,7 @@ function getNearbyDrivers({ location, distance }) {
                             point
                         };
                     });
-                    return resolve(vehicles.sort((a, b) => (a.point > b.point) ? -1 : ((b.point > a.point) ? 1 : 0)));
+                    return resolve(JSON.stringify(vehicles.sort((a, b) => (a.point > b.point) ? -1 : ((b.point > a.point) ? 1 : 0))));
 
                 }
             })
@@ -187,7 +187,7 @@ const searchForDispatcher = async (socket, data) => {
             console.log("single driver");
             vehicle = { _id: data.vehicle, driver: data.driver };
         } else {
-            vehicles = await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 });
+            vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
             vehicles.forEach((v) => {
                 console.log({ vehicles });
@@ -285,6 +285,7 @@ const searchForDispatcher = async (socket, data) => {
         } else if (status == "Expired") {
             var driver = getDriver({ id: request.driverId })
             if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
             if (!data.singleDriver) {
                 sendRequest();
             }

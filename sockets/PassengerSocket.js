@@ -163,7 +163,7 @@ module.exports = (socket) => {
             async function sendRequest() {
                 var vehicle;
                 var vehicles = [];
-                vehicles = await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 });
+                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
                 vehicles.forEach((v) => {
                     console.log({ vehicles });
