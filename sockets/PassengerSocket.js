@@ -215,7 +215,7 @@ module.exports = (socket) => {
                         console.log("driver socket exist ***********");
                         io.of('/driver-socket').to(driver.socketId).emit('request', request);
                         sendNotification(driver.fcm, { title: "Request", body: "You have a new trip request" });
-                        Vehicle.updateOne({ _id: request.vehicleId }, { online: false }, (err, res) => { });
+                        Vehicle.updateOne({ _id: request.vehicleId }, { online: false, lastTripTimestamp: new Date() }, (err, res) => { });
 
                         setTimeout(() => {
                             if (!driverFound && !canceled) {
