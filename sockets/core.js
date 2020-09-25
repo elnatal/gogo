@@ -27,17 +27,50 @@ function getNearbyDrivers({ location, distance }) {
                         }
                     }
                 }
-            }, 'position vehicleType driver').find((err, res) => {
-                if (err) return err;
+            }, 'position vehicleType driver', (err, res) => {
+                if (err) return reject(err);
                 if (res) {
-                    let drivers = JSON.stringify(res);
-                    return resolve(drivers);
+                    var vehicles = res.map((vehicle) => {
+                        var distanceInKM = calculateDistance(location, { lat: vehicle.position.coordinates[1], long: vehicle.position.coordinates[0] });
+                        var lastWorkTime = (vehicle.lastTripTimestamp) ? new Date(vehicle.lastTripTimestamp).getTime() : 0;
+                        var currentTime = new Date().getTime();
+                        radiusInKM = distance / 1000;
+                        var point = (((radiusInKM - distanceInKM) * 100) / radiusInKM) + (currentTime - lastWorkTime);
+                        return {
+                            _id: vehicle._id,
+                            driver: vehicle.driver,
+                            vehicleType: vehicle.vehicleType,
+                            distance: distanceInKM,
+                            position: vehicle.position,
+                            point
+                        };
+                    });
+                    return resolve(vehicles.sort((a, b) => (a.point > b.point) ? -1 : ((b.point > a.point) ? 1 : 0)));
+
                 }
             })
         } else {
             return reject("Invalid location or distance");
         }
     })
+
+    function calculateDistance(from, to) {
+        var R = 6371; // Radius of the earth in km
+        var dLat = deg2rad(to.lat - from.lat);  // deg2rad below
+        var dLon = deg2rad(to.long - from.long);
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(from.lat)) * Math.cos(deg2rad(to.lat)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c; // Distance in km
+        return d;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180)
+    }
 }
 
 const searchForDispatcher = async (socket, data) => {

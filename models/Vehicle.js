@@ -47,12 +47,14 @@ const vehicleSchema = Schema({
     position: {
       type: {
         type: String,
-        enum: ['Point']
+        enum: ['Point'],
+        index: "2dsphere"
       },
       coordinates: {
         type: [Number], // longitude comes first
       }
     },
+    lastTripTimestamp: Date,
     timestamp: {
         type: Date,
         required: false
