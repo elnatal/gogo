@@ -131,7 +131,7 @@ const latest = (req, res) => {
 
 const show = async (req, res) => {
     try {
-        var trip = await Ride.findById(req.params.id).populate('driver').populate('vehicle').populate('vehicleType').populate('dispatcher');
+        var trip = await Ride.findById(req.params.id).populate('driver').populate('vehicle').populate('vehicleType').populate('dispatcher').populate('passenger');
         res.send(trip);
     } catch (error) {
         logger.error("Trip => " + error.toString());
