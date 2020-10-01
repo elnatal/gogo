@@ -15,6 +15,10 @@ const RideSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Drivers"
     },
+    dispatcher: {
+        type: Schema.Types.ObjectId,
+        ref: "accounts"
+    },
     pickupTimestamp: Date,
     cancelCost: {
         type: Number,

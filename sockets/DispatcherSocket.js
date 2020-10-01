@@ -97,6 +97,7 @@ module.exports = (socket) => {
             } else {
                 data['singleDriver'] = false;
             }
+            data['dispatcherId'] = id;
             searchForDispatcher(socket, data);
         }
     });
