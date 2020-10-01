@@ -30,14 +30,14 @@ const index = (req, res) => {
         }
 
         if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
-            filter['$and'] = [{"endTimestamp" : { $gte: new Date(req.query.start) }}, {"endTimestamp": { $lte: new Date(req.query.end) }}];
+            filter['$and'] = [{ "endTimestamp": { $gte: new Date(req.query.start) } }, { "endTimestamp": { $lte: new Date(req.query.end) } }];
         } else if (req.query.end != null && req.query.end != 'all') {
             filter['endTimestamp'] = { $lte: new Date(req.query.end) };
         } else if (req.query.start != null && req.query.start != 'all') {
             filter['endTimestamp'] = { $gte: new Date(req.query.start) };
         }
 
-        var trip =  Ride.find(filter);
+        var trip = Ride.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -50,8 +50,8 @@ const index = (req, res) => {
         }
 
         skip = (page - 1) * limit;
-        
-        trip.sort({createdAt: 'desc'});
+
+        trip.sort({ createdAt: 'desc' });
         trip.limit(limit);
         trip.skip(skip);
         if (req.query.populate) {
@@ -65,16 +65,16 @@ const index = (req, res) => {
             trip.exec()
         ]).then((value) => {
             if (value) {
-                if (((page  * limit) <= value[0])) {
+                if (((page * limit) <= value[0])) {
                     nextPage = page + 1;
                 }
-                res.send({data: value[1], count: value[0], nextPage, prevPage});
+                res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
             logger.error("Trip => " + error.toString());
             res.status(500).send(error);
         });
-    } catch(error) {
+    } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     };
@@ -82,7 +82,7 @@ const index = (req, res) => {
 
 const checkScheduledTrips = async (io) => {
     try {
-        const trips = await Ride.find({status: "Scheduled"}).populate('passenger').populate('vehicle');
+        const trips = await Ride.find({ status: "Scheduled" }).populate('passenger').populate('vehicle');
         trips.forEach((trip) => {
             // const driverId = (trip.driver) ? trip.driver._id : "";
             // const passengerId = (trip.passenger) ? trip.passenger._id : "";
@@ -92,7 +92,7 @@ const checkScheduledTrips = async (io) => {
             //     io.of('/driver-socket').to(driver.socketId).emit('trip', trip);
             // } else 
             if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
-                sendNotification(trip.vehicle.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
+                sendNotification(trip.vehicle.fcm, { title: "Scheduled trip", body: "You have a scheduled trip." });
             } else {
                 logger.error("Trip => No driver found");
             }
@@ -101,8 +101,8 @@ const checkScheduledTrips = async (io) => {
             // if (passenger) {
             //     io.of('/passenger-socket').to(passenger.socketId).emit('trip', trip);
             // } else 
-            if(trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
-                sendNotification(trip.passenger.fcm, {title: "Scheduled trip", body: "You have a scheduled trip."});
+            if (trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
+                sendNotification(trip.passenger.fcm, { title: "Scheduled trip", body: "You have a scheduled trip." });
             } else {
                 logger.error("Trip => No passenger found");
             }
@@ -117,12 +117,12 @@ const checkScheduledTrips = async (io) => {
 
 const latest = (req, res) => {
     try {
-        Ride.find({} , 'driver passenger pickUpAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (error, rides) => {
+        Ride.find({}, 'driver passenger pickUpAddress dropOffAddress status fare passengerName pickupTimestamp endTimestamp ', (error, rides) => {
             if (error) logger.error("Trip => " + error.toString());
             if (rides) {
                 res.send(rides);
             }
-        }).limit(30).populate({path: 'driver', select: 'firstName lastName -_id'}).populate({path: 'passenger', select: 'firstName lastName -_id'})
+        }).limit(30).populate({ path: 'driver', select: 'firstName lastName -_id' }).populate({ path: 'passenger', select: 'firstName lastName -_id' })
     } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
@@ -131,9 +131,9 @@ const latest = (req, res) => {
 
 const show = async (req, res) => {
     try {
-        var trip = await Ride.findById(req.params.id);
+        var trip = await Ride.findById(req.params.id).populate('driver').populate('vehicle').populate('vehicleType').populate('dispatcher');
         res.send(trip);
-    } catch(error) {
+    } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     };
@@ -144,7 +144,7 @@ const store = async (req, res) => {
     try {
         const savedTrip = await Ride.create(req.body);
         res.send(savedTrip);
-    } catch(error) {
+    } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
@@ -152,9 +152,9 @@ const store = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const updatedTrip = await Ride.updateOne({'_id': req.params.id}, req.body);
+        const updatedTrip = await Ride.updateOne({ '_id': req.params.id }, req.body);
         res.send(updatedTrip);
-    } catch(error) {
+    } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
@@ -162,9 +162,9 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const deletedTrip = await Ride.remove({_id: req.params.id});
+        const deletedTrip = await Ride.remove({ _id: req.params.id });
         res.send(deletedTrip);
-    } catch(error) {
+    } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
     }
