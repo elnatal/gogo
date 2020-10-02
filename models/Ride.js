@@ -111,7 +111,10 @@ const RideSchema = Schema({
         type: Number,
         default: 0
     },
-    corporate: Boolean,
+    corporate: {
+        type: Boolean,
+        default: false
+    },
     ticket: {
         type: Schema.Types.ObjectId,
         ref: "Tickets"
