@@ -14,7 +14,42 @@ const SettingSchema = Schema({
         type: Number,
         default: 25
     },
-    searchRadius: Number,
+    searchRadius: {
+        type: Number,
+        default: 3
+    },
+    rentSearchRadius: {
+        type: Number,
+        default: 3
+    },
+    scheduleSearchRadius: {
+        type: Number,
+        default: 3
+    },
+    sosDayLimit: {
+        type: Number,
+        default: 1
+    },
+    androidDriverVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    androidPassengerVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    iosDriverVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    iosPassengerVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    bidDriversPerRequest: {
+        type: Number,
+        default: 1
+    },
     tax: {
         type: Number,
         default: 15
