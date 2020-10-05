@@ -131,16 +131,16 @@ const searchForDispatcher = async (socket, data) => {
         pua.lat = data.pickUpAddress.coordinate.lat;
         pua.long = data.pickUpAddress.coordinate.long;
         sendRequest();
-    } else {
-        var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=" + setting.mapKey);
+    } else if (data.pickUpAddress && data.pickUpAddress.place_id  && data.pickUpAddress.name && data.dropOffAddress && data.dropOffAddress.name && data.dropOffAddress.place_id) {
+        var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey);
 
-        var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=" + setting.mapKey);
+        var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress.place_id + "&key=" + setting.mapKey);
 
         Promise.all([pickup, dropOff]).then(value => {
             console.log("promise")
             if (value[0].status == 200 && value[0].data.status == "OK") {
                 console.log("status ok pul");
-                pua.name = value[0].data.results[0].formatted_address;
+                pua.name = data.pickUpAddress.name;
                 pua.lat = value[0].data.results[0].geometry.location.lat;
                 pua.long = value[0].data.results[0].geometry.location.lng;
             } else {
@@ -150,7 +150,7 @@ const searchForDispatcher = async (socket, data) => {
 
             if (value[1].status == 200 && value[1].data.status == "OK") {
                 console.log("status ok pul");
-                doa.name = value[1].data.results[0].formatted_address;
+                doa.name = data.dropOffAddress.name;
                 doa.lat = value[1].data.results[0].geometry.location.lat;
                 doa.long = value[1].data.results[0].geometry.location.lng;
             } else {
@@ -174,6 +174,8 @@ const searchForDispatcher = async (socket, data) => {
         }).catch((error) => {
             console.log({ error });
         });
+    } else {
+        console.log("Invalid Data!");
     }
 
     // sendRequest();

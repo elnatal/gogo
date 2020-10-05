@@ -46,6 +46,22 @@ const SettingSchema = Schema({
         type: String,
         default: '0.0.1'
     },
+    leastAndroidDriverVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    leastAndroidPassengerVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    leastIosDriverVersion: {
+        type: String,
+        default: '0.0.1'
+    },
+    leastIosPassengerVersion: {
+        type: String,
+        default: '0.0.1'
+    },
     bidDriversPerRequest: {
         type: Number,
         default: 1

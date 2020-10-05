@@ -25,11 +25,11 @@ module.exports = (socket) => {
     });
 
     socket.on('estimate', async (data) => {
-        if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
+        if (started && data && data.pickUpAddress && data.pickUpAddress.place_id && data.dropOffAddress && data.dropOffAddress.place_id && data.vehicleType) {
             var setting = await Setting.findOne();
-            var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress + "&key=" + setting.mapKey);
+            var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey);
 
-            var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress + "&key=" + setting.mapKey);
+            var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress.place_id + "&key=" + setting.mapKey);
 
             var vehicleType;
 
@@ -39,7 +39,7 @@ module.exports = (socket) => {
 
                 if (value[0].status == 200 && value[0].data.status == "OK") {
                     console.log("status ok pul");
-                    pua.name = value[0].data.results[0].formatted_address;
+                    pua.name = data.pickUpAddress.name;
                     pua.lat = value[0].data.results[0].geometry.location.lat;
                     pua.long = value[0].data.results[0].geometry.location.lng;
                 } else {
@@ -50,7 +50,7 @@ module.exports = (socket) => {
 
                 if (value[1].status == 200 && value[1].data.status == "OK") {
                     console.log("status ok pul");
-                    doa.name = value[1].data.results[0].formatted_address;
+                    doa.name = data.dropOffAddress.name;
                     doa.lat = value[1].data.results[0].geometry.location.lat;
                     doa.long = value[1].data.results[0].geometry.location.lng;
                 } else {
@@ -75,6 +75,7 @@ module.exports = (socket) => {
                         var estimate = { 
                             distance: route.distance / 1000, 
                             duration: route.duration / 60, 
+                            route: route.coordinates,
                             fare: ((route.distance / 1000) * vehicleType.pricePerKM) + ((route.duration / 60) * vehicleType.pricePerMin) + vehicleType.baseFare
                         };
                         socket.emit("estimate-response", estimate);
