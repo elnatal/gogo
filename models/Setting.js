@@ -4,8 +4,10 @@ const Schema = mongoose.Schema;
 const SettingSchema = Schema({
     logo: String,
     favIcon: String,
-    playStoreLink: String,
-    appStoreLink: String,
+    driverAppstoreLink: String,
+    driverPlaystoreLink: String,
+    passengerAppstoreLink: String,
+    passengerPlaystoreLink: String,
     requestTimeout: {
         type: Number,
         default: 25
