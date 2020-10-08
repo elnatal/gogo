@@ -11,6 +11,7 @@ const Setting = require('../models/Setting');
 const { request } = require('express');
 const { getIO } = require('./io');
 const { sendNotification } = require('../services/notificationService');
+const { getAllRents, updateRent } = require('../containers/rentContainer');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {
@@ -138,7 +139,7 @@ const searchForDispatcher = async (socket, data) => {
         pua.lat = data.pickUpAddress.coordinate.lat;
         pua.long = data.pickUpAddress.coordinate.long;
         sendRequest();
-    } else if (data.pickUpAddress && data.pickUpAddress.place_id  && data.pickUpAddress.name && data.dropOffAddress && data.dropOffAddress.name && data.dropOffAddress.place_id) {
+    } else if (data.pickUpAddress && data.pickUpAddress.place_id && data.pickUpAddress.name && data.dropOffAddress && data.dropOffAddress.name && data.dropOffAddress.place_id) {
         var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey);
 
         var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress.place_id + "&key=" + setting.mapKey);
@@ -248,11 +249,16 @@ const searchForDispatcher = async (socket, data) => {
             socket.emit("searching");
 
             const requests = getAllRequests('dispatcher');
+            const rents = getAllRents('dispatcher');
+
+            var rentAndRequests = [...requests, ...rents];
+
             const dispatchers = getAllDispatchers();
 
             dispatchers.forEach((dispatcher) => {
-                io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", requests);
+                io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
             });
+
             console.log({ request });
             socket.emit("request", request);
             var driver = getDriver({ id: request.driverId })
@@ -280,10 +286,14 @@ const searchForDispatcher = async (socket, data) => {
 
     async function updateCallback(request) {
         const requests = getAllRequests('dispatcher');
+        const rents = getAllRents('dispatcher');
+
+        var rentAndRequests = [...requests, ...rents];
+
         const dispatchers = getAllDispatchers();
 
         dispatchers.forEach((dispatcher) => {
-            io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", requests);
+            io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
         });
         var status = request.getStatus();
         if (status == "Declined") {
@@ -356,4 +366,225 @@ const searchForDispatcher = async (socket, data) => {
     }
 }
 
-module.exports = { getNearbyDrivers, searchForDispatcher };
+const rentForDispatcher = async (socket, data) => {
+    var io = getIO();
+    console.log("starting rent");
+    var setting = await Setting.findOne();
+    console.log({ setting });
+    var requestedDrivers = [];
+    var driverFound = false;
+    var canceled = false;
+    var passengerId = "";
+    var passenger = null;
+    const vehicleTypeData = await VehicleType.findById(data.vehicleType);
+
+    var pua = {
+        lat: 0,
+        long: 0,
+        name: ""
+    }
+
+    if (data.passengerId) {
+        passengerId = data.passengerId;
+        passenger = await User.findById(data.passengerId);
+    } else {
+        passenger = await User.findOne({ phoneNumber: data.phone });
+        if (passenger) {
+            passengerId = passenger._id;
+        } else {
+            const newPassenger = await User.create({ phoneNumber: data.phone, firstName: data.name ? data.name : "_", lastName: "_" });
+            if (newPassenger) {
+                passenger = newPassenger
+                passengerId = newPassenger._id;
+            }
+        }
+    }
+
+    if (data.pickUpAddress.name && data.pickUpAddress.coordinate) {
+        pua.name = data.pickUpAddress.name;
+        pua.lat = data.pickUpAddress.coordinate.lat;
+        pua.long = data.pickUpAddress.coordinate.long;
+        sendRequest();
+    }
+    else if (data.pickUpAddress && data.pickUpAddress.place_id && data.pickUpAddress.name) {
+        Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey).then((res) => {
+            if (res.status == 200 && res.data.status == "OK") {
+                console.log("status ok pul");
+                pua.name = data.pickUpAddress.name;
+                pua.lat = value[0].data.results[0].geometry.location.lat;
+                pua.long = value[0].data.results[0].geometry.location.lng;
+            } else {
+                pickUpAddress.name = "_";
+                console.log("wrong response pul", res)
+            }
+            sendRequest()
+        });
+    } else {
+        console.log("Invalid Data!");
+    }
+
+    async function sendRequest() {
+        var vehicle;
+        var vehicles = [];
+        vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
+
+        vehicles.forEach((v) => {
+            console.log({ vehicles });
+            if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
+                console.log("here");
+                vehicle = v;
+                requestedDrivers.push(v._id)
+                return;
+            }
+        });
+
+        if (vehicle) {
+            var rentObject = new RentObject({
+                passengerId,
+                passenger,
+                driverId: vehicle.driver,
+                dispatcherId: data.dispatcherId,
+                startTimestamp: data.startTimestamp,
+                note: data.note ? data.note : "",
+                endTimestamp: data.endTimestamp,
+                pickUpAddress: {
+                    name: pua.name,
+                    coordinate: {
+                        lat: pua.lat,
+                        long: pua.long
+                    },
+                },
+                vehicleId: vehicle._id,
+                vehicleType: vehicleTypeData,
+                status: "inRequest",
+                createdBy: 'dispatcher',
+                timestamp: new Date().getTime(),
+                updateCallback
+            });
+
+            addRent({ newRent: rentObject });
+            console.log({ rentObject });
+            socket.emit("searching");
+
+            const requests = getAllRequests('dispatcher');
+            const rents = getAllRents('dispatcher');
+
+            var rentAndRequests = [...requests, ...rents];
+
+            const dispatchers = getAllDispatchers();
+
+            dispatchers.forEach((dispatcher) => {
+                io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
+            });
+
+            socket.emit("rentRequest", rentObject);
+
+
+            var driver = getDriver({ id: rentObject.driverId })
+            console.log({ driver });
+            if (driver) {
+                console.log("driver socket exist ==============");
+                io.of('/driver-socket').to(driver.socketId).emit('rentRequest', rentObject);
+                sendNotification(driver.fcm, { title: "Rent request", body: "You have new rent request" });
+                Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: false }, (err, res) => { });
+
+                setTimeout(() => {
+                    if (!driverFound && !canceled) {
+                        updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
+                        sendRequest();
+                    }
+                }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
+            } else {
+                console.log("no driver socket");
+                updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
+            }
+        } else {
+            canceled = true;
+            console.log("no diver found");
+            socket.emit("noAvailableDriver");
+        }
+    }
+
+    function updateCallback(rentObject) {
+        console.log("changed", rentObject);
+        console.log("status", rentObject.getStatus());
+
+        const requests = getAllRequests('dispatcher');
+        const rents = getAllRents('dispatcher');
+
+        var rentAndRequests = [...requests, ...rents];
+
+        const dispatchers = getAllDispatchers();
+
+        dispatchers.forEach((dispatcher) => {
+            io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
+        });
+
+        var status = rentObject.getStatus();
+
+        if (status == "Declined") {
+            var driver = getDriver({ id: rentObject.driverId });
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
+            sendRequest();
+            Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
+        } else if (status == "Expired") {
+            var driver = getDriver({ id: rentObject.driverId })
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+            Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
+        } else if (status == "Canceled") {
+            canceled = true;
+            var driver = getDriver({ id: rentObject.driverId });
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
+
+            var passengers = getUsers({ userId: rentObject.passengerId });
+            passengers.forEach((passenger) => {
+                if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
+            })
+            Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
+        } else if (status == "Accepted") {
+            driverFound = true;
+            try {
+                Rent.create({
+                    passenger: rentObject.passengerId,
+                    driver: rentObject.driverId,
+                    // startTimestamp: rentObject.startTimestamp,
+                    // endTimestamp: rentObject.endTimestamp,
+                    pickUpAddress: rentObject.pickUpAddress,
+                    note: rentObject.note,
+                    vehicleType: rentObject.vehicleType._id,
+                    vehicle: rentObject.vehicleId,
+                    dispatcher: request.dispatcherId,
+                    active: true,
+                    status: "Accepted",
+                    createdBy: "dispatcher",
+                }, (error, rent) => {
+                    if (error) console.log({ rent });
+                    if (rent) {
+                        Rent.findById(rent._id, async (error, createdRent) => {
+                            if (error) console.log({ error });
+                            if (createdRent) {
+                                console.log({ createdRent });
+
+                                var passengers = getUsers({ userId: id });
+                                passengers.forEach((passenger) => {
+                                    if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', createdRent);
+                                    sendNotification(passenger.fcm, { title: "Rent accepted", body: "Driver is on the way" });
+                                })
+
+                                var driver = getDriver({ id: rentObject.driverId })
+                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('rent', createdRent);
+
+                                Vehicle.update({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
+                            }
+                        }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                    }
+                })
+            } catch (error) {
+                console.log({ error });
+            }
+        }
+    }
+
+}
+
+module.exports = { getNearbyDrivers, searchForDispatcher, rentForDispatcher };

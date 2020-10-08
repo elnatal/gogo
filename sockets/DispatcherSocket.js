@@ -1,5 +1,5 @@
 const { addDispatcher, removeDispatcher } = require('../containers/dispatcherContainer');
-const { searchForDispatcher } = require('./core');
+const { searchForDispatcher, rentForDispatcher } = require('./core');
 const Setting = require('../models/Setting');
 const { default: Axios } = require('axios');
 const VehicleType = require('../models/VehicleType');
@@ -72,9 +72,9 @@ module.exports = (socket) => {
                         console.log({ pua });
                         console.log({ doa });
                         console.log({ route });
-                        var estimate = { 
-                            distance: route.distance / 1000, 
-                            duration: route.duration / 60, 
+                        var estimate = {
+                            distance: route.distance / 1000,
+                            duration: route.duration / 60,
                             route: route.coordinates,
                             fare: ((route.distance / 1000) * vehicleType.pricePerKM) + ((route.duration / 60) * vehicleType.pricePerMin) + vehicleType.baseFare
                         };
@@ -100,6 +100,18 @@ module.exports = (socket) => {
             }
             data['dispatcherId'] = id;
             searchForDispatcher(socket, data);
+        }
+    });
+
+    socket.on('rent', (data) => {
+        if (started && data && data.pickUpAddress && data.vehicleType && data.phone && data.startTimestamp && data.endTimestamp) {
+            if (data.vehicle && data.driver) {
+                data['singleDriver'] = true;
+            } else {
+                data['singleDriver'] = false;
+            }
+            data['dispatcherId'] = id;
+            rentForDispatcher(socket, data);
         }
     });
 

@@ -29,4 +29,6 @@ const getRent = ({ passengerId, driverId }) => rents.find((rent) =>  driverId ? 
 
 const getDriverRent = ({driverId}) => rents.find((rent) => rent.driverId == driverId);
 
-module.exports = { addRent, removeRent, getRent, updateRent, getDriverRent };
+const getAllRents = (createdBy) => createdBy ? rents.filter((rent) => rent.createdBy == createdBy) : rents;
+
+module.exports = { addRent, removeRent, getRent, updateRent, getDriverRent, getAllRents };

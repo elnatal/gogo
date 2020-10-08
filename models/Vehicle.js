@@ -48,7 +48,6 @@ const vehicleSchema = Schema({
       type: {
         type: String,
         enum: ['Point'],
-        index: "2dsphere"
       },
       coordinates: {
         type: [Number], // longitude comes first
