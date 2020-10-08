@@ -69,6 +69,7 @@ const RentSchema = Schema({
         default: 0
     },
     status: String,
+    createdBy: String,
     active: {
         type: Boolean,
         default: true
