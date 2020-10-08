@@ -83,7 +83,7 @@ const index = (req, res) => {
 
 const show = async (req, res) => {
     try {
-        var rent = await Rent.findById(req.params.id);
+        var rent = await Rent.findById(req.params.id).populate('driver').populate('vehicle').populate('vehicleType').populate('dispatcher').populate('passenger');
         res.send(rent);
     } catch(error) {
         logger.error("Rent => " + error.toString());

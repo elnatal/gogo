@@ -10,6 +10,10 @@ const RentSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Drivers'
     },
+    dispatcher: {
+        type: Schema.Types.ObjectId,
+        ref: "accounts"
+    },
     cancelCost: {
         type: Number,
         default: 0

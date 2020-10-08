@@ -74,23 +74,30 @@ function getNearbyDrivers({ location, distance }) {
 }
 
 const searchForDispatcher = async (socket, data) => {
+    var io = getIO();
     console.log("search", data);
+    var setting = await Setting.findOne();
+    console.log({ setting });
+    var type = "normal";
+    if (data.type && data.type != undefined) {
+        type = data.type;
+    }
     var requestedDrivers = [];
     var driverFound = false;
     var canceled = false;
     var passengerId = "";
     var passenger = null;
     var schedule = null;
-    var setting = await Setting.findOne();
-    var io = getIO();
+    var corporate = false;
 
-    console.log({ setting });
+    const vehicleTypeData = await VehicleType.findById(data.vehicleType);
 
     if (data.schedule && data.schedule != undefined) {
         schedule = new Date(data.schedule);
     }
 
-    const vehicleTypeData = await VehicleType.findById(data.vehicleType);
+    if (data.ticket && data.ticket != undefined) corporate = true;
+
 
     var pua = {
         lat: 0,
@@ -208,11 +215,11 @@ const searchForDispatcher = async (socket, data) => {
                 passengerId: passengerId,
                 passenger,
                 driverId: vehicle.driver,
-                type: "normal",
+                type,
                 dispatcherId: data.dispatcherId,
                 schedule,
                 vehicleId: vehicle._id,
-                bidAmount: null,
+                bidAmount: data.bidAmount && type == "bid" ? data.bidAmount : null,
                 pickUpAddress: {
                     name: pua.name,
                     coordinate: {
@@ -223,8 +230,8 @@ const searchForDispatcher = async (socket, data) => {
                 route,
                 note: data.note ? data.note : "",
                 vehicleType: vehicleTypeData,
-                ticket: null,
-                corporate: false,
+                ticket: corporate ? data.ticket : null,
+                corporate,
                 createdBy: 'dispatcher',
                 dropOffAddress: {
                     name: doa.name,
