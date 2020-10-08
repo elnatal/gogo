@@ -1,5 +1,6 @@
 const { default: axios } = require('axios');
 const logger = require('./logger');
+require('dotenv/config');
 
 const sendNotification = (to, message) => {
     // TODO:: Implement Push notification
@@ -20,7 +21,7 @@ const sendNotification = (to, message) => {
     var config = {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer AAAA2RqOe68:APA91bGqYlyMNx1shAiUUojjxGyiDVw43ydmH5RAxmKFG9qAEbUJw4ZYC0T-R87Q_h97OjRL1HAP7-escboSlho0blEKfhA0AarCzN3wiyjRTpcmTqUuNkwrbhWQ4jmPzguO2ZvOguA9'
+            'Authorization': 'Bearer ' + process.env.FCM_TOKEN
         }
     };
 
