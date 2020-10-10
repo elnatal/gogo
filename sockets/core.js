@@ -203,7 +203,6 @@ const searchForDispatcher = async (socket, data) => {
             vehicles.forEach((v) => {
                 if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                     console.log("here");
-                    console.log({ v });
                     vehicle = v;
                     requestedDrivers.push(v._id)
                     return;
