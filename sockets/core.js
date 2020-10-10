@@ -219,6 +219,7 @@ const searchForDispatcher = async (socket, data) => {
                 type,
                 dispatcherId: data.dispatcherId,
                 schedule,
+                vehicle,
                 vehicleId: vehicle._id,
                 bidAmount: data.bidAmount && type == "bid" ? data.bidAmount : null,
                 pickUpAddress: {
