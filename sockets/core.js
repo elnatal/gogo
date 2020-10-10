@@ -199,8 +199,8 @@ const searchForDispatcher = async (socket, data) => {
         } else {
             vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
+            console.log({ vehicles });
             vehicles.forEach((v) => {
-                console.log({ vehicles });
                 if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
                     console.log("here");
                     console.log({ v });
