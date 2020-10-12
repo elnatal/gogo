@@ -106,7 +106,7 @@ module.exports = (socket) => {
 
 
             var requestCount = 1;
-            if (type == "bid" && bidDriversPerRequest && bidDriversPerRequest > 1) {
+            if (type == "bid" && setting.bidDriversPerRequest && setting.bidDriversPerRequest > 1) {
                 requestCount = setting.bidDriversPerRequest;
             }
             var sentRequestCount = 0;
