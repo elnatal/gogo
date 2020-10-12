@@ -7,9 +7,10 @@ const sendNotification = (to, message) => {
     var data = { 
         "notification": { 
             "title": message && message.title ? message.title : "title",
-            "body": message && message.body ? message.body : "body"
+            "body": message && message.body ? message.body : "body",
+            "sound": "sound"
         }, 
-        "priority": "high", 
+        "priority": "high",
         "data": { 
             "click_action": "FLUTTER_NOTIFICATION_CLICK", 
             "id": "1", 
