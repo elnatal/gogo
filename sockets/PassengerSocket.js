@@ -232,6 +232,10 @@ module.exports = (socket) => {
 
                             setTimeout(() => {
                                 if (!driverFound && !canceled) {
+                                    console.log("expired", request.driverId);
+                                    var driver = getDriver({ id: request.driverId })
+                                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                                    Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
                                     updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                                     receivedResponse += 1;
                                     if (sentRequestCount <= receivedResponse) {
@@ -265,10 +269,10 @@ module.exports = (socket) => {
                             sendRequest();
                         }
                     } else if (status == "Expired") {
-                        console.log("expired", request.driverId);
-                        var driver = getDriver({ id: request.driverId })
-                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
-                        Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
+                        // console.log("expired", request.driverId);
+                        // var driver = getDriver({ id: request.driverId })
+                        // if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                        // Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
                     } else if (status == "Canceled") {
                         console.log("request canceled");
                         canceled = true;
