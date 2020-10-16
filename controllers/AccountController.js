@@ -129,7 +129,6 @@ const auth = (req, res) => {
                 if (await bcrypt.compare(data.password, account.password)) {
                     const accountObject = account.toObject();
                     delete accountObject.password;
-                    delete accountObject.roles;
                     var token = await Token.create({ active: true, account: accountObject._id });
                     res.send({ account: accountObject, role: data.role, token: token._id });
                 } else {
