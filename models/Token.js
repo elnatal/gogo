@@ -13,10 +13,6 @@ const TokenSchema = Schema({
     account: {
         type: Schema.Types.ObjectId,
         ref: "accounts" 
-    },
-    role: {
-        type: Number,
-        require: true
     }
 },
     {
