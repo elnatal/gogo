@@ -126,7 +126,7 @@ const auth = (req, res) => {
         Account.findOne({ email: data.email }, async (error, account) => {
             if (error) res.status(500).send(error);
             if (account) {
-                if (bcrypt.compare(data.password, account.password)) {
+                if (await bcrypt.compare(data.password, account.password)) {
                     const accountObject = account.toObject();
                     delete accountObject.password;
                     delete accountObject.roles;
