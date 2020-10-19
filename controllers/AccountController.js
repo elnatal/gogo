@@ -12,8 +12,33 @@ const index = (req, res) => {
         var limit = 20;
         var nextPage;
         var prevPage;
+        var filter = {
+            $or: [
+                {
+                    plateNumber: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    color: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    modelYear: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ]
+        }
 
-        var accounts = Account.find();
+        if (req.query.corporate) {
+            filter["corporate"] = req.query.corporate;
+        }
+
+        var accounts = Account.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -37,7 +62,7 @@ const index = (req, res) => {
             });
         }
         Promise.all([
-            Account.countDocuments(),
+            Account.countDocuments(filter),
             accounts.exec()
         ]).then(async (value) => {
             if (value) {
@@ -122,7 +147,7 @@ const store = async (req, res) => {
 
 const auth = (req, res) => {
     const data = req.body;
-    if (data && data.email && data.password ) {
+    if (data && data.email && data.password) {
         Account.findOne({ email: data.email }, async (error, account) => {
             if (error) res.status(500).send(error);
             if (account) {
