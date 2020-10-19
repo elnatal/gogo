@@ -15,19 +15,15 @@ const index = (req, res) => {
         var filter = {
             $or: [
                 {
-                    plateNumber: {
+                    firstName: {
                         $regex: req.query.q ? req.query.q : "", $options: "i"
                     }
                 }, {
-                    color: {
+                    lastName: {
                         $regex: req.query.q ? req.query.q : "", $options: "i"
                     }
                 }, {
-                    modelName: {
-                        $regex: req.query.q ? req.query.q : "", $options: "i"
-                    }
-                }, {
-                    modelYear: {
+                    email: {
                         $regex: req.query.q ? req.query.q : "", $options: "i"
                     }
                 }
