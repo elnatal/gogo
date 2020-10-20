@@ -188,6 +188,7 @@ module.exports = (socket) => {
                 });
 
                 if (availableVehicles.length > 0) {
+                    var requests = [];
                     for (let index = 0; index < availableVehicles.length; index++) {
                         var request = new Request({
                             passengerId: id,
@@ -219,6 +220,7 @@ module.exports = (socket) => {
                             status: "inRequest",
                             updateCallback
                         })
+                        requests.push(request)
                         addRequest({ newRequest: request });
                         console.log({ request });
                         socket.emit("request", request);
@@ -230,17 +232,18 @@ module.exports = (socket) => {
                             sendNotification(driver.fcm, { title: "Request", body: "You have a new trip request" });
                             Vehicle.updateOne({ _id: request.vehicleId }, { online: false, lastTripTimestamp: new Date() }, (err, res) => { });
 
-                            setTimeout(() => {
-                                if (!driverFound && !canceled) {
-                                    receivedResponse += 1;
-                                    updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                                }
-                            }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                         } else {
                             console.log("no driver socket");
                             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                         }
                     }
+                    setTimeout(() => {
+                        if (!driverFound && !canceled) {
+                            requests.forEach((request) => {
+                                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                            })
+                        }
+                    }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
                     canceled = true;
                     console.log("no diver found");
