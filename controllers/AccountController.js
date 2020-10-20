@@ -149,12 +149,12 @@ const auth = (req, res) => {
             if (account) {
                 if (await bcrypt.compare(data.password, account.password)) {
                     const accountObject = account.toObject();
-                    if (accountObject.active || (accountObject.corporate && accountObject.corporate.active)) {
+                    if (!accountObject.active || (accountObject.corporate && !accountObject.corporate.active)) {
+                        res.status(500).send({ error: "INACTIVE" })
+                    } else {
                         delete accountObject.password;
                         var token = await Token.create({ active: true, account: accountObject._id });
                         res.send({ account: accountObject, role: data.role, token: token._id });
-                    } else {
-                        res.status(500).send({ error: "INACTIVE" })
                     }
                 } else {
                     res.status(401).send({ error: "UNAUTHORIZED" });
