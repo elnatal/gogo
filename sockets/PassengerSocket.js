@@ -242,6 +242,7 @@ module.exports = (socket) => {
                             requests.forEach((request) => {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                             })
+                            sendRequest();
                         }
                     }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
@@ -268,9 +269,6 @@ module.exports = (socket) => {
                         var driver = getDriver({ id: request.driverId })
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
                         Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-                        if (sentRequestCount <= receivedResponse) {
-                            sendRequest();
-                        }
                     } else if (status == "Canceled") {
                         console.log("request canceled");
                         canceled = true;
