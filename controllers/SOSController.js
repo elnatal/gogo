@@ -108,6 +108,7 @@ module.exports = (io) => {
                                 driver: trip.driver,
                                 passenger: trip.passenger,
                                 type: req.body.type,
+                                ride: req.body.tripId,
                                 vehicle: trip.vehicle,
                                 position: {
                                     type: "Point",
@@ -155,6 +156,7 @@ module.exports = (io) => {
                                 driver: rent.driver,
                                 passenger: rent.passenger,
                                 vehicle: rent.vehicle,
+                                rent: req.body.rentId,
                                 type: req.body.type,
                                 position: {
                                     type: "Point",

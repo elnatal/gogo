@@ -14,6 +14,14 @@ const SOSSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Vehicles"
   },
+  ride: {
+    type: Schema.Types.ObjectId,
+    ref: "Rides"
+  },
+  rent: {
+    type: Schema.Types.ObjectId,
+    ref: "Rents"
+  },
   type: String,
   position: {
     type: {

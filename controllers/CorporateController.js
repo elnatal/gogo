@@ -14,7 +14,23 @@ const index = async (req, res) => {
         var nextPage;
         var prevPage;
 
-        var corporates = Corporate.find();
+        var filter = {};
+
+        if (req.query.q != null) {
+            filter['$or'] = [
+                {
+                    name: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }, {
+                    shortName: {
+                        $regex: req.query.q ? req.query.q : "", $options: "i"
+                    }
+                }
+            ];
+        }
+
+        var corporates = Corporate.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -38,7 +54,7 @@ const index = async (req, res) => {
             });
         }
         Promise.all([
-            Corporate.countDocuments(),
+            Corporate.countDocuments(filter),
             corporates.exec()
         ]).then(async (value) => {
             if (value) {
@@ -239,9 +255,7 @@ const show = async (req, res) => {
 const store = async (req, res) => {
     try {
         const data = req.body;
-        if (data.password && data.name && data.shortName && data.firstName && data.lastName && data.email) {
-            data["password"] = await bcrypt.hash(data["password"], 5);
-
+        if (data.name && data.shortName) {
             Corporate.create({
                 name: data.name,
                 shortName: data.shortName
@@ -251,27 +265,7 @@ const store = async (req, res) => {
                     res.status(500).send(error);
                 }
                 if (corporate) {
-                    Account.create({
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        password: data.password,
-                        email: data.email,
-                        roles: [4],
-                        profileImage: data.profileImage,
-                        corporate: corporate._id
-                    }, (error, account) => {
-                        if (error) {
-                            logger.error("Corporate => " + error.toString());
-                            Corporate.deleteOne({ _id: corporate._id }, (error, res) => {
-                                if (error) logger.error("Corporate => " + error.toString());
-                                if (res) logger.info("Corporate => Deleted");
-                            })
-                            res.status(500).send(err);
-                        }
-                        if (account) {
-                            res.send({ account, corporate });
-                        }
-                    })
+                    res.send({ corporate });
                 }
             })
         } else {
