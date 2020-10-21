@@ -172,7 +172,6 @@ module.exports = (socket) => {
             async function sendRequest() {
                 sentRequestCount = 0;
                 receivedResponse = 0;
-                var vehicle;
                 var vehicles = [];
                 vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
