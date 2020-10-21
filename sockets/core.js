@@ -200,7 +200,6 @@ const searchForDispatcher = async (socket, data) => {
         console.log("requesting");
         sentRequestCount = 0;
         receivedResponse = 0;
-        var vehicle;
         var vehicles = [];
 
         var availableVehicles = [];
@@ -223,7 +222,7 @@ const searchForDispatcher = async (socket, data) => {
         }
 
         if (availableVehicles.length > 0) {
-            var requests = [];
+            var sentRequests = [];
             for (let index = 0; index < availableVehicles.length; index++) {
                 var request = new Request({
                     passengerId: passengerId,
@@ -259,7 +258,7 @@ const searchForDispatcher = async (socket, data) => {
                     timestamp: new Date().getTime(),
                     updateCallback
                 })
-                requests.push(request)
+                sentRequests.push(request)
                 addRequest({ newRequest: request });
                 socket.emit("searching");
 
@@ -289,7 +288,7 @@ const searchForDispatcher = async (socket, data) => {
             }
             setTimeout(() => {
                 if (!driverFound && !canceled) {
-                    requests.forEach((request) => {
+                    sentRequests.forEach((request) => {
                         updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                     })
                     sendRequest();
