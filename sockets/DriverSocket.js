@@ -141,9 +141,10 @@ module.exports = async (socket) => {
                     })
 
                     if (trip.status == "Started") {
+                        console.log("===================saved");
                         trip.path.push(data.location);
                         addTrip(trip);
-                        Ride.updateOne({ _id: data.tripId }, trip, (error, response) => {
+                        Ride.updateOne({ _id: data.tripId }, { path: trip.path }, (error, response) => {
                             if (error) {
                                 console.log({ error });
                             } else if (response) {
