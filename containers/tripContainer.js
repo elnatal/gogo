@@ -1,7 +1,7 @@
 var trips = {};
 
 const addTrip = (trip) => {
-    trips[trip_id] = trip;
+    trips[trip._id] = trip;
 }
 
 const findTrip = (id) => {
