@@ -17,6 +17,7 @@ const { getIO } = require("./io");
 const VehicleType = require("../models/VehicleType");
 const User = require("../models/User");
 const { sendNotification } = require("../services/notificationService");
+const { addTrip, findTrip } = require("../containers/tripContainer");
 
 module.exports = async (socket) => {
     console.log("new connection", socket.id);
@@ -118,22 +119,40 @@ module.exports = async (socket) => {
         }
     })
 
-    socket.on('updateLocation', (newLocation) => {
-        if (started && newLocation && newLocation.lat && newLocation.long) {
-            console.log({ newLocation });
+    socket.on('updateLocation', (data) => {
+        if (started && data && data.location) {
+            console.log({ data });
             Vehicle.updateOne({ _id: vehicleId }, {
                 timestamp: new Date(),
                 position: {
                     type: "Point",
-                    coordinates: [
-                        newLocation.long,
-                        newLocation.lat
-                    ]
+                    coordinates: data.location
                 }
             }, (err, res) => {
                 if (err) console.log({ err });
                 if (res) console.log("location updated", vehicleId);
             });
+            if (data.tripId) {
+                var trip = findTrip(data.tripId);
+                if (trip) {
+                    var passengers = getUsers({ userId: trip.passenger._id });
+                    passengers.forEach((passenger) => {
+                        if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('driverLocation', { lat: data.location[1], long: data.location[0] });
+                    })
+
+                    if (trip.status == "Started") {
+                        trip.path.push(data.location);
+                        addTrip(trip);
+                        Ride.updateOne({ _id: data.tripId }, trip, (error, response) => {
+                            if (error) {
+                                console.log({ error });
+                            } else if (response) {
+                                console.log({ response });
+                            }
+                        })
+                    }
+                }
+            }
         }
     });
 
@@ -178,6 +197,7 @@ module.exports = async (socket) => {
                         res.status = "Arrived";
                         res.active = true;
                         res.save();
+                        addTrip(res);
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
@@ -207,6 +227,7 @@ module.exports = async (socket) => {
                         res.active = true;
                         res.pickupTimestamp = new Date();
                         res.save();
+                        addTrip(res);
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
 
@@ -319,6 +340,7 @@ module.exports = async (socket) => {
                                 if (err) console.log(err);
                                 if (createdRide) {
                                     console.log("ride", createdRide);
+                                    addTrip(createdRide);
 
                                     var driver = getDriver({ id })
                                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
@@ -437,7 +459,7 @@ module.exports = async (socket) => {
                             res.endTimestamp = date;
                             res.active = false;
                             res.save();
-
+                            addTrip(res);
                             console.log({ res });
 
                             if (res.ticket) {
@@ -547,6 +569,7 @@ module.exports = async (socket) => {
                             res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
+                        addTrip(res);
                         Vehicle.updateOne({ _id: vehicleId }, { online: true }, (err, res) => {
                             if (err) console.log({ err });
                             if (res) console.log("status updated", true, vehicleId);
