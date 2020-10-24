@@ -76,6 +76,10 @@ const RideSchema = Schema({
         type: Number,
         default: 0
     },
+    path: {
+        type: [[Number]],
+        default: []
+    },
     route: {
         coordinates: {
             type: [[Number]]
