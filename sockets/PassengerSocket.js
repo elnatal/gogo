@@ -15,6 +15,7 @@ const { addRent, updateRent } = require('../containers/rentContainer');
 const Rent = require('../models/Rent');
 const { getIO } = require('./io');
 const { sendNotification } = require('../services/notificationService');
+const { addTrip } = require('../containers/tripContainer');
 
 module.exports = (socket) => {
     console.log("new passenger connection", socket.id);
@@ -51,6 +52,7 @@ module.exports = (socket) => {
                 Promise.all([ride, rent]).then((values) => {
                     if (values[0]) {
                         socket.emit("trip", values[0]);
+                        addTrip(values[0]);
                     } else if (values[1] && values[1].status != "Started") {
                         socket.emit("rent", values[1]);
                     }
@@ -320,6 +322,7 @@ module.exports = (socket) => {
                                     Ride.findById(ride._id, async (err, createdRide) => {
                                         if (createdRide) {
                                             console.log("ride", createdRide);
+                                            addTrip(createdRide);
 
                                             var passengers = getUsers({ userId: id });
                                             passengers.forEach((passenger) => {
@@ -368,6 +371,7 @@ module.exports = (socket) => {
                         res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
+                        addTrip(res);
                         Vehicle.updateOne({ _id: res.vehicle._id }, { online: true }, (error, response) => { });
                         var driver = getDriver({ id: res.driver._id });
                         if (driver) {

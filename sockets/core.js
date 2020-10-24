@@ -12,6 +12,7 @@ const { request } = require('express');
 const { getIO } = require('./io');
 const { sendNotification } = require('../services/notificationService');
 const { getAllRents, updateRent } = require('../containers/rentContainer');
+const { addTrip } = require('../containers/tripContainer');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {
@@ -366,6 +367,7 @@ const searchForDispatcher = async (socket, data) => {
                             if (err) console.log(err);
                             if (createdRide) {
                                 console.log("ride", createdRide);
+                                addTrip(createdRide);
 
                                 var driver = getDriver({ id: request.driverId })
                                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
