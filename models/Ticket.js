@@ -11,6 +11,11 @@ const TicketSchema = Schema({
         ref: 'Corporates',
         required: true
     },
+    employee: {
+        type: Schema.Types.ObjectId,
+        ref: 'Employees',
+        required: true
+    },
     ride: {
         type: Schema.Types.ObjectId,
         ref: 'Rides'
