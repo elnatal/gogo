@@ -5,6 +5,7 @@ const { default: Axios } = require('axios');
 const Request = require('../models/Request');
 const RentObject = require('../models/RentObject');
 const Ride = require('../models/Ride');
+const Rent = require('../models/Rent');
 const { getDriver } = require('../containers/driversContainer');
 const { addRequest, updateRequest, getAllRequests } = require('../containers/requestContainer');
 const { getAllDispatchers } = require('../containers/dispatcherContainer');
