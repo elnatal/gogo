@@ -64,4 +64,39 @@ const index = async (req, res) => {
     };
 }
 
-module.exports = { index };
+const show = async (req, res) => {
+    try {
+        var employee = await Employee.findById(req.params.id);
+        res.send(employee);
+    } catch (error) {
+        logger.error("Employee => " + error.toString());
+        res.status(500).send(error);
+    };
+}
+
+const store = async (req, res) => {
+    try {
+        const data = req.body;
+        if (data.name && data.corporate) {
+            Employee.create({
+                name: data.name,
+                corporate: data.corporate
+            }, (error, employee) => {
+                if (error) {
+                    logger.error("Employee => " + error.toString());
+                    res.status(500).send(error);
+                }
+                if (employee) {
+                    res.send({ employee });
+                }
+            })
+        } else {
+            res.status(500).send("Invalid data")
+        }
+    } catch (error) {
+        logger.error("Employee => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
+module.exports = { index, store, show };

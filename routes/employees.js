@@ -4,4 +4,8 @@ const employeeController = require('../controllers/EmployeeController');
 
 router.get('/', employeeController.index);
 
+router.get('/:id', employeeController.show);
+
+router.post('/', employeeController.store);
+
 module.exports = router
