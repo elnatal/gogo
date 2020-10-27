@@ -431,8 +431,8 @@ const rentForDispatcher = async (socket, data) => {
             if (res.status == 200 && res.data.status == "OK") {
                 console.log("status ok pul");
                 pua.name = data.pickUpAddress.name;
-                pua.lat = value[0].data.results[0].geometry.location.lat;
-                pua.long = value[0].data.results[0].geometry.location.lng;
+                pua.lat = res.data.results[0].geometry.location.lat;
+                pua.long = res.data.results[0].geometry.location.lng;
             } else {
                 pickUpAddress.name = "_";
                 console.log("wrong response pul", res)
