@@ -446,7 +446,7 @@ const rentForDispatcher = async (socket, data) => {
     async function sendRequest() {
         var vehicle;
         var vehicles = [];
-        vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
+        vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.rentSearchRadius ? setting.rentSearchRadius * 1000 : 10000 }));
 
         vehicles.forEach((v) => {
             console.log({ vehicles });
