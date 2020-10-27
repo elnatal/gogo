@@ -11,7 +11,7 @@ const { getAllDispatchers } = require('../containers/dispatcherContainer');
 const Setting = require('../models/Setting');
 const { getIO } = require('./io');
 const { sendNotification } = require('../services/notificationService');
-const { getAllRents, updateRent } = require('../containers/rentContainer');
+const { getAllRents, updateRent, addRent } = require('../containers/rentContainer');
 const { addTrip } = require('../containers/tripContainer');
 
 function getNearbyDrivers({ location, distance }) {
