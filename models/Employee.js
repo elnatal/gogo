@@ -8,7 +8,8 @@ const EmployeeSchema = Schema({
     },
     corporate: {
         type: Schema.Types.ObjectId,
-        ref: 'Corporates'
+        ref: 'Corporates',
+        required: true
     }
 },
     {
