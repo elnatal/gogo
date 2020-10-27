@@ -80,6 +80,7 @@ const store = async (req, res) => {
         if (data.name && data.corporate) {
             Employee.create({
                 name: data.name,
+                phone: data.phone,
                 corporate: data.corporate
             }, (error, employee) => {
                 if (error) {
