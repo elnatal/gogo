@@ -15,7 +15,11 @@ const EmployeeSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Corporates',
         required: true
-    }
+    },
+    active: {
+        type: Boolean,
+        default: true
+    },
 },
     {
         timestamps: true

@@ -80,6 +80,7 @@ const store = async (req, res) => {
         if (data.name && data.corporate) {
             Employee.create({
                 name: data.name,
+                phone: data.phone,
                 corporate: data.corporate
             }, (error, employee) => {
                 if (error) {
@@ -102,7 +103,7 @@ const store = async (req, res) => {
 const update = async (req, res) => {
     try {
         await Employee.updateOne({ '_id': req.params.id }, req.body);
-        const employee = await Account.findById(req.params.id);
+        const employee = await Employee.findById(req.params.id);
         res.send(employee);
     } catch (error) {
         logger.error("Employee => " + error.toString());
