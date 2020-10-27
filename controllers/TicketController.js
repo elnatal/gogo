@@ -86,7 +86,7 @@ const generate = async (req, res) => {
     try {
         var id = req.params.id;
         var account = await Account.findById(id).populate('corporate');
-        if (account && account.corporate && req.body.employeeName) {
+        if (account && account.corporate && req.body.employee) {
             var corporate = account.corporate
             var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
             var found = false;
@@ -100,7 +100,7 @@ const generate = async (req, res) => {
                 }
             }
 
-            const savedTicket = await Ticket.create({code, corporate: account.corporate._id, employeeName: req.body.employeeName});
+            const savedTicket = await Ticket.create({code, corporate: account.corporate._id, employee: req.body.employee});
             res.send(savedTicket);
         } else {
             res.status(500).send({error: "Unknown account"})
