@@ -258,6 +258,10 @@ const employees = async (req, res) => {
             filter['name'] =
                 { $regex: req.query.q ? req.query.q : "", $options: "i" };
         }
+        
+        if (req.query.active != null) {
+            filter['active'] = req.query.active;
+        }
 
         var employees = Employee.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
