@@ -99,4 +99,25 @@ const store = async (req, res) => {
     }
 }
 
-module.exports = { index, store, show };
+const update = async (req, res) => {
+    try {
+        await Employee.updateOne({ '_id': req.params.id }, req.body);
+        const employee = await Account.findById(req.params.id);
+        res.send(employee);
+    } catch (error) {
+        logger.error("Employee => " + error.toString());
+        res.status(500).send(error);
+    }
+};
+
+const remove = async (req, res) => {
+    try {
+        const deletedEmployee = await Employee.remove({ _id: req.params.id });
+        res.send(deletedEmployee);
+    } catch (error) {
+        logger.error("Employee => " + error.toString());
+        res.status(500).send(error);
+    }
+};
+
+module.exports = { index, store, show, update, remove };

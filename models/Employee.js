@@ -6,6 +6,11 @@ const EmployeeSchema = Schema({
         type: String,
         required: true
     },
+    phone: {
+        type: String,
+        required: true,
+        unique: true
+    },
     corporate: {
         type: Schema.Types.ObjectId,
         ref: 'Corporates',
