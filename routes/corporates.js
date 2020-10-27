@@ -9,6 +9,8 @@ router.get('/search', CorporateController.search)
 
 router.get('/:id', CorporateController.show);
 
+router.get('/:id/employees', CorporateController.employees);
+
 router.get('/:id/trips', CorporateController.trips)
 
 router.get('/:id/tickets', CorporateController.tickets)
