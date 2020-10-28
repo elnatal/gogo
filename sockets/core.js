@@ -574,7 +574,7 @@ const rentForDispatcher = async (socket, data) => {
                     note: rentObject.note,
                     vehicleType: rentObject.vehicleType._id,
                     vehicle: rentObject.vehicleId,
-                    dispatcher: request.dispatcherId,
+                    dispatcher: rentObject.dispatcherId,
                     active: true,
                     status: "Accepted",
                     createdBy: "dispatcher",
@@ -586,7 +586,7 @@ const rentForDispatcher = async (socket, data) => {
                             if (createdRent) {
                                 console.log({ createdRent });
 
-                                var passengers = getUsers({ userId: id });
+                                var passengers = getUsers({ userId: rentObject.passengerId });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', createdRent);
                                     sendNotification(passenger.fcm, { title: "Rent accepted", body: "Driver is on the way" });
