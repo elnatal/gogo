@@ -8,6 +8,8 @@ router.get('/latest', TripController.latest);
 
 router.get('/:id', TripController.show);
 
+router.get('/:id/sos', TripController.sos);
+
 router.post('/', TripController.store);
 
 router.patch('/:id', TripController.update);

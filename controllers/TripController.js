@@ -5,6 +5,7 @@ const { getDriver } = require('../containers/driversContainer');
 const { getUser } = require('../containers/usersContainer');
 const { sendNotification } = require('../services/notificationService');
 const logger = require('../services/logger');
+const SOS = require('../models/SOS');
 
 const index = (req, res) => {
     try {
@@ -139,6 +140,16 @@ const show = async (req, res) => {
     };
 };
 
+const sos = async (req, res) => {
+    try {
+        var sos = await SOS.find({ride : req.params.id});
+        res.send(sos);
+    } catch (error) {
+        logger.error("Trip => " + error.toString());
+        res.status(500).send(error);
+    };
+};
+
 
 const store = async (req, res) => {
     try {
@@ -170,4 +181,4 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, latest, show, store, update, remove, checkScheduledTrips };
+module.exports = { index, latest, show, store, update, remove, checkScheduledTrips, sos };

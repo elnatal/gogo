@@ -109,6 +109,7 @@ module.exports = (io) => {
                                 passenger: trip.passenger,
                                 type: req.body.type,
                                 ride: req.body.tripId,
+                                rent: req.body.rentId,
                                 vehicle: trip.vehicle,
                                 position: {
                                     type: "Point",
