@@ -29,10 +29,6 @@ const TicketSchema = Schema({
         type: Boolean,
         default: true
     },
-    locked: {
-        type: Boolean,
-        default: false
-    },
     timestamp: Date
 },
 {

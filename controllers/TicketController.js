@@ -1,6 +1,7 @@
 const Ticket = require('../models/Ticket');
 const Corporate = require('../models/Corporate');
 const Account = require('../models/Account');
+const Employee = require('../models/Employee');
 const logger = require('../services/logger');
 
 const index = async (req, res) => {
@@ -67,14 +68,16 @@ const show = async (req, res) => {
 
 const validate = async (req, res) => {
     try {
-        const ticket = await Ticket.findOne({ code: req.params.code });
-        if (ticket && ticket.active == true && ticket.locked == false) {
-            await Ticket.updateOne({_id: ticket._id}, {locked: true});
-            res.send(ticket._id);
-        } else if (ticket && ticket.locked == true) {
-            res.status(500).send("locked");
+        if (req.params.code && req.params.phone) {
+            const ticket = await Ticket.findOne({ code: req.params.code }).populate('employee');
+            if (ticket && ticket.employee && ticket.active == true && ticket.employee.phone == req.params.phone) {
+                res.send(ticket._id);
+            } else {
+                res.status(500).send("Invalid");
+            }
         } else {
-            res.status(500).send("invalid");
+            logger.error("Ticket => Invalid data");
+            res.status(500).send("Invalid data");
         }
     } catch (error) {
         logger.error("Ticket => " + error.toString());
@@ -90,7 +93,7 @@ const generate = async (req, res) => {
             var corporate = account.corporate
             var code = corporate.shortName + ":" + Math.random().toString(36).substring(7);
             var found = false;
-    
+
             while (!found) {
                 var ticket = await Ticket.findOne({ code });
                 if (ticket) {
@@ -100,10 +103,10 @@ const generate = async (req, res) => {
                 }
             }
 
-            const savedTicket = await Ticket.create({code, corporate: account.corporate._id, employee: req.body.employee});
+            const savedTicket = await Ticket.create({ code, corporate: account.corporate._id, employee: req.body.employee });
             res.send(savedTicket);
         } else {
-            res.status(500).send({error: "Unknown account"})
+            res.status(500).send({ error: "Unknown account" })
         }
     } catch (error) {
         logger.error("Ticket => " + error.toString());
