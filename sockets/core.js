@@ -101,8 +101,8 @@ const searchForDispatcher = async (socket, data) => {
     var receivedResponse = 0;
     var vehicleTypeData;
 
-    if (data.vehicleType) {
-        vehicleTypeData = data.vehicleType
+    if (data.vehicleTypeData) {
+        vehicleTypeData = data.vehicleTypeData
     } else {
         vehicleTypeData = await VehicleType.findById(data.vehicleType);
     }
