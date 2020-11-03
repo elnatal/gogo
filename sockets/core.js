@@ -99,7 +99,7 @@ const searchForDispatcher = async (socket, data) => {
     }
     var sentRequestCount = 0;
     var receivedResponse = 0;
-    const vehicleTypeData;
+    var vehicleTypeData;
 
     if (data.vehicleType) {
         vehicleTypeData = data.vehicleType
