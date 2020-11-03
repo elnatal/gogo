@@ -99,8 +99,13 @@ const searchForDispatcher = async (socket, data) => {
     }
     var sentRequestCount = 0;
     var receivedResponse = 0;
+    const vehicleTypeData;
 
-    const vehicleTypeData = await VehicleType.findById(data.vehicleType);
+    if (data.vehicleType) {
+        vehicleTypeData = data.vehicleType
+    } else {
+        vehicleTypeData = await VehicleType.findById(data.vehicleType);
+    }
 
     if (data.schedule && data.schedule != undefined) {
         schedule = new Date(data.schedule);
@@ -125,7 +130,11 @@ const searchForDispatcher = async (socket, data) => {
 
     if (data.passengerId) {
         passengerId = data.passengerId;
-        passenger = await User.findById(data.passengerId);
+        if (data.passenger) {
+            passenger = data.passenger
+        } else {
+            passenger = await User.findById(data.passengerId);
+        }
     } else {
         passenger = await User.findOne({ phoneNumber: data.phone });
         if (passenger) {
