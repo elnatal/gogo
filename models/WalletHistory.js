@@ -12,6 +12,10 @@ const WalletHistorySchema = Schema({
         required: true
     },
     reason: String,
+    paymentType: {
+        type: String,
+        default: ""
+    },
     account: {
         type: Schema.Types.ObjectId,
         ref: 'accounts'

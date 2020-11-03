@@ -302,7 +302,7 @@ const rents = (req, res) => {
 
 const topUp = (req, res) => {
     try {
-        if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.account && req.body.reason) {
+        if (req.params.id && req.body.amount && req.body.amount > 0 && req.body.account && req.body.reason, req.body.paymentType) {
             Driver.findById(req.params.id, async (error, driver) => {
                 if (error) {
                     logger.error("Top up => " + error.toString());
@@ -361,7 +361,7 @@ const topUp = (req, res) => {
                                         res.status(500).send(error);
                                     }
                                     if (updateResponse) {
-                                        WalletHistory.create({ driver: req.params.id, amount: topUpAmount, reason: req.body.reason, by: 'admin', account: req.body.account }, (error, wallet) => {
+                                        WalletHistory.create({ driver: req.params.id, amount: topUpAmount, reason: req.body.reason, by: 'admin', account: req.body.account, paymentType: req.body.paymentType }, (error, wallet) => {
                                             if (error) {
                                                 logger.error("Top up => " + error.toString());
                                                 res.status(500).send(error);

@@ -283,7 +283,7 @@ module.exports = (socket) => {
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                         })
                         Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-                    } else if (status == "Accepted") {
+                    } else if (status == "Accepted" && (!driverFound || !canceled)) {
                         driverFound = true;
                         var ticket;
                         if (request.corporate && request.ticket) {
