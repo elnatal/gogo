@@ -394,6 +394,10 @@ const searchForDispatcher = async (socket, data) => {
             }
             console.log("status updated passenger")
             console.log(status);
+        } else {
+            var driver = getDriver({ id: request.driverId })
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
         }
     }
 }
@@ -616,6 +620,10 @@ const rentForDispatcher = async (socket, data) => {
                     console.log({ error });
                 }
             }
+        } else {
+            var driver = getDriver({ id: request.driverId })
+            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
         }
     }
 

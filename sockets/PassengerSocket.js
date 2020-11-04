@@ -347,6 +347,10 @@ module.exports = (socket) => {
                     }
                     console.log("status updated passenger")
                     console.log(status);
+                } else {
+                    var driver = getDriver({ id: request.driverId })
+                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                    Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
                 }
             }
         } else {
@@ -581,6 +585,10 @@ module.exports = (socket) => {
                             console.log({ error });
                         }
                     }
+                } else {
+                    var driver = getDriver({ id: request.driverId })
+                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                    Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
                 }
             }
         }
