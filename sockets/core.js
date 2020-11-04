@@ -313,86 +313,88 @@ const searchForDispatcher = async (socket, data) => {
     }
 
     async function updateCallback(request) {
-        const requests = getAllRequests('dispatcher');
-        const rents = getAllRents('dispatcher');
-
-        var rentAndRequests = [...requests, ...rents];
-
-        const dispatchers = getAllDispatchers();
-
-        dispatchers.forEach((dispatcher) => {
-            io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
-        });
-        var status = request.getStatus();
-        if (status == "Declined") {
-            receivedResponse += 1;
-            var driver = getDriver({ id: request.driverId });
-            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-            if (!data.singleDriver && sentRequestCount <= receivedResponse) {
-                sendRequest();
+        if (!driverFound && !canceled) {
+            const requests = getAllRequests('dispatcher');
+            const rents = getAllRents('dispatcher');
+    
+            var rentAndRequests = [...requests, ...rents];
+    
+            const dispatchers = getAllDispatchers();
+    
+            dispatchers.forEach((dispatcher) => {
+                io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
+            });
+            var status = request.getStatus();
+            if (status == "Declined") {
+                receivedResponse += 1;
+                var driver = getDriver({ id: request.driverId });
+                if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
+                Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
+                if (!data.singleDriver && sentRequestCount <= receivedResponse) {
+                    sendRequest();
+                }
+            } else if (status == "Expired") {
+                var driver = getDriver({ id: request.driverId })
+                if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
+                Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
+                // if (!data.singleDriver) {
+                //     sendRequest();
+                // }
+            } else if (status == "Canceled") {
+                canceled = true;
+                var driver = getDriver({ id: request.driverId });
+                if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
+    
+                // var dispatcher = getDispatcher({ dispatcherId: id });
+                // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
+            } else if (status == "Accepted" && !driverFound && !canceled) {
+                driverFound = true;
+                console.log("trip accepted========================");
+                try {
+                    Ride.create({
+                        driver: request.driverId,
+                        passenger: request.passengerId,
+                        vehicle: request.vehicleId,
+                        type: request.type,
+                        schedule: request.schedule,
+                        corporate: null,
+                        bidAmount: request.bidAmount,
+                        route: request.route,
+                        note: request.note,
+                        dispatcher: request.dispatcherId,
+                        ticket: null,
+                        pickUpAddress: request.pickUpAddress,
+                        dropOffAddress: request.dropOffAddress,
+                        vehicleType: request.vehicleType._id,
+                        status: request.schedule ? "Scheduled" : "Accepted",
+                        active: request.schedule ? false : true,
+                        createdBy: "dispatcher",
+                    }, (err, ride) => {
+                        if (err) console.log(err);
+                        if (ride) {
+                            console.log(ride);
+                            // socket.emit('status', { "status": false });
+                            Ride.findById(ride._id, async (err, createdRide) => {
+                                if (err) console.log(err);
+                                if (createdRide) {
+                                    console.log("ride", createdRide);
+                                    addTrip(createdRide);
+    
+                                    var driver = getDriver({ id: request.driverId })
+                                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+    
+                                    Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
+                                }
+                            }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                        }
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
             }
-        } else if (status == "Expired") {
-            var driver = getDriver({ id: request.driverId })
-            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestExpired');
-            Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-            // if (!data.singleDriver) {
-            //     sendRequest();
-            // }
-        } else if (status == "Canceled") {
-            canceled = true;
-            var driver = getDriver({ id: request.driverId });
-            if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-
-            // var dispatcher = getDispatcher({ dispatcherId: id });
-            // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
-        } else if (status == "Accepted") {
-            driverFound = true;
-            console.log("trip accepted========================");
-            try {
-                Ride.create({
-                    driver: request.driverId,
-                    passenger: request.passengerId,
-                    vehicle: request.vehicleId,
-                    type: request.type,
-                    schedule: request.schedule,
-                    corporate: null,
-                    bidAmount: request.bidAmount,
-                    route: request.route,
-                    note: request.note,
-                    dispatcher: request.dispatcherId,
-                    ticket: null,
-                    pickUpAddress: request.pickUpAddress,
-                    dropOffAddress: request.dropOffAddress,
-                    vehicleType: request.vehicleType._id,
-                    status: request.schedule ? "Scheduled" : "Accepted",
-                    active: request.schedule ? false : true,
-                    createdBy: "dispatcher",
-                }, (err, ride) => {
-                    if (err) console.log(err);
-                    if (ride) {
-                        console.log(ride);
-                        // socket.emit('status', { "status": false });
-                        Ride.findById(ride._id, async (err, createdRide) => {
-                            if (err) console.log(err);
-                            if (createdRide) {
-                                console.log("ride", createdRide);
-                                addTrip(createdRide);
-
-                                var driver = getDriver({ id: request.driverId })
-                                if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
-
-                                Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
-                            }
-                        }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
-                    }
-                });
-            } catch (error) {
-                console.log(error);
-            }
+            console.log("status updated passenger")
+            console.log(status);
         }
-        console.log("status updated passenger")
-        console.log(status);
     }
 }
 
@@ -536,7 +538,7 @@ const rentForDispatcher = async (socket, data) => {
     }
 
     function updateCallback(rentObject) {
-        if (!driverFound || !canceled) {
+        if (!driverFound && !canceled) {
             console.log("changed", rentObject);
             console.log("status", rentObject.getStatus());
 
@@ -572,7 +574,7 @@ const rentForDispatcher = async (socket, data) => {
                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
                 })
                 Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
-            } else if (status == "Accepted" && (!driverFound || !canceled)) {
+            } else if (status == "Accepted" && (!driverFound && !canceled)) {
                 driverFound = true;
                 try {
                     Rent.create({
