@@ -253,7 +253,7 @@ module.exports = (socket) => {
                 }
             }
 
-            function updateCallback(request) {
+            async function updateCallback(request) {
                 if (!driverFound && !canceled) {
                     console.log("changed", request);
                     console.log("status", request.getStatus());
@@ -287,14 +287,9 @@ module.exports = (socket) => {
                         driverFound = true;
                         var ticket;
                         if (request.corporate && request.ticket) {
-                            Ticket.updateOne({ _id: request.ticket }, { active: false }, (error, ticket) => {
-                                if (error) {
-                                    console.log({ error });
-                                }
-                                if (ticket) {
-                                    console.log({ ticket });
-                                }
-                            });
+                            ticket = await Ticket.findById(request.ticket);
+                            ticket.active = false;
+                            ticket.save();
                         }
                         try {
                             Ride.create({

@@ -14,6 +14,7 @@ const { getIO } = require('./io');
 const { sendNotification } = require('../services/notificationService');
 const { getAllRents, updateRent, addRent } = require('../containers/rentContainer');
 const { addTrip } = require('../containers/tripContainer');
+const Ticket = require('../models/Ticket');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {
@@ -350,6 +351,12 @@ const searchForDispatcher = async (socket, data) => {
             } else if (status == "Accepted" && !driverFound && !canceled) {
                 driverFound = true;
                 console.log("trip accepted========================");
+                var ticket;
+                if (request.corporate && request.ticket) {
+                    ticket = await Ticket.findById(request.ticket);
+                    ticket.active = false;
+                    ticket.save();
+                }
                 try {
                     Ride.create({
                         driver: request.driverId,
@@ -357,12 +364,12 @@ const searchForDispatcher = async (socket, data) => {
                         vehicle: request.vehicleId,
                         type: request.type,
                         schedule: request.schedule,
-                        corporate: null,
+                        corporate: ticket && ticket.corporate ? ticket.corporate : null,
                         bidAmount: request.bidAmount,
                         route: request.route,
                         note: request.note,
                         dispatcher: request.dispatcherId,
-                        ticket: null,
+                        ticket: request.ticket,
                         pickUpAddress: request.pickUpAddress,
                         dropOffAddress: request.dropOffAddress,
                         vehicleType: request.vehicleType._id,
