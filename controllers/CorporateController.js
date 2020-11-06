@@ -89,7 +89,7 @@ const trips = async (req, res) => {
         if (req.query.end) {
             filter.endTimestamp["$lte"] = req.query.end;
         }
-        var rides = await Ride.find(filter);
+        var rides = await Ride.find(filter).populate('passenger').populate('driver').populate('ticket');
         res.send(rides);
     } catch (error) {
         logger.error("Corporate => " + error.toString());
