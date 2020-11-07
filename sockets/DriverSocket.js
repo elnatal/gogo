@@ -66,7 +66,7 @@ module.exports = async (socket) => {
                     }, (err, res) => {
                         if (err) console.log({ err });
                         if (res) {
-                            console.log("vehicle updated, status ", res || values[2] ? false : true);
+                            console.log("vehicle updated, status ", values[0] || values[1] || values[2] ? false : true);
                         }
                     });
 

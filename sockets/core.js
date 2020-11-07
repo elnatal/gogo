@@ -293,19 +293,26 @@ const searchForDispatcher = async (socket, data) => {
                     io.of('/driver-socket').to(driver.socketId).emit('request', request);
                     sendNotification(driver.fcm, { title: "Request", body: "You have new trip request" });
                     Vehicle.updateOne({ _id: request.vehicleId }, { online: false, lastTripTimestamp: new Date() }, (err, res) => { });
+
+                    setTimeout(() => {
+                        if (!driverFound && !canceled) {
+                            sentRequests.forEach((request) => {
+                                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                            })
+                            sendRequest();
+                        }
+                    }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
                     console.log("no driver socket");
                     updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    if (!driverFound && !canceled) {
+                        sentRequests.forEach((request) => {
+                            updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                        })
+                        sendRequest();
+                    }
                 }
             }
-            setTimeout(() => {
-                if (!driverFound && !canceled) {
-                    sentRequests.forEach((request) => {
-                        updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                    })
-                    sendRequest();
-                }
-            }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
         } else {
             canceled = true;
             console.log("no diver found");
@@ -317,11 +324,11 @@ const searchForDispatcher = async (socket, data) => {
         if (!driverFound && !canceled) {
             const requests = getAllRequests('dispatcher');
             const rents = getAllRents('dispatcher');
-    
+
             var rentAndRequests = [...requests, ...rents];
-    
+
             const dispatchers = getAllDispatchers();
-    
+
             dispatchers.forEach((dispatcher) => {
                 io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
             });
@@ -345,7 +352,7 @@ const searchForDispatcher = async (socket, data) => {
                 canceled = true;
                 var driver = getDriver({ id: request.driverId });
                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-    
+
                 // var dispatcher = getDispatcher({ dispatcherId: id });
                 // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
             } else if (status == "Accepted" && !driverFound && !canceled) {
@@ -386,10 +393,10 @@ const searchForDispatcher = async (socket, data) => {
                                 if (createdRide) {
                                     console.log("ride", createdRide);
                                     addTrip(createdRide);
-    
+
                                     var driver = getDriver({ id: request.driverId })
                                     if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
-    
+
                                     Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
                                 }
                             }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -539,7 +546,10 @@ const rentForDispatcher = async (socket, data) => {
                 }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
             } else {
                 console.log("no driver socket");
-                updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
+                if (!driverFound && !canceled) {
+                    updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
+                    sendRequest();
+                }
             }
         } else {
             canceled = true;
