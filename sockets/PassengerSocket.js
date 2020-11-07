@@ -175,7 +175,7 @@ module.exports = (socket) => {
                 sentRequestCount = 0;
                 receivedResponse = 0;
                 var vehicles = [];
-                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
+                vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: schedule && setting.scheduleSearchRadius ? setting.scheduleSearchRadius * 1000 : setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
                 var availableVehicles = [];
                 vehicles.forEach((v) => {

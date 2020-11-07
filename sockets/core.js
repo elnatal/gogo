@@ -220,7 +220,7 @@ const searchForDispatcher = async (socket, data) => {
             console.log("single driver");
             availableVehicles.push({ _id: data.vehicle, driver: data.driver });
         } else {
-            vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
+            vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: schedule && setting.scheduleSearchRadius ? setting.scheduleSearchRadius * 1000 : setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
             console.log({ vehicles });
             vehicles.forEach((v) => {
