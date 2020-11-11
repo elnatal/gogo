@@ -219,6 +219,7 @@ module.exports = (socket) => {
                                 },
                             },
                             status: "inRequest",
+                            timestamp: new Date().getTime(),
                             updateCallback
                         })
                         requests.push(request)
