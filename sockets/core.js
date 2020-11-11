@@ -299,7 +299,9 @@ const searchForDispatcher = async (socket, data) => {
                             sentRequests.forEach((request) => {
                                 updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                             })
-                            sendRequest();
+                            if (!data.singleDriver) {
+                                sendRequest();
+                            }
                         }
                     }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
@@ -309,7 +311,9 @@ const searchForDispatcher = async (socket, data) => {
                         sentRequests.forEach((request) => {
                             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                         })
-                        sendRequest();
+                        if (!data.singleDriver) {
+                            sendRequest();
+                        }
                     }
                 }
             }
@@ -541,14 +545,20 @@ const rentForDispatcher = async (socket, data) => {
                 setTimeout(() => {
                     if (!driverFound && !canceled) {
                         updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
-                        sendRequest();
+                        
+                        if (!data.singleDriver) {
+                            sendRequest();
+                        }
                     }
                 }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
             } else {
                 console.log("no driver socket");
                 if (!driverFound && !canceled) {
                     updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
-                    sendRequest();
+                    
+                    if (!data.singleDriver) {
+                        sendRequest();
+                    }
                 }
             }
         } else {
@@ -579,7 +589,10 @@ const rentForDispatcher = async (socket, data) => {
             if (status == "Declined") {
                 var driver = getDriver({ id: rentObject.driverId });
                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-                sendRequest();
+                
+                if (!data.singleDriver) {
+                    sendRequest();
+                }
                 Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
             } else if (status == "Expired") {
                 var driver = getDriver({ id: rentObject.driverId })
