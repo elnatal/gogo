@@ -15,6 +15,7 @@ const { sendNotification } = require('../services/notificationService');
 const { getAllRents, updateRent, addRent } = require('../containers/rentContainer');
 const { addTrip } = require('../containers/tripContainer');
 const Ticket = require('../models/Ticket');
+const { getUsers } = require('../containers/usersContainer');
 
 function getNearbyDrivers({ location, distance }) {
     return new Promise((resolve, reject) => {

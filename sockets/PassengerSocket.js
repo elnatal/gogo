@@ -487,6 +487,7 @@ module.exports = (socket) => {
                         vehicleId: vehicle._id,
                         vehicleType: vehicleTypeData,
                         status: "inRequest",
+                        timestamp: new Date().getTime(),
                         updateCallback
                     });
 
