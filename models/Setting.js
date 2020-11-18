@@ -76,6 +76,10 @@ const SettingSchema = Schema({
         type: Number,
         default: 15
     },
+    rentCommission: {
+        type: Number,
+        default: 15
+    },
     defaultRoadPickupCommission: {
         type: Number,
         default: 5

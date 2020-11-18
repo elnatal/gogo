@@ -511,7 +511,7 @@ module.exports = async (socket) => {
                     if (res) {
                         if (res.status != "Completed") {
                             var tax = setting.tax ? setting.tax : 15;
-                            var companyCut = setting.companyCut ? setting.companyCut : 15;
+                            var companyCut = setting.rentCommission ? setting.rentCommission : 15;
                             var fare = ((rent.months * (res.vehicleType.rentPerDay * 30)) + (rent.hours * res.vehicleType.rentPerHour) + (rent.days * res.vehicleType.rentPerDay)) * rent.months > 0 ? res.vehicleType.rentDiscount / 100 : 1;
                             var cutFromDriver = - fare * (companyCut / 100);
                             res.status = "Completed";
@@ -559,15 +559,19 @@ module.exports = async (socket) => {
                 Ride.findById(trip.id, (err, res) => {
                     if (err) console.log(err);
                     if (res) {
-                        var tax = setting.cancelCost * (setting.defaultCommission / 100);
+                        var commission = setting.defaultCommission;
+                        if (trip.type == 'roadPickup') {
+                            commission = setting.defaultRoadPickupCommission
+                        }
+                        var tax = setting.cancelCost * (commission / 100);
                         res.status = "Canceled";
                         res.endTimestamp = new Date();
                         res.cancelledBy = "Driver";
                         res.tax = tax;
                         res.companyCut = setting.cancelCost;
                         res.net = (setting.cancelCost * (setting.tax / 100)) - tax;
-                        res.cancelCost = setting.cancelCost,
-                            res.cancelledReason = trip.reason ? trip.reason : "";
+                        res.cancelCost = setting.cancelCost;
+                        res.cancelledReason = trip.reason ? trip.reason : "";
                         res.active = false;
                         res.save();
                         addTrip(res);
@@ -604,8 +608,13 @@ module.exports = async (socket) => {
                 Rent.findById(rent.id, (err, res) => {
                     if (err) console.log(err);
                     if (res) {
+                        var tax = setting.cancelCost * (setting.rentCommission / 100);
                         res.status = "Canceled";
                         res.endTimestamp = new Date();
+                        res.tax = tax;
+                        res.companyCut = setting.cancelCost;
+                        res.net = (setting.cancelCost * (setting.tax / 100)) - tax;
+                        res.cancelCost = setting.cancelCost;
                         res.cancelledBy = "Driver";
                         res.cancelledReason = rent.reason ? rent.reason : "";
                         res.active = false;
