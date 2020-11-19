@@ -30,6 +30,10 @@ const index = (req, res) => {
             filter['passenger'] = req.query.passenger;
         }
 
+        if (req.query.dispatcher != null && req.query.dispatcher != 'all') {
+            filter['dispatcher'] = req.query.dispatcher;
+        }
+
         if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
             filter['$and'] = [{ "endTimestamp": { $gte: new Date(req.query.start) } }, { "endTimestamp": { $lte: new Date(req.query.end) } }];
         } else if (req.query.end != null && req.query.end != 'all') {
