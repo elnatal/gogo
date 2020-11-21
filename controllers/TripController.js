@@ -194,7 +194,34 @@ const remove = async (req, res) => {
 
 const cancel = async (req, res) => {
     try {
-        const trip = await Ride.findById(req.params.id);
+        const io = getIO();
+        Ride.findById(req.params.id, async (err, ride) => {
+            if (err) console.log(err);
+            if (ride) {
+                ride.status = "Canceled";
+                ride.endTimestamp = new Date();
+                ride.cancelledBy = "Dispatcher";
+                ride.cancelledReason = req.body.reason ? req.body.reason : "";
+                ride.active = false;
+                ride.save();
+                addTrip(ride);
+                Vehicle.updateOne({ _id: ride.vehicle._id }, { online: true }, (error, response) => { });
+                var driver = getDriver({ id: ride.driver._id });
+                if (driver) {
+                    io.of('/driver-socket').to(driver.socketId).emit('trip', ride);
+                    sendNotification(driver.fcm, { title: "Canceled", body: "Trip has been canceled" });
+                    // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
+                }
+
+                var passengers = getUsers({ userId: res.passenger._id });
+                passengers.forEach((passenger) => {
+                    if (passenger) {
+                        io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        sendNotification(passenger.fcm, { title: "Canceled", body: "Trip has been canceled" });
+                    }
+                })
+            }
+        }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
     } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
@@ -202,6 +229,10 @@ const cancel = async (req, res) => {
 }
 
 const end = async (req, res) => {
+    if (!req.body || !req.body.totalDistance) {
+        res.send("totalDistance is required").status(500)
+        return
+    }
     try {
         const setting = await Setting.findOne();
         const io = getIO()
@@ -227,21 +258,21 @@ const end = async (req, res) => {
                         }
                     }
                     if (ride.type == "corporate") {
-                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultCommission / 100));
                         payToDriver = (fare - companyCut);
                         tax = companyCut * (setting.tax / 100);
                         net = companyCut - tax;
                         cutFromDriver = -companyCut;
                     } else if (ride.type == "roadPickup") {
-                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultRoadPickupCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultRoadPickupCommission / 100) - discount) * (setting.tax / 100);
                         net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - tax;
                         cutFromDriver = (-(fare * (setting.defaultRoadPickupCommission / 100))) + discount;
                     } else if (ride.type == "normal") {
-                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
@@ -256,7 +287,7 @@ const end = async (req, res) => {
                         console.log("log=============");
                         console.log({ fare, companyCut, tax, net, cutFromDriver });
                     } else {
-                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
@@ -264,7 +295,7 @@ const end = async (req, res) => {
                         cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                     }
                     ride.status = "Completed";
-                    ride.totalDistance = trip.totalDistance;
+                    ride.totalDistance = req.body.totalDistance;
                     ride.discount = discount;
                     ride.companyCut = companyCut;
                     ride.tax = tax;
@@ -319,6 +350,7 @@ const end = async (req, res) => {
 const resendEmail = async (req, res) => {
     try {
         const trip = await Ride.findById(req.params.id);
+        res.send("Email sent")
     } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
