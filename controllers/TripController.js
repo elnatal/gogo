@@ -42,11 +42,11 @@ const index = (req, res) => {
         }
 
         if (req.query.start != null && req.query.start != 'all' && req.query.end != null && req.query.end != 'all') {
-            filter['$and'] = [{ "endTimestamp": { $gte: new Date(req.query.start) } }, { "endTimestamp": { $lte: new Date(req.query.end) } }];
+            filter['$and'] = [{ "createdAt": { $gte: new Date(req.query.start) } }, { "createdAt": { $lte: new Date(req.query.end) } }];
         } else if (req.query.end != null && req.query.end != 'all') {
-            filter['endTimestamp'] = { $lte: new Date(req.query.end) };
+            filter['createdAt'] = { $lte: new Date(req.query.end) };
         } else if (req.query.start != null && req.query.start != 'all') {
-            filter['endTimestamp'] = { $gte: new Date(req.query.start) };
+            filter['createdAt'] = { $gte: new Date(req.query.start) };
         }
 
         var trip = Ride.find(filter);
@@ -213,13 +213,15 @@ const cancel = async (req, res) => {
                     // io.of('/driver-socket').to(driver.socketId).emit('status', { "status": true });
                 }
 
-                var passengers = getUsers({ userId: res.passenger._id });
+                var passengers = getUsers({ userId: ride.passenger._id });
                 passengers.forEach((passenger) => {
                     if (passenger) {
-                        io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
+                        io.of('/passenger-socket').to(passenger.socketId).emit('trip', ride);
                         sendNotification(passenger.fcm, { title: "Canceled", body: "Trip has been canceled" });
                     }
                 })
+
+                res.send(ride);
             }
         }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
     } catch (error) {
