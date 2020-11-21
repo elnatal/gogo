@@ -12,6 +12,10 @@ router.get('/:id/sos', TripController.sos);
 
 router.post('/', TripController.store);
 
+router.post('/:id/cancel', TripController.cancel);
+
+router.post('/:id/end', TripController.end);
+
 router.patch('/:id', TripController.update);
 
 router.delete('/:id', TripController.remove);
