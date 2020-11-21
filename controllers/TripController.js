@@ -340,6 +340,8 @@ const end = async (req, res) => {
                             sendNotification(passenger.fcm, { title: "Trip ended", body: "You have arrived at your destination" });
                         })
                     }
+
+                    res.send(ride);
                 }
             }
         }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
