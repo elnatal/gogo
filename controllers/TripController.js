@@ -2,10 +2,17 @@ const Ride = require('../models/Ride');
 const { request, json } = require('express');
 const { send } = require('../services/emailService');
 const { getDriver } = require('../containers/driversContainer');
-const { getUser } = require('../containers/usersContainer');
+const { getUser, getUsers } = require('../containers/usersContainer');
 const { sendNotification } = require('../services/notificationService');
+const { sendEmail } = require('../services/emailService')
 const logger = require('../services/logger');
 const SOS = require('../models/SOS');
+const Setting = require('../models/Setting');
+const { addTrip } = require('../containers/tripContainer');
+const Ticket = require('../models/Ticket');
+const { updateWallet } = require('./DriverController');
+const Vehicle = require('../models/Vehicle');
+const { getIO } = require('../sockets/io');
 
 const index = (req, res) => {
     try {
@@ -146,7 +153,7 @@ const show = async (req, res) => {
 
 const sos = async (req, res) => {
     try {
-        var sos = await SOS.find({ride : req.params.id});
+        var sos = await SOS.find({ ride: req.params.id });
         res.send(sos);
     } catch (error) {
         logger.error("Trip => " + error.toString());
@@ -185,4 +192,138 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { index, latest, show, store, update, remove, checkScheduledTrips, sos };
+const cancel = async (req, res) => {
+    try {
+        const trip = await Ride.findById(req.params.id);
+    } catch (error) {
+        logger.error("Trip => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
+const end = async (req, res) => {
+    try {
+        const setting = await Setting.findOne();
+        const io = getIO()
+        Ride.findById(req.params.id, async (err, ride) => {
+            if (err) console.log(err);
+            if (ride) {
+                if (ride.status != "Completed") {
+                    var discount = setting.discount ? setting.discount : 0;
+                    var tax = 0;
+                    var companyCut = 0;
+                    var date = new Date();
+                    var payToDriver = 0;
+                    var net = 0;
+                    var tsts = new Date(ride.pickupTimestamp);
+                    var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
+                    var cutFromDriver = 0;
+                    var fare = 0;
+                    if ((ride.type == "normal" || ride.type == "roadPickup") && setting.promoTripCount > 0) {
+                        var tripCount = await Ride.countDocuments({ passenger: ride.passenger._id, status: "Completed" });
+                        if (tripCount % setting.promoTripCount == 0) {
+                            var t = tripCount / setting.promoTripCount;
+                            discount += setting.promoAmount * (1 + ((setting.promoRate / 100) * t));
+                        }
+                    }
+                    if (ride.type == "corporate") {
+                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        companyCut = (fare * (setting.defaultCommission / 100));
+                        payToDriver = (fare - companyCut);
+                        tax = companyCut * (setting.tax / 100);
+                        net = companyCut - tax;
+                        cutFromDriver = -companyCut;
+                    } else if (ride.type == "roadPickup") {
+                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        companyCut = (fare * (setting.defaultRoadPickupCommission / 100)) - discount;
+                        payToDriver = discount;
+                        tax = (fare * (setting.defaultRoadPickupCommission / 100) - discount) * (setting.tax / 100);
+                        net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - tax;
+                        cutFromDriver = (-(fare * (setting.defaultRoadPickupCommission / 100))) + discount;
+                    } else if (ride.type == "normal") {
+                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        companyCut = (fare * (setting.defaultCommission / 100)) - discount;
+                        payToDriver = discount;
+                        tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
+                        net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                        cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
+                    } else if (ride.type == "bid") {
+                        fare = ride.bidAmount;
+                        companyCut = (fare * (setting.defaultCommission / 100));
+                        tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
+                        net = (fare * (setting.defaultCommission / 100)) - tax;
+                        cutFromDriver = (-companyCut);
+                        console.log("log=============");
+                        console.log({ fare, companyCut, tax, net, cutFromDriver });
+                    } else {
+                        fare = (trip.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
+                        companyCut = (fare * (setting.defaultCommission / 100)) - discount;
+                        payToDriver = discount;
+                        tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
+                        net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                        cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
+                    }
+                    ride.status = "Completed";
+                    ride.totalDistance = trip.totalDistance;
+                    ride.discount = discount;
+                    ride.companyCut = companyCut;
+                    ride.tax = tax;
+                    ride.fare = fare;
+                    ride.payToDriver = payToDriver;
+                    ride.net = net;
+                    ride.endTimestamp = date;
+                    ride.active = false;
+                    ride.save();
+                    addTrip(ride);
+                    console.log({ ride });
+
+                    if (ride.ticket) {
+                        console.log("has ticket =========");
+                        Ticket.updateOne({ _id: ride.ticket }, { amount: fare, timestamp: new Date(), ride: ride.id }, (err, ticketResponse) => {
+                            if (err) console.log({ err });
+                            if (ticketResponse) {
+                                console.log("ticket updated");
+                            }
+                        });
+                    }
+
+                    updateWallet({ id: ride.driver._id, amount: cutFromDriver });
+
+                    Vehicle.updateOne({ _id: ride.vehicle._id }, { online: true }, (err, vehicleResponse) => {
+                        if (err) console.log({ err });
+                        if (vehicleResponse) console.log("status updated", true, ride.vehicle._id);
+                    });
+
+                    if (ride.createdBy == "app" && ride.passenger && ride.passenger.email) {
+                        sendEmail(ride.passenger.email, "Trip summery", "test email");
+                    }
+                    var driver = getDriver({ id: ride.driver._id });
+                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', ride);
+
+                    if (ride.passenger) {
+                        var passengers = getUsers({ userId: ride.passenger._id });
+                        passengers.forEach((passenger) => {
+                            if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', ride);
+                            sendNotification(passenger.fcm, { title: "Trip ended", body: "You have arrived at your destination" });
+                        })
+                    }
+                }
+            }
+        }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+    } catch (error) {
+        logger.error("Trip => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
+const resendEmail = async (req, res) => {
+    try {
+        const trip = await Ride.findById(req.params.id);
+    } catch (error) {
+        logger.error("Trip => " + error.toString());
+        res.status(500).send(error);
+    }
+}
+
+
+module.exports = { index, latest, show, store, update, remove, checkScheduledTrips, sos, cancel, end, resendEmail };
