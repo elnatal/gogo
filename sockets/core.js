@@ -484,6 +484,7 @@ const rentForDispatcher = async (socket, data) => {
         
         if (data.singleDriver) {
             console.log("single driver");
+            data.vehicle["driver"] = data.driver;
             vehicle = data.vehicle;
         } else {
             vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.rentSearchRadius ? setting.rentSearchRadius * 1000 : 10000 }));
