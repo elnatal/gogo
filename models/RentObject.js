@@ -8,6 +8,7 @@ class RentObject {
     pickUpAddress;
     vehicleId;
     note;
+    type = "rent";
     dispatcherId;
     status;
     createdBy;
