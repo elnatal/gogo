@@ -481,11 +481,11 @@ const rentForDispatcher = async (socket, data) => {
     async function sendRequest() {
         var vehicle;
         var vehicles = [];
-        
+        console.log({ data });
+
         if (data.singleDriver) {
             console.log("single driver");
-            data.vehicle["driver"] = data.driver;
-            vehicle = data.vehicle;
+            vehicle = { _id: data.vehicle, driver: data.driver };
         } else {
             vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.rentSearchRadius ? setting.rentSearchRadius * 1000 : 10000 }));
 
@@ -553,7 +553,7 @@ const rentForDispatcher = async (socket, data) => {
                 setTimeout(() => {
                     if (!driverFound && !canceled) {
                         updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
-                        
+
                         if (!data.singleDriver) {
                             sendRequest();
                         }
@@ -563,7 +563,7 @@ const rentForDispatcher = async (socket, data) => {
                 console.log("no driver socket");
                 if (!driverFound && !canceled) {
                     updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
-                    
+
                     if (!data.singleDriver) {
                         sendRequest();
                     }
@@ -597,7 +597,7 @@ const rentForDispatcher = async (socket, data) => {
             if (status == "Declined") {
                 var driver = getDriver({ id: rentObject.driverId });
                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-                
+
                 if (!data.singleDriver) {
                     sendRequest();
                 }
