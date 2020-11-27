@@ -8,7 +8,7 @@ class RentObject {
     pickUpAddress;
     vehicleId;
     note;
-    type = "rent";
+    type;
     dispatcherId;
     status;
     createdBy;
@@ -22,6 +22,7 @@ class RentObject {
         this.timestamp = timestamp;
         this.createdBy = createdBy;
         this.vehicleId = vehicleId;
+        this.type = "rent";
         this.vehicleType = vehicleType;
         this.dispatcherId = dispatcherId;
         this.pickUpAddress = pickUpAddress;
