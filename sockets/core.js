@@ -481,17 +481,23 @@ const rentForDispatcher = async (socket, data) => {
     async function sendRequest() {
         var vehicle;
         var vehicles = [];
-        vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.rentSearchRadius ? setting.rentSearchRadius * 1000 : 10000 }));
+        
+        if (data.singleDriver) {
+            console.log("single driver");
+            vehicle = data.vehicle;
+        } else {
+            vehicles = JSON.parse(await getNearbyDrivers({ location: pua, distance: setting.rentSearchRadius ? setting.rentSearchRadius * 1000 : 10000 }));
 
-        vehicles.forEach((v) => {
-            console.log({ vehicles });
-            if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
-                console.log("here");
-                vehicle = v;
-                requestedDrivers.push(v._id)
-                return;
-            }
-        });
+            vehicles.forEach((v) => {
+                console.log({ vehicles });
+                if (!requestedDrivers.includes(v._id) && vehicle == null && v.driver && ((vehicleTypeData && vehicleTypeData.name && vehicleTypeData.name.toLowerCase() == "any") ? true : v.vehicleType == data.vehicleType)) {
+                    console.log("here");
+                    vehicle = v;
+                    requestedDrivers.push(v._id)
+                    return;
+                }
+            });
+        }
 
         if (vehicle) {
             var rentObject = new RentObject({
