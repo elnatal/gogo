@@ -27,17 +27,25 @@ module.exports = (socket) => {
     socket.on('estimate', async (data) => {
         if (started && data && data.pickUpAddress && data.pickUpAddress.place_id && data.dropOffAddress && data.dropOffAddress.place_id && data.vehicleType) {
             var setting = await Setting.findOne();
-            var pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey);
-
-            var dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress.place_id + "&key=" + setting.mapKey);
-
+            var pickup, dropOff;
+            if (!data.pickUpAddress.coordinate) {
+                pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.pickUpAddress.place_id + "&key=" + setting.mapKey);
+            }
+            if (!data.dropOffAddress.coordinate) {
+                dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?place_id=" + data.dropOffAddress.place_id + "&key=" + setting.mapKey);
+            }
             var vehicleType;
 
             Promise.all([pickup, dropOff, VehicleType.findById(data.vehicleType)]).then(value => {
                 var pua = {};
                 var doa = {};
 
-                if (value[0].status == 200 && value[0].data.status == "OK") {
+                if (value[0] == null && data.pickUpAddress.coordinate) {
+                    pua.name = data.pickUpAddress.name;
+                    pua.lat = data.pickUpAddress.coordinate.lat;
+                    pua.long = data.pickUpAddress.coordinate.long;
+                }
+                else if (value[0].status == 200 && value[0].data.status == "OK") {
                     console.log("status ok pul");
                     pua.name = data.pickUpAddress.name;
                     pua.lat = value[0].data.results[0].geometry.location.lat;
@@ -48,7 +56,12 @@ module.exports = (socket) => {
                     return;
                 }
 
-                if (value[1].status == 200 && value[1].data.status == "OK") {
+                if (value[0] == null && data.dropOffAddress.coordinate) {
+                    doa.name = data.dropOffAddress.name;
+                    doa.lat = data.dropOffAddress.coordinate.lat;
+                    doa.long = data.dropOffAddress.coordinate.long;
+                }
+                else if (value[1].status == 200 && value[1].data.status == "OK") {
                     console.log("status ok pul");
                     doa.name = data.dropOffAddress.name;
                     doa.lat = value[1].data.results[0].geometry.location.lat;
