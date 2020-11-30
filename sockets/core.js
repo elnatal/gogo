@@ -53,7 +53,7 @@ function getNearbyDrivers({ location, distance }) {
                     return resolve(JSON.stringify(vehicles.sort((a, b) => (a.point > b.point) ? -1 : ((b.point > a.point) ? 1 : 0))));
 
                 }
-            })
+            }).populate('driver');
         } else {
             return reject("Invalid location or distance");
         }
@@ -240,7 +240,8 @@ const searchForDispatcher = async (socket, data) => {
                 var request = new Request({
                     passengerId: passengerId,
                     passenger,
-                    driverId: availableVehicles[index].driver,
+                    driverId: availableVehicles[index].driver && availableVehicles[index].driver._id ? availableVehicles[index].driver._id : availableVehicles[index].driver,
+                    driver: availableVehicles[index].driver,
                     type,
                     dispatcherId: data.dispatcherId,
                     schedule,
@@ -504,7 +505,8 @@ const rentForDispatcher = async (socket, data) => {
             var rentObject = new RentObject({
                 passengerId,
                 passenger,
-                driverId: vehicle.driver,
+                driverId: vehicle.driver && vehicle.driver._id ? vehicle.driver._id : vehicle.driver,
+                driver: vehicle.driver,
                 dispatcherId: data.dispatcherId,
                 startTimestamp: data.startTimestamp,
                 note: data.note ? data.note : "",

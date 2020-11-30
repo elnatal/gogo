@@ -4,6 +4,7 @@ class Request {
     passengerId;
     passenger;
     driverId;
+    driver;
     dispatcherId;
     pickUpAddress;
     dropOffAddress;
@@ -21,9 +22,10 @@ class Request {
     createdBy;
     timestamp;
     updateCallback;
-    constructor({ passengerId, driverId, pickUpAddress, schedule, vehicle, dropOffAddress, passenger, dispatcherId, createdBy, timestamp, note, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback }) {
+    constructor({ passengerId, driverId, driver, pickUpAddress, schedule, vehicle, dropOffAddress, passenger, dispatcherId, createdBy, timestamp, note, bidAmount, type, vehicleType, vehicleId, status, route, ticket, corporate, updateCallback }) {
         this.passengerId = passengerId;
         this.driverId = driverId;
+        this.driver = driver;
         this.pickUpAddress = pickUpAddress;
         this.vehicleId = vehicleId;
         this.passenger = passenger;

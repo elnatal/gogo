@@ -193,7 +193,8 @@ module.exports = (socket) => {
                     for (let index = 0; index < availableVehicles.length; index++) {
                         var request = new Request({
                             passengerId: id,
-                            driverId: availableVehicles[index].driver,
+                            driverId: availableVehicles[index].driver && availableVehicles[index].driver._id ? availableVehicles[index].driver._id : availableVehicles[index].driver,
+                            driver: availableVehicles[index].driver,
                             vehicleId: availableVehicles[index]._id,
                             type,
                             vehicle: availableVehicles[index],
@@ -473,7 +474,8 @@ module.exports = (socket) => {
                 if (vehicle) {
                     var rentObject = new RentObject({
                         passengerId: id,
-                        driverId: vehicle.driver,
+                        driverId: vehicle.driver && vehicle.driver._id ? vehicle.driver._id : vehicle.driver,
+                        driver: vehicle.driver,
                         startTimestamp: data.startTimestamp,
                         note: data.note ? data.note : "",
                         endTimestamp: data.endTimestamp,

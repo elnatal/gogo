@@ -2,6 +2,7 @@ class RentObject {
     passengerId;
     passenger
     driverId;
+    driver;
     startTimestamp;
     endTimestamp;
     vehicleType;
@@ -15,9 +16,10 @@ class RentObject {
     timestamp;
     updateCallback;
 
-    constructor({passengerId, driverId, createdBy, timestamp, passenger, startTimestamp, note, dispatcherId, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
+    constructor({passengerId, driverId, driver, createdBy, timestamp, passenger, startTimestamp, note, dispatcherId, endTimestamp, vehicleId, pickUpAddress, vehicleType, status, updateCallback}) {
         this.passengerId = passengerId,
         this.driverId = driverId;
+        this.driver = driver;
         this.passenger = passenger;
         this.timestamp = timestamp;
         this.createdBy = createdBy;
