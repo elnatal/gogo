@@ -298,15 +298,15 @@ const searchForDispatcher = async (socket, data) => {
 
                 } else {
                     console.log("no driver socket");
-                    updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                    if (!driverFound && !canceled) {
-                        sentRequests.forEach((request) => {
-                            updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                        })
-                        if (!data.singleDriver) {
-                            sendRequest();
-                        }
-                    }
+                    // updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    // if (!driverFound && !canceled) {
+                    //     sentRequests.forEach((request) => {
+                    //         updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    //     })
+                    //     if (!data.singleDriver) {
+                    //         sendRequest();
+                    //     }
+                    // }
                 }
             }
 
