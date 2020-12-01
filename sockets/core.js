@@ -318,7 +318,7 @@ const searchForDispatcher = async (socket, data) => {
                             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                         }
                     })
-                    if (!data.singleDriver) {
+                    if (!driverFound && !data.singleDriver) {
                         sendRequest();
                     }
                 }

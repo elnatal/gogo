@@ -241,11 +241,16 @@ module.exports = (socket) => {
                         }
                     }
                     setTimeout(() => {
-                        if (!driverFound && !canceled) {
-                            requests.forEach((request) => {
-                                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                        if (!canceled) {
+                            sentRequests.forEach((request) => {
+                                var r = getRequest({ passengerId: request.passengerId, driverId: request.driverId });
+                                if (r && r.getStatus() != "Accepted") {
+                                    updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                                }
                             })
-                            sendRequest();
+                            if (!driverFound) {
+                                sendRequest();
+                            }
                         }
                     }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
