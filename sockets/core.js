@@ -296,16 +296,6 @@ const searchForDispatcher = async (socket, data) => {
                     sendNotification(driver.fcm, { title: "Request", body: "You have new trip request" });
                     Vehicle.updateOne({ _id: request.vehicleId }, { online: false, lastTripTimestamp: new Date() }, (err, res) => { });
 
-                    setTimeout(() => {
-                        if (!driverFound && !canceled) {
-                            sentRequests.forEach((request) => {
-                                updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
-                            })
-                            if (!data.singleDriver) {
-                                sendRequest();
-                            }
-                        }
-                    }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
                 } else {
                     console.log("no driver socket");
                     updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
@@ -319,6 +309,17 @@ const searchForDispatcher = async (socket, data) => {
                     }
                 }
             }
+
+            setTimeout(() => {
+                if (!driverFound && !canceled) {
+                    sentRequests.forEach((request) => {
+                        updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                    })
+                    if (!data.singleDriver) {
+                        sendRequest();
+                    }
+                }
+            }, setting && setting.requestTimeout ? setting.requestTimeout * 1000 : 10000);
         } else {
             canceled = true;
             console.log("no diver found");
