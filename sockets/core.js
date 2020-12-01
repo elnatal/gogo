@@ -7,7 +7,7 @@ const RentObject = require('../models/RentObject');
 const Ride = require('../models/Ride');
 const Rent = require('../models/Rent');
 const { getDriver } = require('../containers/driversContainer');
-const { addRequest, updateRequest, getAllRequests } = require('../containers/requestContainer');
+const { addRequest, updateRequest, getAllRequests, getRequest } = require('../containers/requestContainer');
 const { getAllDispatchers } = require('../containers/dispatcherContainer');
 const Setting = require('../models/Setting');
 const { getIO } = require('./io');
@@ -311,9 +311,12 @@ const searchForDispatcher = async (socket, data) => {
             }
 
             setTimeout(() => {
-                if (!driverFound && !canceled) {
+                if (!canceled) {
                     sentRequests.forEach((request) => {
-                        updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                        var r = getRequest({ passengerId: request.passengerId, driverId: request.driverId });
+                        if (r && r.getStatus() != "Accepted") {
+                            updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
+                        }
                     })
                     if (!data.singleDriver) {
                         sendRequest();
