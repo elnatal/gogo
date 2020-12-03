@@ -8,8 +8,7 @@ const EmployeeSchema = Schema({
     },
     phone: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     corporate: {
         type: Schema.Types.ObjectId,

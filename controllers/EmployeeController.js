@@ -78,17 +78,29 @@ const store = async (req, res) => {
     try {
         const data = req.body;
         if (data.name && data.corporate) {
-            Employee.create({
-                name: data.name,
-                phone: data.phone,
-                corporate: data.corporate
-            }, (error, employee) => {
+            Employee.findOne({ corporate: data.corporate, phone: data.phone }, (error, employee) => {
                 if (error) {
-                    logger.error("Employee => " + error.toString());
-                    res.status(500).send(error);
+                    console.log({ error });
+                    res.send({ error }).status(500);
                 }
+
                 if (employee) {
-                    res.send({ employee });
+                    console.log("Employee already exist");
+                    res.send("Employee already exist").status(422);
+                } else {
+                    Employee.create({
+                        name: data.name,
+                        phone: data.phone,
+                        corporate: data.corporate
+                    }, (error, employee) => {
+                        if (error) {
+                            logger.error("Employee => " + error.toString());
+                            res.status(500).send(error);
+                        }
+                        if (employee) {
+                            res.send({ employee });
+                        }
+                    })
                 }
             })
         } else {
