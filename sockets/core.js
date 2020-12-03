@@ -332,17 +332,20 @@ const searchForDispatcher = async (socket, data) => {
 
     async function updateCallback(request) {
         if (!driverFound && !canceled) {
+            var status = request.getStatus();
             const requests = getAllRequests('dispatcher');
             const rents = getAllRents('dispatcher');
 
             var rentAndRequests = [...requests, ...rents];
+            if (status == "Accepted") {
+                rentAndRequests = rentAndRequests.filter((r) => r.passenger != request.passenger);
+            }
 
             const dispatchers = getAllDispatchers();
 
             dispatchers.forEach((dispatcher) => {
                 io.of('/dispatcher-socket').to(dispatcher.socketId).emit("requests", rentAndRequests);
             });
-            var status = request.getStatus();
             if (status == "Declined") {
                 receivedResponse += 1;
                 var driver = getDriver({ id: request.driverId });
@@ -365,55 +368,57 @@ const searchForDispatcher = async (socket, data) => {
 
                 // var dispatcher = getDispatcher({ dispatcherId: id });
                 // if (dispatcher) io.of('/dispatcher-socket').to(dispatcher.socketId).emit('requestCanceled');
-            } else if (status == "Accepted" && !driverFound && !canceled) {
-                driverFound = true;
-                console.log("trip accepted========================");
-                var ticket;
-                if (request.corporate && request.ticket) {
-                    ticket = await Ticket.findById(request.ticket);
-                    ticket.active = false;
-                    ticket.save();
-                }
-                try {
-                    Ride.create({
-                        driver: request.driverId,
-                        passenger: request.passengerId,
-                        vehicle: request.vehicleId,
-                        type: request.type,
-                        schedule: request.schedule,
-                        corporate: ticket && ticket.corporate ? ticket.corporate : null,
-                        bidAmount: request.bidAmount,
-                        route: request.route,
-                        note: request.note,
-                        dispatcher: request.dispatcherId,
-                        ticket: request.ticket,
-                        pickUpAddress: request.pickUpAddress,
-                        dropOffAddress: request.dropOffAddress,
-                        vehicleType: request.vehicleType._id,
-                        status: request.schedule ? "Scheduled" : "Accepted",
-                        active: request.schedule ? false : true,
-                        createdBy: "dispatcher",
-                    }, (err, ride) => {
-                        if (err) console.log(err);
-                        if (ride) {
-                            console.log(ride);
-                            // socket.emit('status', { "status": false });
-                            Ride.findById(ride._id, async (err, createdRide) => {
-                                if (err) console.log(err);
-                                if (createdRide) {
-                                    console.log("ride", createdRide);
-                                    addTrip(createdRide);
+            } else if (status == "Accepted") {
+                if (!driverFound && !canceled) {
+                    driverFound = true;
+                    console.log("trip accepted========================");
+                    var ticket;
+                    if (request.corporate && request.ticket) {
+                        ticket = await Ticket.findById(request.ticket);
+                        ticket.active = false;
+                        ticket.save();
+                    }
+                    try {
+                        Ride.create({
+                            driver: request.driverId,
+                            passenger: request.passengerId,
+                            vehicle: request.vehicleId,
+                            type: request.type,
+                            schedule: request.schedule,
+                            corporate: ticket && ticket.corporate ? ticket.corporate : null,
+                            bidAmount: request.bidAmount,
+                            route: request.route,
+                            note: request.note,
+                            dispatcher: request.dispatcherId,
+                            ticket: request.ticket,
+                            pickUpAddress: request.pickUpAddress,
+                            dropOffAddress: request.dropOffAddress,
+                            vehicleType: request.vehicleType._id,
+                            status: request.schedule ? "Scheduled" : "Accepted",
+                            active: request.schedule ? false : true,
+                            createdBy: "dispatcher",
+                        }, (err, ride) => {
+                            if (err) console.log(err);
+                            if (ride) {
+                                console.log(ride);
+                                // socket.emit('status', { "status": false });
+                                Ride.findById(ride._id, async (err, createdRide) => {
+                                    if (err) console.log(err);
+                                    if (createdRide) {
+                                        console.log("ride", createdRide);
+                                        addTrip(createdRide);
 
-                                    var driver = getDriver({ id: request.driverId })
-                                    if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
+                                        var driver = getDriver({ id: request.driverId })
+                                        if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', createdRide);
 
-                                    Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
-                                }
-                            }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
-                        }
-                    });
-                } catch (error) {
-                    console.log(error);
+                                        Vehicle.updateOne({ _id: request.vehicleId }, { online: request.schedule ? true : false }, (err, res) => { });
+                                    }
+                                }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
+                            }
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    }
                 }
             }
             console.log("status updated passenger")
