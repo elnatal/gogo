@@ -338,7 +338,9 @@ const searchForDispatcher = async (socket, data) => {
 
             var rentAndRequests = [...requests, ...rents];
             if (status == "Accepted") {
-                rentAndRequests = rentAndRequests.filter((r) => r.passenger != request.passenger);
+                var filteredRequests = rentAndRequests.filter((r) => r.passenger != request.passenger);
+                rentAndRequests = filteredRequests;
+                rentAndRequests.push(request);
             }
 
             const dispatchers = getAllDispatchers();
