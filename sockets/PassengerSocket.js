@@ -242,7 +242,7 @@ module.exports = (socket) => {
                     }
                     setTimeout(() => {
                         if (!canceled) {
-                            sentRequests.forEach((request) => {
+                            requests.forEach((request) => {
                                 var r = getRequest({ passengerId: request.passengerId, driverId: request.driverId });
                                 if (r && r.getStatus() != "Accepted") {
                                     updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
