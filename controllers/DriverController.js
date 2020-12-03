@@ -518,9 +518,11 @@ const rate = async (req, res) => {
         if (req.params.id && req.body && req.body.tripId && req.body.rate) {
             const driver = await Driver.findById(req.params.id);
 
-            if (driver) {
-                driver.rating = (((driver.rating * driver.rateCount) + req.body.rate) / (driver.rateCount + 1));
-                driver.rateCount = driver.rateCount + 1;
+            if (driver && req.body.rate) {
+                var rating = driver.rating ? driver.rating : 5;
+                var rateCount = driver.rateCount ? driver.rateCount : 1;
+                driver.rating = (((rating * rateCount) + req.body.rate) / (rateCount + 1));
+                driver.rateCount = rateCount + 1;
                 driver.save();
             }
 

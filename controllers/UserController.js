@@ -181,9 +181,14 @@ const rate = async (req, res) => {
             const user = await User.findById(req.params.id);
 
             if (user) {
-                user.rating = (((user.rating * user.rateCount) + req.body.rate) / (user.rateCount + 1));
-                user.rateCount = user.rateCount + 1;
+                var rating = user.rating ? user.rating : 5;
+                var rateCount = user.rateCount ? user.rateCount : 1;
+                user.rating = (((rating * rateCount) + req.body.rate) / (rateCount + 1));
+                user.rateCount = rateCount + 1;
                 user.save();
+                // user.rating = (((user.rating * user.rateCount) + req.body.rate) / (user.rateCount + 1));
+                // user.rateCount = user.rateCount + 1;
+                // user.save();
             }
 
             const trip = await Ride.findById(req.body.tripId);
