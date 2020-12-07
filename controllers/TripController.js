@@ -94,7 +94,9 @@ const index = (req, res) => {
 
 const checkScheduledTrips = async (io) => {
     try {
-        const trips = await Ride.find({ status: "Scheduled" }).populate('passenger').populate('vehicle');
+        var date = new Date()
+        var date2 = date.setHours(date.getHours() + 1);
+        const trips = await Ride.find({ status: "Scheduled", notified: false, schedule: { $gte: date, $lte: date2 } }).populate('passenger').populate('vehicle');
         trips.forEach((trip) => {
             // const driverId = (trip.driver) ? trip.driver._id : "";
             // const passengerId = (trip.passenger) ? trip.passenger._id : "";
@@ -105,6 +107,8 @@ const checkScheduledTrips = async (io) => {
             // } else 
             if (trip.vehicle && trip.vehicle != undefined && trip.vehicle.fcm && trip.vehicle.fcm != undefined) {
                 sendNotification(trip.vehicle.fcm, { title: "Scheduled trip", body: "You have a scheduled trip." });
+                trip.notified = true;
+                trip.save();
             } else {
                 logger.error("Trip => No driver found");
             }
@@ -115,6 +119,8 @@ const checkScheduledTrips = async (io) => {
             // } else 
             if (trip.passenger && trip.passenger != undefined && trip.passenger.fcm && trip.passenger.fcm != undefined) {
                 sendNotification(trip.passenger.fcm, { title: "Scheduled trip", body: "You have a scheduled trip." });
+                trip.notified = true;
+                trip.save();
             } else {
                 logger.error("Trip => No passenger found");
             }

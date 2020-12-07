@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const RideSchema = Schema({
     schedule: Date,
+    notified: {
+        type: Boolean,
+        default: false
+    },
     type: {
         type: String,
         default: "normal"
@@ -132,8 +136,8 @@ const RideSchema = Schema({
     bidAmount: Number,
     createdBy: String,
 },
-{
- timestamps: true
-});
+    {
+        timestamps: true
+    });
 
 module.exports = mongoose.model("Rides", RideSchema);
