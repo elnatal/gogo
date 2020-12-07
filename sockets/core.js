@@ -213,6 +213,7 @@ const searchForDispatcher = async (socket, data) => {
         console.log("requesting");
         sentRequestCount = 0;
         receivedResponse = 0;
+        var removedDrivers = [];
         var vehicles = [];
 
         var availableVehicles = [];
@@ -318,7 +319,8 @@ const searchForDispatcher = async (socket, data) => {
                             updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                         }
                     })
-                    if (!driverFound && !data.singleDriver) {
+                    if (!driverFound && !data.singleDriver && !removedDrivers.includes(request.driverId)) {
+                        removedDrivers.push(request.driverId);
                         sendRequest();
                     }
                 }
@@ -353,7 +355,8 @@ const searchForDispatcher = async (socket, data) => {
                 var driver = getDriver({ id: request.driverId });
                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
                 Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-                if (!data.singleDriver && sentRequestCount <= receivedResponse) {
+                if (!data.singleDriver && sentRequestCount <= receivedResponse && !removedDrivers.includes(request.driverId)) {
+                    removedDrivers.push(request.driverId);
                     sendRequest();
                 }
             } else if (status == "Expired") {
@@ -493,6 +496,7 @@ const rentForDispatcher = async (socket, data) => {
     async function sendRequest() {
         var vehicle;
         var vehicles = [];
+        var removedDrivers = [];
         console.log({ data });
 
         if (data.singleDriver) {
@@ -567,7 +571,8 @@ const rentForDispatcher = async (socket, data) => {
                     if (!driverFound && !canceled) {
                         updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
 
-                        if (!data.singleDriver) {
+                        if (!data.singleDriver && !removedDrivers.includes(request.driverId)) {
+                            removedDrivers.push(request.driverId);
                             sendRequest();
                         }
                     }
@@ -611,7 +616,8 @@ const rentForDispatcher = async (socket, data) => {
                 var driver = getDriver({ id: rentObject.driverId });
                 if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
 
-                if (!data.singleDriver) {
+                if (!data.singleDriver && !removedDrivers.includes(request.driverId)) {
+                    removedDrivers.push(request.driverId);
                     sendRequest();
                 }
                 Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });

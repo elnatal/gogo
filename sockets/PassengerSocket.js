@@ -174,6 +174,7 @@ module.exports = (socket) => {
             async function sendRequest() {
                 sentRequestCount = 0;
                 receivedResponse = 0;
+                var removedDrivers = [];
                 var vehicles = [];
                 vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: schedule && setting.scheduleSearchRadius ? setting.scheduleSearchRadius * 1000 : setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
@@ -248,7 +249,8 @@ module.exports = (socket) => {
                                     updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: "Expired" });
                                 }
                             })
-                            if (!driverFound) {
+                            if (!driverFound && !removedDrivers.includes(request.driverId)) {
+                                removedDrivers.push(request.driverId);
                                 sendRequest();
                             }
                         }
@@ -270,7 +272,8 @@ module.exports = (socket) => {
                         var driver = getDriver({ id: request.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
                         Vehicle.updateOne({ _id: request.vehicleId }, { online: true }, (err, res) => { });
-                        if (sentRequestCount <= receivedResponse) {
+                        if (sentRequestCount <= receivedResponse && !removedDrivers.includes(request.driverId)) {
+                            removedDrivers.push(request.driverId);
                             sendRequest();
                         }
                     } else if (status == "Expired") {
@@ -463,6 +466,7 @@ module.exports = (socket) => {
 
             async function sendRequest() {
                 var vehicle;
+                var removedDrivers = [];
                 var vehicles = [];
                 vehicles = JSON.parse(await getNearbyDrivers({ location: data.pickUpAddress, distance: setting.searchRadius ? setting.searchRadius * 1000 : 10000 }));
 
@@ -512,7 +516,8 @@ module.exports = (socket) => {
                     Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: false }, (err, res) => { });
 
                     setTimeout(() => {
-                        if (!driverFound && !canceled) {
+                        if (!driverFound && !canceled && !removedDrivers.includes(request.driverId)) {
+                            removedDrivers.push(request.driverId);
                             updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
                             sendRequest();
                         }
@@ -533,7 +538,10 @@ module.exports = (socket) => {
                     if (status == "Declined") {
                         var driver = getDriver({ id: rentObject.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-                        sendRequest();
+                        if (!removedDrivers.includes(request.driverId)) {
+                            removedDrivers.push(request.driverId);
+                            sendRequest();
+                        }
                         Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
                     } else if (status == "Expired") {
                         var driver = getDriver({ id: rentObject.driverId })
