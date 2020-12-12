@@ -571,8 +571,8 @@ const rentForDispatcher = async (socket, data) => {
                     if (!driverFound && !canceled) {
                         updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
 
-                        if (!data.singleDriver && !removedDrivers.includes(request.driverId)) {
-                            removedDrivers.push(request.driverId);
+                        if (!data.singleDriver && !removedDrivers.includes(rentObject.driverId)) {
+                            removedDrivers.push(rentObject.driverId);
                             sendRequest();
                         }
                     }

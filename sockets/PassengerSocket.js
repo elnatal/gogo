@@ -516,8 +516,8 @@ module.exports = (socket) => {
                     Vehicle.updateOne({ _id: rentObject.vehicleId }, { online: false }, (err, res) => { });
 
                     setTimeout(() => {
-                        if (!driverFound && !canceled && !removedDrivers.includes(request.driverId)) {
-                            removedDrivers.push(request.driverId);
+                        if (!driverFound && !canceled && !removedDrivers.includes(rentObject.driverId)) {
+                            removedDrivers.push(rentObject.driverId);
                             updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: "Expired" });
                             sendRequest();
                         }
