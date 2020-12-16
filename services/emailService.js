@@ -36,8 +36,8 @@ const customerEmail = async ({ trip, setting }) => {
         var tsts = new Date(trip.pickupTimestamp);
         var durationInMinute = ((date.getTime() - tsts.getTime()) / 1000) / 60;
 
-        var minute = this.duration % 60;
-        var hour = (this.duration - minute) / 60;
+        var minute = durationInMinute % 60;
+        var hour = (durationInMinute - minute) / 60;
 
         hour += ":" + Math.round(minute).toString().padStart(2, "0");
 
@@ -106,7 +106,7 @@ const customerEmail = async ({ trip, setting }) => {
                                                                                 <span
                                                                                     style="width:100%;display:block;text-align:center;font-family:Tahoma,Arial,Helvetica,sans-serif;font-size:24px;color:#FFA500"><strong></strong>
                                                                                     Total<br>ETB
-                                                                                    ${trip.fare.toString().padStart(2, "0")}</span>
+                                                                                    ${trip.fare.toFixed(2)}</span>
                                                                             </strong>
                                                                         </div>
                                                                     </span>
