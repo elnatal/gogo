@@ -8,7 +8,7 @@ const { updateRent } = require("../containers/rentContainer");
 const Setting = require("../models/Setting");
 const Ticket = require("../models/Ticket");
 const { default: Axios } = require('axios');
-const { sendEmail } = require("../services/emailService");
+const { sendEmail, customerEmail } = require("../services/emailService");
 const Token = require("../models/Token");
 const { request } = require("express");
 const Rent = require("../models/Rent");
@@ -480,8 +480,9 @@ module.exports = async (socket) => {
                                 if (res) console.log("status updated", true, vehicleId);
                             });
 
-                            if (res.createdBy == "app" && res.passenger && res.passenger.email) {
-                                sendEmail(res.passenger.email, "Trip summery", "test email");
+                            if (res.passenger && res.passenger.email) {
+                                var emailBody = await customerEmail({trip: res, setting});
+                                sendEmail(res.passenger.email, "Trip summery", emailBody);
                             }
                             var driver = getDriver({ id: res.driver._id });
                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('trip', res);
