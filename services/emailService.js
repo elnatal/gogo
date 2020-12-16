@@ -11,12 +11,12 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendEmail = (to, subject, text) => {
+const sendEmail = (to, subject, html) => {
     transporter.sendMail({
+        html,
         from: 'taxitestemail12@gmail.com',
         to,
-        subject,
-        text
+        subject
     }, function (error, info) {
         if (error) {
             logger.error("Email => " + error.toString());
@@ -41,15 +41,7 @@ const customerEmail = async ({ trip, setting }) => {
 
         hour += ":" + Math.round(minute).toString().padStart(2, "0");
 
-        return `<!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Trip summery</title>
-            </head>
-            <body>
-            <div style="background-color:#f1f1f1;margin:0;padding:0;font-family:sans-serif">
+        return `<div style="background-color:#f1f1f1;margin:0;padding:0;font-family:sans-serif">
                 <table style="background-color:#000c18;width:100%">
                     <tbody>
                         <tr>
@@ -240,9 +232,7 @@ const customerEmail = async ({ trip, setting }) => {
                         </tr>
                     </tbody>
                 </table>
-            </div>
-        </body>
-        </html>`;
+            </div>`;
     }
 }
 
