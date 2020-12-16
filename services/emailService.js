@@ -106,7 +106,7 @@ const customerEmail = async ({ trip, setting }) => {
                                                                                 <span
                                                                                     style="width:100%;display:block;text-align:center;font-family:Tahoma,Arial,Helvetica,sans-serif;font-size:24px;color:#FFA500"><strong></strong>
                                                                                     Total<br>ETB
-                                                                                    ${trip?.fare?.padStart(2, "0")}</span>
+                                                                                    ${trip.fare.padStart(2, "0")}</span>
                                                                             </strong>
                                                                         </div>
                                                                     </span>
