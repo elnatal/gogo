@@ -12,6 +12,9 @@ const CorporateSchema = Schema({
         required: true,
         unique: true
     },
+    email: {
+        type: String,
+    },
     active: {
         type: Boolean,
         default: true

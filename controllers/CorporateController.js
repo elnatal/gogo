@@ -324,6 +324,7 @@ const store = async (req, res) => {
         if (data.name && data.shortName) {
             Corporate.create({
                 name: data.name,
+                email: data.email,
                 shortName: data.shortName
             }, (error, corporate) => {
                 if (error) {
