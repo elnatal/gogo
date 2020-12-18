@@ -2,19 +2,28 @@ var nodemailer = require('nodemailer');
 const logger = require('./logger');
 const Setting = require('../models/Setting');
 const moment = require('moment');
+require('dotenv/config');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    // Test config
+    // service: 'gmail',
+    // auth: {
+    //     user: 'taxitestemail12@gmail.com',
+    //     pass: 'TaxiTest12'
+    // }
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: false,
     auth: {
-        user: 'taxitestemail12@gmail.com',
-        pass: 'TaxiTest12'
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
     }
 });
 
 const sendEmail = (to, subject, html) => {
     transporter.sendMail({
         html,
-        from: 'taxitestemail12@gmail.com',
+        from: 'shuufare@g2gclarity.com',
         to,
         subject
     }, function (error, info) {
@@ -47,7 +56,7 @@ const customerEmail = async ({ trip, setting }) => {
                         <tr>
                             <td style="padding:0;text-align:center;padding-top:10px;padding-bottom:10px;color:#ffffff">
                                 <div style="text-align:center;width:100%;display:inline-block;vertical-align:top;font-size:1.5em">
-                                    Thanks for choosing SHUUFARE, ${trip.passenger.firstName + ' ' + trip.passenger.lastName}!
+                                    Thanks for riding with us, ${trip.passenger.firstName + ' ' + trip.passenger.lastName}!
                                 </div>
                             </td>
                         </tr>
@@ -113,7 +122,7 @@ const customerEmail = async ({ trip, setting }) => {
                                                                             <p style="padding:0em 0.8em 0.0em 0.8em">
                                                                                 <span
                                                                                     style="width:100%;display:block;text-align:center;font-family:Tahoma,Arial,Helvetica,sans-serif;font-size:24px;color:#000c18">
-                                                                                    ${ hour + ' / ' + trip.totalDistance} km</span>
+                                                                                    ${hour + ' / ' + trip.totalDistance} km</span>
                                                                             </p>
                                                                         </div>
                                                                     </span>
@@ -148,7 +157,7 @@ const customerEmail = async ({ trip, setting }) => {
                                                                                     <span style="font-size:10px">${moment(trip.endTimestamp).format('HH:mm:ss A')}</span>
                                                                                 </span>
                                                                                 <span
-                                                                                    style="margin:0.3em 0em;width:50%;display:block;float:left;text-align:left">Coca-Cola
+                                                                                    style="margin:0.3em 0em;width:50%;display:block;float:left;text-align:left">
                                                                                     ${trip.dropOffAddress.name}</span>
                                                                             </p>
                                                                         </div>
