@@ -13,17 +13,20 @@ const transporter = nodemailer.createTransport({
     // }
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
-    secure: false,
+    secure: true,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
 const sendEmail = (to, subject, html) => {
     transporter.sendMail({
         html,
-        from: 'shuufare@g2gclarity.com',
+        from: `"Shuufare" <${process.env.EMAIL}>`,
         to,
         subject
     }, function (error, info) {
@@ -37,6 +40,7 @@ const sendEmail = (to, subject, html) => {
 
 const customerEmail = async ({ trip, setting }) => {
     if (trip && trip.passenger && trip.driver && trip.vehicle && trip.vehicleType) {
+        console.log("here");
         if (setting == null) {
             setting = await Setting.findOne();
         }
@@ -225,8 +229,8 @@ const customerEmail = async ({ trip, setting }) => {
                                                                     <span style="font-size:15px">${setting.contactNumber}</span>
                                                                     <br>
                                                                     <span style="font-size:15px">
-                                                                        <a href="mailto:${setting.contactEmail}"
-                                                                            target="_blank">${setting.contactEmail}</a>
+                                                                        <a href="mailto:${setting.contactEmail?? ""}"
+                                                                            target="_blank">${setting.contactEmail?? ""}</a>
                                                                     </span>
                                                                 </span>
                                                             </p>
@@ -243,6 +247,7 @@ const customerEmail = async ({ trip, setting }) => {
                 </table>
             </div>`;
     }
+    return;
 }
 
 module.exports = { sendEmail, customerEmail };
