@@ -20,4 +20,6 @@ router.patch('/:id', TripController.update);
 
 router.delete('/:id', TripController.remove);
 
+router.get('/:id/send-email', TripController.resendEmail);
+
 module.exports = router;

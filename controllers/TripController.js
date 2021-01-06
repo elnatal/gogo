@@ -4,7 +4,7 @@ const { send } = require('../services/emailService');
 const { getDriver } = require('../containers/driversContainer');
 const { getUser, getUsers } = require('../containers/usersContainer');
 const { sendNotification } = require('../services/notificationService');
-const { sendEmail } = require('../services/emailService')
+const { sendEmail, customerEmail } = require('../services/emailService')
 const logger = require('../services/logger');
 const SOS = require('../models/SOS');
 const Setting = require('../models/Setting');
@@ -13,6 +13,7 @@ const Ticket = require('../models/Ticket');
 const { updateWallet } = require('./DriverController');
 const Vehicle = require('../models/Vehicle');
 const { getIO } = require('../sockets/io');
+const { log } = require('../services/logger');
 
 const index = (req, res) => {
     try {
@@ -359,8 +360,19 @@ const end = async (req, res) => {
 
 const resendEmail = async (req, res) => {
     try {
-        const trip = await Ride.findById(req.params.id);
-        res.send("Email sent")
+        const trip = await Ride.findById(req.params.id).populate('driver').populate('passenger').populate('vehicle').populate('vehicleType');
+
+        if (trip && trip.passenger && trip.passenger.email) {
+            var email = await customerEmail({ trip });
+            if (email) {
+                sendEmail(trip.passenger.email, "Trip summary", email);
+                res.send("Email sent!");
+            } else {
+                res.send("Something went wrong!");
+            }
+        } else {
+            res.send("Passenger does not have email.");
+        }
     } catch (error) {
         logger.error("Trip => " + error.toString());
         res.status(500).send(error);
