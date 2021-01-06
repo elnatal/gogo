@@ -1,6 +1,6 @@
 const { addUser, removeUser, getUser, getUsers } = require('../containers/usersContainer');
 const { getDriver } = require('../containers/driversContainer');
-const { addRequest, updateRequest, getRequest, removeRequest } = require('../containers/requestContainer');
+const { addRequest, updateRequest, getRequest, getPassengerRequest } = require('../containers/requestContainer');
 const { getNearbyDrivers, search } = require('./core');
 const Request = require('../models/Request');
 const User = require('../models/User');
@@ -24,6 +24,7 @@ module.exports = (socket) => {
     var fcm = "";
     var location = null;
     var started = false;
+    var canceled = false;
 
     var interval = setInterval(() => {
         if (id && location) {
@@ -45,16 +46,21 @@ module.exports = (socket) => {
             fcm = passengerInfo.fcm;
             started = true;
             try {
+                var request = getPassengerRequest({ passengerId: id });
+
                 var ride = Ride.findOne({ active: true, passenger: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
                 var rent = Rent.findOne({ active: true, passenger: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
 
-                Promise.all([ride, rent]).then((values) => {
+                Promise.all([ride, rent, request]).then((values) => {
                     if (values[0]) {
                         socket.emit("trip", values[0]);
                         addTrip(values[0]);
                     } else if (values[1] && values[1].status != "Started") {
                         socket.emit("rent", values[1]);
+                    } else if (values[2]) {
+                        socket.emit('request', values[2]);
+                        console.log('request', values[2]);
                     }
                 }).catch((error) => {
                     console.log({ error });
@@ -91,6 +97,8 @@ module.exports = (socket) => {
         }
     });
 
+
+
     socket.on('search', async (data) => {
         if (started && data && data.pickUpAddress && data.dropOffAddress && data.vehicleType) {
             console.log("search")
@@ -102,7 +110,7 @@ module.exports = (socket) => {
             }
             var requestedDrivers = [];
             var driverFound = false;
-            var canceled = false;
+            canceled = false;
             var corporate = false;
             var schedule = null;
 
@@ -168,7 +176,9 @@ module.exports = (socket) => {
                     data.route = { coordinates: value[2].data.routes[0].geometry.coordinates, distance: value[2].data.routes[0].distance, duration: value[2].data.routes[0].duration };
                 }
                 console.log(data)
-                sendRequest();
+                if (!canceled) {
+                    sendRequest();
+                }
             });
 
             async function sendRequest() {
@@ -364,6 +374,8 @@ module.exports = (socket) => {
     });
 
     socket.on('cancelRequest', (request) => {
+        canceled = true;
+        socket.emit("requestCanceled");
         console.log("cancel request");
         updateRequest({ passengerId: request.passengerId, driverId: null, status: "Canceled" });
     });
@@ -440,7 +452,7 @@ module.exports = (socket) => {
             console.log({ setting });
             var requestedDrivers = [];
             var driverFound = false;
-            var canceled = false;
+            canceled = false;
             var vehicleTypeData;
 
             VehicleType.findById(data.vehicleType).then((res) => {
@@ -458,10 +470,14 @@ module.exports = (socket) => {
                         pickUpAddress.name = "_";
                         console.log("wrong response pul", res)
                     }
-                    sendRequest()
+                    if (!canceled) {
+                        sendRequest()
+                    }
                 });
             } else {
-                sendRequest();
+                if (!canceled) {
+                    sendRequest()
+                }
             }
 
             async function sendRequest() {
@@ -534,7 +550,7 @@ module.exports = (socket) => {
                     console.log("changed", rentObject);
                     console.log("status", rentObject.getStatus());
                     var status = rentObject.getStatus();
-    
+
                     if (status == "Declined") {
                         var driver = getDriver({ id: rentObject.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
@@ -551,7 +567,7 @@ module.exports = (socket) => {
                         canceled = true;
                         var driver = getDriver({ id: rentObject.driverId });
                         if (driver) io.of('/driver-socket').to(driver.socketId).emit('requestCanceled');
-    
+
                         var passengers = getUsers({ userId: rentObject.passengerId });
                         passengers.forEach((passenger) => {
                             if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('requestCanceled');
@@ -578,16 +594,16 @@ module.exports = (socket) => {
                                         if (error) console.log({ error });
                                         if (createdRent) {
                                             console.log({ createdRent });
-    
+
                                             var passengers = getUsers({ userId: id });
                                             passengers.forEach((passenger) => {
                                                 if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', createdRent);
                                                 sendNotification(passenger.fcm, { title: "Rent accepted", body: "Driver is on the way" });
                                             })
-    
+
                                             var driver = getDriver({ id: rentObject.driverId })
                                             if (driver) io.of('/driver-socket').to(driver.socketId).emit('rent', createdRent);
-    
+
                                             Vehicle.update({ _id: rentObject.vehicleId }, { online: true }, (err, res) => { });
                                         }
                                     }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
@@ -607,6 +623,8 @@ module.exports = (socket) => {
     });
 
     socket.on('cancelRentRequest', (rentObject) => {
+        canceled = true;
+        socket.emit("requestCanceled");
         updateRent({ passengerId: rentObject.passengerId, driverId: null, status: "Canceled" });
     });
 
