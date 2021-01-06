@@ -229,8 +229,8 @@ const customerEmail = async ({ trip, setting }) => {
                                                                     <span style="font-size:15px">${setting.contactNumber}</span>
                                                                     <br>
                                                                     <span style="font-size:15px">
-                                                                        <a href="mailto:${setting.contactEmail?? ""}"
-                                                                            target="_blank">${setting.contactEmail?? ""}</a>
+                                                                        <a href="mailto:${setting && setting.contactEmail ? setting.contactEmail : ""}"
+                                                                            target="_blank">${setting && setting.contactEmail ? setting.contactEmail : ""}</a>
                                                                     </span>
                                                                 </span>
                                                             </p>
