@@ -20,7 +20,7 @@ const DriverSchema = Schema({
     },
     businessLicense: {
         type: String,
-        required: true
+        required: false
     },
     phoneNumber: {
         type: String,
@@ -37,7 +37,7 @@ const DriverSchema = Schema({
     },
     drivingLicense: {
         type: String,
-        required: true
+        required: false
     },
     rating: {
         type: Number,
