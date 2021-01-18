@@ -8,6 +8,22 @@ const SettingSchema = Schema({
     driverPlaystoreLink: String,
     passengerAppstoreLink: String,
     passengerPlaystoreLink: String,
+    driverPrivacyPolicyLink: {
+        type: String,
+        default: ""
+    },
+    driverTermsAndConditionLink: {
+        type: String,
+        default: ""
+    },
+    passengerPrivacyPolicyLink: {
+        type: String,
+        default: ""
+    },
+    passengerTermsAndConditionLink: {
+        type: String,
+        default: ""
+    },
     requestTimeout: {
         type: Number,
         default: 25
