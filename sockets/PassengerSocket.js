@@ -343,7 +343,7 @@ module.exports = (socket) => {
                                             passengers.forEach((passenger) => {
                                                 if (passenger) {
                                                     io.of('/passenger-socket').to(passenger.socketId).emit('trip', createdRide);
-                                                    sendNotification(passenger.fcm, { title: "Request accepted", body: "Driver is on the way" });
+                                                    sendNotification(passenger.fcm, { title: "Request accepted", body: createdRide.status == "Scheduled" ? "Scheduled" : "Driver is on the way" });
                                                 }
                                             })
 
