@@ -420,27 +420,27 @@ module.exports = async (socket) => {
                                 companyCut = (fare * (setting.defaultCommission / 100));
                                 payToDriver = (fare - companyCut);
                                 tax = companyCut * (setting.tax / 100);
-                                net = companyCut - tax;
+                                net = companyCut - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = -companyCut;
                             } else if (res.type == "roadPickup") {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultRoadPickupCommission / 100)) - discount;
                                 payToDriver = discount;
                                 tax = (fare * (setting.defaultRoadPickupCommission / 100) - discount) * (setting.tax / 100);
-                                net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - tax;
+                                net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = (-(fare * (setting.defaultRoadPickupCommission / 100))) + discount;
                             } else if (res.type == "normal") {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                                 payToDriver = discount;
                                 tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
-                                net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                                net = ((fare * (setting.defaultCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                             } else if (res.type == "bid") {
                                 fare = res.bidAmount;
                                 companyCut = (fare * (setting.defaultCommission / 100));
                                 tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
-                                net = (fare * (setting.defaultCommission / 100)) - tax;
+                                net = (fare * (setting.defaultCommission / 100)) - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = (-companyCut);
                                 console.log("log=============");
                                 console.log({ fare, companyCut, tax, net, cutFromDriver });
@@ -449,7 +449,7 @@ module.exports = async (socket) => {
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                                 payToDriver = discount;
                                 tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
-                                net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                                net = ((fare * (setting.defaultCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                             }
                             res.status = "Completed";

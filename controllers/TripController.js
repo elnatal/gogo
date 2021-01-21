@@ -271,27 +271,27 @@ const end = async (req, res) => {
                         companyCut = (fare * (setting.defaultCommission / 100));
                         payToDriver = (fare - companyCut);
                         tax = companyCut * (setting.tax / 100);
-                        net = companyCut - tax;
+                        net = companyCut - ((tax < 0) ? 0 : tax);
                         cutFromDriver = -companyCut;
                     } else if (ride.type == "roadPickup") {
                         fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultRoadPickupCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultRoadPickupCommission / 100) - discount) * (setting.tax / 100);
-                        net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - tax;
+                        net = ((fare * (setting.defaultRoadPickupCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                         cutFromDriver = (-(fare * (setting.defaultRoadPickupCommission / 100))) + discount;
                     } else if (ride.type == "normal") {
                         fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
-                        net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                        net = ((fare * (setting.defaultCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                         cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                     } else if (ride.type == "bid") {
                         fare = ride.bidAmount;
                         companyCut = (fare * (setting.defaultCommission / 100));
                         tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
-                        net = (fare * (setting.defaultCommission / 100)) - tax;
+                        net = (fare * (setting.defaultCommission / 100)) - ((tax < 0) ? 0 : tax);
                         cutFromDriver = (-companyCut);
                         console.log("log=============");
                         console.log({ fare, companyCut, tax, net, cutFromDriver });
@@ -300,7 +300,7 @@ const end = async (req, res) => {
                         companyCut = (fare * (setting.defaultCommission / 100)) - discount;
                         payToDriver = discount;
                         tax = (fare * (setting.defaultCommission / 100) - discount) * (setting.tax / 100);
-                        net = ((fare * (setting.defaultCommission / 100)) - discount) - tax;
+                        net = ((fare * (setting.defaultCommission / 100)) - discount) - ((tax < 0) ? 0 : tax);
                         cutFromDriver = (-(fare * (setting.defaultCommission / 100))) + discount;
                     }
                     ride.status = "Completed";
