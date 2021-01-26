@@ -85,7 +85,6 @@ const store = async (req, res) => {
                 }
 
                 if (employee) {
-                    console.log("Employee already exist");
                     res.send("Employee already exist").status(422);
                 } else {
                     Employee.create({

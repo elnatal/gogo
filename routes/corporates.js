@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const CorporateController = require('../controllers/CorporateController');
-const AuthMiddleware = require('../middleware/authMiddleware');
 
 router.get('/', CorporateController.index);
 

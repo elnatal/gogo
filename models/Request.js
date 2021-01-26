@@ -1,5 +1,3 @@
-const { schema } = require("./Vehicle");
-
 class Request {
     passengerId;
     passenger;

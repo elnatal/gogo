@@ -12,7 +12,6 @@ router.get('/search', VehicleController.search);
 router.get('/drivers', async (req, res) => {
     try {
         var drivers = await getNearbyDrivers({location: {lat: 8.9996048, long: 38.78399910000002}, distance: 1000000});
-        // console.log(drivers);
         res.send(drivers);
     } catch (error) {
         console.log(error);

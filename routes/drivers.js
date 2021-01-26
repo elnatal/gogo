@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const DriverController = require('../controllers/DriverController');
-const AuthMiddleware = require('../middleware/authMiddleware')
 
 router.get('/', DriverController.index);
 

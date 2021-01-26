@@ -202,8 +202,8 @@ const remove = async (req, res) => {
 const cancel = async (req, res) => {
     try {
         const io = getIO();
-        Ride.findById(req.params.id, async (err, ride) => {
-            if (err) console.log(err);
+        Ride.findById(req.params.id, async (error, ride) => {
+            if (error) console.log(error);
             if (ride) {
                 ride.status = "Canceled";
                 ride.endTimestamp = new Date();
@@ -245,8 +245,8 @@ const end = async (req, res) => {
     try {
         const setting = await Setting.findOne();
         const io = getIO()
-        Ride.findById(req.params.id, async (err, ride) => {
-            if (err) console.log(err);
+        Ride.findById(req.params.id, async (error, ride) => {
+            if (error) console.log(error);
             if (ride) {
                 if (ride.status != "Completed") {
                     var discount = setting.discount ? setting.discount : 0;
@@ -293,8 +293,6 @@ const end = async (req, res) => {
                         tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
                         net = (fare * (setting.defaultCommission / 100)) - ((tax < 0) ? 0 : tax);
                         cutFromDriver = (-companyCut);
-                        console.log("log=============");
-                        console.log({ fare, companyCut, tax, net, cutFromDriver });
                     } else {
                         fare = (req.body.totalDistance * ride.vehicleType.pricePerKM) + ride.vehicleType.baseFare + (durationInMinute * ride.vehicleType.pricePerMin);
                         companyCut = (fare * (setting.defaultCommission / 100)) - discount;
@@ -315,12 +313,10 @@ const end = async (req, res) => {
                     ride.active = false;
                     ride.save();
                     addTrip(ride);
-                    console.log({ ride });
 
                     if (ride.ticket) {
-                        console.log("has ticket =========");
-                        Ticket.updateOne({ _id: ride.ticket }, { amount: fare, timestamp: new Date(), ride: ride.id }, (err, ticketResponse) => {
-                            if (err) console.log({ err });
+                        Ticket.updateOne({ _id: ride.ticket }, { amount: fare, timestamp: new Date(), ride: ride.id }, (error, ticketResponse) => {
+                            if (error) console.log({ error });
                             if (ticketResponse) {
                                 console.log("ticket updated");
                             }
@@ -329,8 +325,8 @@ const end = async (req, res) => {
 
                     updateWallet({ id: ride.driver._id, amount: cutFromDriver });
 
-                    Vehicle.updateOne({ _id: ride.vehicle._id }, { online: true }, (err, vehicleResponse) => {
-                        if (err) console.log({ err });
+                    Vehicle.updateOne({ _id: ride.vehicle._id }, { online: true }, (error, vehicleResponse) => {
+                        if (error) console.log({ error });
                         if (vehicleResponse) console.log("status updated", true, ride.vehicle._id);
                     });
 

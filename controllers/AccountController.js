@@ -1,7 +1,6 @@
 const Account = require('../models/Account');
 const bcrypt = require('bcryptjs');
 const Token = require('../models/Token');
-const { populate } = require('../models/Account');
 const logger = require('../services/logger');
 require('dotenv/config');
 

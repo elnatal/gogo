@@ -20,7 +20,6 @@ const { sendNotification } = require("../services/notificationService");
 const { addTrip, findTrip } = require("../containers/tripContainer");
 
 module.exports = async (socket) => {
-    console.log("new connection", socket.id);
     var io = getIO();
     var id = "";
     var vehicleId = "";
@@ -31,14 +30,7 @@ module.exports = async (socket) => {
     var setting = await Setting.findOne();
 
     socket.on('init', async (driverInfo) => {
-        console.log(driverInfo);
-        console.log("///////////////////////////////////");
-        console.log("//////////// Le Tinsu //////////////");
-        console.log("///////////////////////////////////");
-        // console.log(JSON.parse(driverInfo));
-        console.log("type", typeof (driverInfo));
         if (!started && driverInfo && driverInfo.id != undefined && driverInfo.id != null && driverInfo.id != "" && driverInfo.vehicleId != null && driverInfo.vehicleId != undefined && driverInfo.vehicleId != "" && driverInfo.fcm != undefined && driverInfo.fcm != null && driverInfo.fcm != "" && driverInfo.location != null && driverInfo.location != undefined && driverInfo.location.lat != null && driverInfo.location.lat != undefined && driverInfo.location.long != undefined && driverInfo.location.long != null && driverInfo.token != "" && driverInfo.token != null && driverInfo.token != undefined) {
-            console.log("passed");
             id = driverInfo.id;
             vehicleId = driverInfo.vehicleId;
             location = driverInfo.location;
@@ -51,7 +43,6 @@ module.exports = async (socket) => {
                 var trip = Ride.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 var rent = Rent.findOne({ active: true, driver: id }).populate('driver').populate('passenger').populate('vehicleType').populate('vehicle');
                 Promise.all([rent, trip, request]).then((values) => {
-                    console.log("status", values[0] || values[1] || values[2] ? false : true);
                     Vehicle.updateOne({ _id: vehicleId }, {
                         fcm,
                         online: values[0] || values[1] || values[2] ? false : true,
@@ -63,8 +54,8 @@ module.exports = async (socket) => {
                                 location.lat
                             ]
                         }
-                    }, (err, res) => {
-                        if (err) console.log({ err });
+                    }, (error, res) => {
+                        if (error) console.log({ error });
                         if (res) {
                             console.log("vehicle updated, status ", values[0] || values[1] || values[2] ? false : true);
                         }
@@ -72,17 +63,12 @@ module.exports = async (socket) => {
 
                     if (values[0]) {
                         socket.emit('rent', values[0]);
-                        console.log("rent", values[0]);
                     } else if (values[1]) {
                         socket.emit('trip', values[1]);
-                        console.log("trip", values[1]);
-                        // socket.emit('status', { "status": false });
                     } else if (values[2]) {
                         socket.emit('request', values[2]);
-                        console.log('request', values[2]);
                     } else {
                         socket.emit('status', { "status": true });
-                        console.log("status", true);
                     }
                 })
             } catch (error) {
@@ -93,7 +79,6 @@ module.exports = async (socket) => {
 
             existingDrivers.forEach((driver) => {
                 if (driver && driver.token != token) {
-                    console.log("unauthorized", driver.token);
                     io.of('/driver-socket').to(driver.socketId).emit('unauthorized');
                     removeDriver({ id: driver.id });
                     Token.updateOne({ _id: driver.token }, { active: false }, (err, res) => {
@@ -104,9 +89,6 @@ module.exports = async (socket) => {
             })
 
             addDriver({ newDriver: new DriverObject({ id, vehicleId, fcm, token, socketId: socket.id, removeDriverCallback }) })
-            // addDriver({ driverId: id, vehicleId, fcm, socketId: socket.id });
-
-            // console.log("driver", getDriver({ id }));
 
             async function removeDriverCallback() {
                 // console.log("unauthorized", { token });
@@ -121,7 +103,6 @@ module.exports = async (socket) => {
 
     socket.on('updateLocation', (data) => {
         if (started && data && data.location) {
-            console.log({ data });
             Vehicle.updateOne({ _id: vehicleId }, {
                 timestamp: new Date(),
                 position: {
@@ -141,7 +122,6 @@ module.exports = async (socket) => {
                     })
 
                     if (trip.status == "Started") {
-                        console.log("===================saved");
                         trip.path.push(data.location);
                         addTrip(trip);
                         Ride.updateOne({ _id: data.tripId }, { path: trip.path }, (error, response) => {
@@ -158,16 +138,12 @@ module.exports = async (socket) => {
     });
 
     socket.on('changeStatus', (online) => {
-        console.log(typeof (online));
-        console.log('vehicle id', vehicleId);
         if (started) {
             if (online != null && vehicleId) {
-                console.log('status', online);
                 Vehicle.updateOne({ _id: vehicleId }, { online }, (err, res) => {
                     if (err) console.log({ err });
                     if (res) {
                         socket.emit('status', { "status": online });
-                        console.log("updated status", online);
                     }
                 });
             } else {
@@ -179,17 +155,14 @@ module.exports = async (socket) => {
     });
 
     socket.on('updateRequest', (request) => {
-        console.log("request update", request);
         updateRequest({ passengerId: request.passengerId, driverId: request.driverId, status: request.status });
     });
 
     socket.on('updateRent', (rentObject) => {
-        console.log("request update", rentObject);
         updateRent({ passengerId: rentObject.passengerId, driverId: rentObject.driverId, status: rentObject.status });
     });
 
     socket.on('arrived', (trip) => {
-        console.log("arrived", trip)
         if (started && trip && trip.id) {
             try {
                 Ride.findById(trip.id, (err, res) => {
@@ -219,7 +192,6 @@ module.exports = async (socket) => {
     });
 
     socket.on('startTrip', async (trip) => {
-        console.log("start trip", trip)
         if (started && trip && trip.id) {
             try {
                 Ride.findById(trip.id, (err, res) => {
@@ -247,9 +219,7 @@ module.exports = async (socket) => {
                 console.log(error);
             }
         } else if (started && trip && trip.type == "roadPickup" && trip.pickUpAddress && trip.pickUpAddress.lat && trip.pickUpAddress.long && trip.dropOffAddress && trip.dropOffAddress.lat && trip.dropOffAddress.long && trip.vehicleType && trip.phone) {
-            console.log({ trip });
             var setting = await Setting.findOne();
-            console.log({ setting });
             var passengerId = "";
             const vehicleTypeData = await VehicleType.findById(trip.vehicleType);
             var pickup = trip.pickUpAddress.name;
@@ -267,28 +237,21 @@ module.exports = async (socket) => {
 
             if (!pickup) {
                 pickup = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + trip.pickUpAddress.lat + "," + trip.pickUpAddress.long + "&key=" + setting.mapKey);
-                console.log("pickup", pickup);
             }
 
             if (!dropOff) {
                 dropOff = Axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + trip.dropOffAddress.lat + "," + trip.dropOffAddress.long + "&key=" + setting.mapKey);
-                console.log("drpOff", dropOff);
             }
 
             var route = Axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/' + trip.pickUpAddress.long + ',' + trip.pickUpAddress.lat + ';' + trip.dropOffAddress.long + ',' + trip.dropOffAddress.lat + '?radiuses=unlimited;&geometries=geojson&access_token=pk.eyJ1IjoidGluc2FlLXliIiwiYSI6ImNrYnFpdnNhajJuNTcydHBqaTA0NmMyazAifQ.25xYVe5Wb3-jiXpPD_8oug');
 
             Promise.all([pickup, dropOff, route]).then(value => {
-                console.log(value[0].data);
                 if (typeof (value[0]) != typeof (" ")) {
                     if (value[0].status == 200 && value[0].data.status == "OK") {
-                        console.log("status ok pul");
                         trip.pickUpAddress.name = value[0].data.results[0].formatted_address;
                     } else {
                         trip.pickUpAddress.name = "_";
-                        console.log("wrong response pul", value[0])
                     }
-                } else {
-                    console.log("wrong data pul", value[0])
                 }
 
                 if (typeof (value[1]) != typeof (" ")) {
@@ -299,14 +262,11 @@ module.exports = async (socket) => {
                         trip.dropOffAddress.name = "_";
                         console.log("wrong response dol", value[1])
                     }
-                } else {
-                    console.log("wrong data dol", value[1])
                 }
 
                 if (value[2] && value[2].data && value[2].data.routes && value[2].data.routes[0] && value[2].data.routes[0].geometry && value[2].data.routes[0].geometry.coordinates) {
                     trip.route = { coordinates: value[2].data.routes[0].geometry.coordinates, distance: value[2].data.routes[0].distance, duration: value[2].data.routes[0].duration };
                 }
-                console.log(trip)
 
                 try {
                     Ride.create({
@@ -337,12 +297,9 @@ module.exports = async (socket) => {
                     }, (err, ride) => {
                         if (err) console.log(err);
                         if (ride) {
-                            console.log(ride);
-                            // socket.emit('status', { "status": false });
                             Ride.findById(ride._id, async (err, createdRide) => {
                                 if (err) console.log(err);
                                 if (createdRide) {
-                                    console.log("ride", createdRide);
                                     addTrip(createdRide);
 
                                     var driver = getDriver({ id })
@@ -361,7 +318,6 @@ module.exports = async (socket) => {
     });
 
     socket.on('startRent', (rent) => {
-        console.log("start rent", rent)
         if (started && rent && rent.id) {
             try {
                 Rent.findById(rent.id, (err, res) => {
@@ -391,7 +347,6 @@ module.exports = async (socket) => {
     });
 
     socket.on('tripEnded', (trip) => {
-        console.log("completed", trip)
         if (started && trip && trip.id && trip.totalDistance != null && trip.totalDistance != undefined) {
             try {
                 Ride.findById(trip.id, async (err, res) => {
@@ -442,8 +397,6 @@ module.exports = async (socket) => {
                                 tax = (fare * (setting.defaultCommission / 100)) * (setting.tax / 100);
                                 net = (fare * (setting.defaultCommission / 100)) - ((tax < 0) ? 0 : tax);
                                 cutFromDriver = (-companyCut);
-                                console.log("log=============");
-                                console.log({ fare, companyCut, tax, net, cutFromDriver });
                             } else {
                                 fare = (trip.totalDistance * res.vehicleType.pricePerKM) + res.vehicleType.baseFare + (durationInMinute * res.vehicleType.pricePerMin);
                                 companyCut = (fare * (setting.defaultCommission / 100)) - discount;
@@ -464,10 +417,8 @@ module.exports = async (socket) => {
                             res.active = false;
                             res.save();
                             addTrip(res);
-                            console.log({ res });
 
                             if (res.ticket) {
-                                console.log("has ticket =========");
                                 Ticket.updateOne({ _id: res.ticket }, { amount: fare, timestamp: new Date(), ride: res.id }, (err, res) => {
                                     if (err) console.log({ err });
                                     if (res) {
@@ -495,7 +446,6 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('trip', res);
-                                    // sendNotification(passenger.fcm, { title: "Trip ended", body: "You have arrived at your destination" });
                                 })
                             }
                         }
@@ -508,7 +458,6 @@ module.exports = async (socket) => {
     });
 
     socket.on('endRent', (rent) => {
-        console.log("completed", rent)
         if (started && rent && rent.id && rent.months != null && rent.days != null, rent.hours != null) {
             try {
                 Rent.findById(rent.id, async (err, res) => {
@@ -526,8 +475,6 @@ module.exports = async (socket) => {
                             res.endTimestamp = new Date();
                             res.active = false;
                             res.save();
-
-                            console.log({ res });
 
                             updateWallet({ id, amount: cutFromDriver });
 
@@ -547,7 +494,6 @@ module.exports = async (socket) => {
                                 var passengers = getUsers({ userId: res.passenger._id });
                                 passengers.forEach((passenger) => {
                                     if (passenger) io.of('/passenger-socket').to(passenger.socketId).emit('rent', res);
-                                    // sendNotification(passenger.fcm, { title: "Rent ended", body: "You have arrived at your destination" });
                                 })
                             }
                         }

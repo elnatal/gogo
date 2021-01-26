@@ -9,7 +9,6 @@ const runCrone = (io) => {
 }
 
 function runJobs(io) {
-    console.log("Running cron job");
     checkScheduledTrips(io);
 }
 

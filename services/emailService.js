@@ -5,12 +5,6 @@ const moment = require('moment');
 require('dotenv/config');
 
 const transporter = nodemailer.createTransport({
-    // Test config
-    // service: 'gmail',
-    // auth: {
-    //     user: 'taxitestemail12@gmail.com',
-    //     pass: 'TaxiTest12'
-    // }
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
     secure: true,
@@ -40,7 +34,6 @@ const sendEmail = (to, subject, html) => {
 
 const customerEmail = async ({ trip, setting }) => {
     if (trip && trip.passenger && trip.driver && trip.vehicle && trip.vehicleType) {
-        console.log("here");
         if (setting == null) {
             setting = await Setting.findOne();
         }
