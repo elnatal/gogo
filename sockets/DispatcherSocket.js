@@ -44,7 +44,7 @@ module.exports = (socket) => {
                     pua.long = data.pickUpAddress.coordinate.long;
                 }
                 else if (value[0].status == 200 && value[0].data.status == "OK") {
-\                    pua.name = data.pickUpAddress.name;
+                    pua.name = data.pickUpAddress.name;
                     pua.lat = value[0].data.results[0].geometry.location.lat;
                     pua.long = value[0].data.results[0].geometry.location.lng;
                 } else {
