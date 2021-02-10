@@ -38,8 +38,20 @@ const index =  async (req, res) => {
             filter['vehicleType'] = req.query.vehicleType;
         }
 
+        if (req.query.driver != null && req.query.driver != 'all') {
+            filter['driver'] = req.query.driver;
+        }
+
         if (req.query.active != null && req.query.active != 'all') {
             filter['active'] = req.query.active;
+        }
+
+        if (req.query.date != null && req.query.date) {
+            var endDate = new Date(req.query.date);
+            endDate.getHours().setHours(24);
+
+            filter['createdAt'] = { $gte: new Date(req.query.date)};
+            filter['createdAt'] = { $lte: endDate};
         }
 
         var vehicle =  Vehicle.find(filter);

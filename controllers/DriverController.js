@@ -26,6 +26,14 @@ const index = async (req, res) => {
             filter['active'] = req.query.active;
         }
 
+        if (req.query.date != null && req.query.date) {
+            var endDate = new Date(req.query.date);
+            endDate.getHours().setHours(24);
+
+            filter['createdAt'] = { $gte: new Date(req.query.date)};
+            filter['createdAt'] = { $lte: endDate};
+        }
+
         var drives = Driver.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
