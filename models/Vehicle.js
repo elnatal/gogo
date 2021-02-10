@@ -4,11 +4,11 @@ const Schema = mongoose.Schema;
 const vehicleSchema = Schema({
     modelName: {
         type: String,
-        required: true
+        required: false
     },
     modelYear: {
         type: String,
-        required: true
+        required: false
     },
     plateNumber: {
         type: String,
@@ -16,19 +16,19 @@ const vehicleSchema = Schema({
     },
     photo: {
         type: String,
-        required: true
+        required: false
     },
     color: {
         type: String,
-        required: true
+        required: false
     },
     insurance: {
         type: String,
-        required: true
+        required: false
     },
     libre: {
         type: String,
-        required: true
+        required: false
     },
     vehicleType: {
         type: Schema.Types.ObjectId,
