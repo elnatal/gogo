@@ -48,7 +48,7 @@ const index =  async (req, res) => {
 
         if (req.query.date != null && req.query.date) {
             var endDate = new Date(req.query.date);
-            endDate.getHours().setHours(24);
+            endDate.setHours(24);
 
             filter['createdAt'] = { $gte: new Date(req.query.date)};
             filter['createdAt'] = { $lte: endDate};
