@@ -30,8 +30,10 @@ const index = async (req, res) => {
             var endDate = new Date(req.query.date);
             endDate.setHours(24);
 
-            filter['createdAt'] = { $gte: new Date(req.query.date)};
-            filter['createdAt'] = { $lte: endDate};
+            filter['$and'] = [
+                { 'createdAt': { $gte: new Date(req.query.date) } },
+                { 'createdAt': { $lte: endDate } }
+            ];
         }
 
         var drives = Driver.find(filter);

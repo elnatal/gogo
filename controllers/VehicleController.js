@@ -1,7 +1,7 @@
 const Vehicle = require('../models/Vehicle');
 const logger = require('../services/logger');
 
-const index =  async (req, res) => {
+const index = async (req, res) => {
     try {
         var page = 1;
         var skip = 0;
@@ -49,12 +49,13 @@ const index =  async (req, res) => {
         if (req.query.date != null && req.query.date) {
             var endDate = new Date(req.query.date);
             endDate.setHours(24);
-
-            filter['createdAt'] = { $gte: new Date(req.query.date)};
-            filter['createdAt'] = { $lte: endDate};
+            filter['$and'] = [
+                { 'createdAt': { $gte: new Date(req.query.date) } },
+                { 'createdAt': { $lte: endDate } }
+            ];
         }
 
-        var vehicle =  Vehicle.find(filter);
+        var vehicle = Vehicle.find(filter);
         if (req.query.page && parseInt(req.query.page) != 0) {
             page = parseInt(req.query.page);
         }
@@ -67,8 +68,8 @@ const index =  async (req, res) => {
         }
 
         skip = (page - 1) * limit;
-        
-        vehicle.sort({createdAt: 'desc'});
+
+        vehicle.sort({ createdAt: 'desc' });
         vehicle.limit(limit);
         vehicle.skip(skip);
         if (req.query.populate) {
@@ -82,10 +83,10 @@ const index =  async (req, res) => {
             vehicle.exec()
         ]).then((value) => {
             if (value) {
-                if (((page  * limit) <= value[0])) {
+                if (((page * limit) <= value[0])) {
                     nextPage = page + 1;
                 }
-                res.send({data: value[1], count: value[0], nextPage, prevPage});
+                res.send({ data: value[1], count: value[0], nextPage, prevPage });
             }
         }).catch((error) => {
             logger.error("Vehicle => " + error.toString());
@@ -169,7 +170,7 @@ const show = async (req, res) => {
     };
 };
 
-const store =  async (req, res) => {
+const store = async (req, res) => {
     try {
         const savedVehicle = await Vehicle.create(req.body);
         res.send(savedVehicle);
